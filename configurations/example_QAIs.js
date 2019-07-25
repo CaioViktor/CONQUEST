@@ -1,7 +1,7 @@
 {
-	"description": "",
+	"description": "Exemplo de QAI",
 	"update_data": "",
-	"author": "",
+	"author": "Caio Viktor",
 	"created_date": "",
 	"QAIs": [
 		{
