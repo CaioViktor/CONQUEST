@@ -34,11 +34,15 @@ class QAI_Manager():
 
 			count_id = 1
 			for qaiD in qais['QAIs']:
-				qai = QAI.QAI(qaiD,count_id)
-				self.QAIs.append(qai)
+				try:
+					qai = QAI.QAI(qaiD,count_id)
+					self.QAIs.append(qai)
+				except:
+					print('Error on loading QAI Manager on file: "{}"'.format(file_path))
+					raise
 				count_id+=1
 
-			print(str(self))
+			# print(str(self))
 
 
 	def __str__(self):
