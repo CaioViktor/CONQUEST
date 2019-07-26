@@ -24,6 +24,8 @@ class QAI:
 			print("Error on loading QAI {}".format(self.id))
 			raise 
 
+		#TODO: computar CVs e RVs
+
 		# print("{}\n{}".format(vars_Set,result_Set))
 
 		# print(str(self))
