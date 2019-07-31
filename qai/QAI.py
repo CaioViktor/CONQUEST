@@ -25,6 +25,9 @@ class QAI:
 			raise 
 
 		#TODO: computar CVs e RVs
+		
+
+
 
 		# print("{}\n{}".format(vars_Set,result_Set))
 

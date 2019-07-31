@@ -3,7 +3,9 @@ from rdflib import Graph
 from rdflib.util import guess_format
 import hashlib
 from rdflib.resource import Resource
-from rdflib import OWL, RDF, RDFS, OWL, XSD,URIRef,BNode
+import re
+import rdflib.plugins.sparql.processor as processor
+from rdflib import OWL, RDF, RDFS, OWL, XSD,URIRef,BNode,Variable
 from rdflib.namespace import Namespace
 
 DC = Namespace('http://purl.org/dc/elements/1.1/')
@@ -104,22 +106,19 @@ def get_info_class(classe,schema):
 	super_classes_list = get_Resource(schema,classe).transitive_objects(RDFS.subClassOf)
 	super_classes = []
 	for super_class in super_classes_list:
-
 		if not isinstance(super_class.identifier,BNode) :
 			super_classes.append(super_class.identifier)
+	info['super_classes'] = super_classes
 
 
 
-
-	print("Classe:{}\n".format(classe))
-	print(super_classes)
-	print("\nTeste 2:\n")
-	r = get_Resource(schema,classe)
-	r = URIRef(r.identifier)
-	for test in schema.objects(r,RDFS.subClassOf):
-		print(test)
-	print("\n*********************\n")
-
+	#get sub-classes
+	sub_classes_list = get_Resource(schema,classe).transitive_subjects(RDFS.subClassOf)
+	sub_classes = []
+	for sub_class in sub_classes_list:
+		if not isinstance(sub_class.identifier,BNode) :
+			sub_classes.append(sub_class.identifier)
+	info['sub_classes'] = sub_classes
 	
 
 
@@ -139,3 +138,47 @@ def load_classes_index(schema):
 
 
 	return classes
+
+#parser sparql query to interpretate context variables meaning
+def parser_sparql(query_string):
+	query_object = processor.prepareQuery(query_string)
+	# print(query_object.algebra)
+	# print("\n\n")
+	parser_algebra(query_object.algebra)
+
+#parser utilities functions
+def parser_algebra(algebra,depth=0):
+	for element in algebra:
+		children = algebra[element]
+		if re.search("^p\d*",element):
+			print("depth:{}- {}".format(depth,element))
+			parser_algebra(children,depth+1)
+		elif element == "expr":
+			parser_expr(children)
+		elif element == "triples":
+			parser_triples(children)
+
+
+def parser_expr(expr,depth=0):
+	print("Expressão de pofundidade {}:\n{}".format(depth,expr))
+	#expr.name tem o tipo da expressão
+	#TODO: interpretar expressões
+
+def parser_triples(triples):
+	for triple in triples:
+		subject,predicate,objectt = triple
+		if predicate == RDF.type and isinstance(subject,Variable):
+			#is a variable type declaration
+
+			print("declarou {} como um {}".format(subject.n3(),objectt))
+		elif isinstance(subject,Variable) or isinstance(objectt,Variable):
+			#subject or object are variables, so its types may be infered by property
+			print("S:{},\tP:{},\tO:{}".format(subject,predicate,objectt))
+			print("\n")
+			if isinstance(subject,Variable):
+				#TODO: consultar o indice
+				return 0
+			if isinstance(objectt,Variable):
+				#TODO: consultar o indice
+				return 0
+		#TODO: Verificar casos de CVs
