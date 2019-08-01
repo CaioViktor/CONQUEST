@@ -168,7 +168,9 @@ def new_var(name,typee,classs,context=None,filterr=None,only_optional=False):
 		context = []
 	else:
 		context = [context]
-	return {'name':name,'type':typee,'class':[classs],'context':context,'filter':filterr,'only_optional':only_optional}
+	if not isinstance(classs,list):
+		classs = [classs]
+	return {'name':name,'type':typee,'class':set(classs),'context':context,'filter':filterr,'only_optional':only_optional}
 
 #parser utilities functions
 def parser_algebra(algebra,schema,depth=0,vars_query={}):
@@ -195,37 +197,76 @@ def parser_triples(triples,schema,vars_query={}):
 		subject,predicate,objectt = triple
 		if predicate == RDF.type and isinstance(subject,Variable):
 			#is a variable type declaration
-			id_var = uri_to_hash(subject.n3())
+			id_var = uri_to_hash(subject)
 			if id_var in vars_query:
 				#var already parsed
-				vars_query[id_var]['class'].append(objectt)
+				vars_query[id_var]['class'].update([objectt])
 			else:
 				#new var found
 				name = subject.n3().replace("?","")
-				typee = LITERAL
-				if isinstance(subject,URIRef):
-					typee = URIRef
+				typee = URI
 				vars_query[id_var] = new_var(name,typee,objectt)
 			#print("declarou {} como um {}".format(subject.n3(),objectt))
 		elif isinstance(subject,Variable) or isinstance(objectt,Variable):
 			#subject or object are variables, so its types may be infered by property
-			print("S:{},\tP:{},\tO:{}\n".format(subject,predicate,objectt))
-			#print("\n")
-
 			id_hash_property = uri_to_hash(predicate)
 
-			# TODO: shcema dividido em [0] propriedade,[1] object[2]datatype, arrumar
-			if id_hash_property in schema[1]:
+			#get iformation about the predicate if it is known
+			predicate_info = None		
+			predicate_type = None
+			if id_hash_property in schema[0]:
+				#Predicate is a rdf:Property
+				predicate_info = schema[0][id_hash_property]
+				predicate_type = 0
+			elif id_hash_property in schema[1]:
+				#Predicate is a owl:ObjectProperty
+				predicate_info = schema[1][id_hash_property]
+				predicate_type = 1
+			elif id_hash_property in schema[2]:
+				#Predicate is a owl:DatatypeProperty
+				predicate_info = schema[2][id_hash_property]
+				predicate_type = 2
+
+
+
+			domains = []
+			ranges = []
+			if not predicate_info == None:
 				#Known Predicate
-				domains = schema[1][id_hash_property]['domains']
-				ranges = schema[1][id_hash_property]['ranges']
-				print("Propriedade {} já conhecida.\nDomains:{}\nRanges:{}".format(predicate,domains,ranges))
+				domains = predicate_info['domains']
+				ranges = predicate_info['ranges']
+				# print("Propriedade {} do tipo: {} já conhecida.\nDomains:{}\nRanges:{}".format(predicate,predicate_type,domains,ranges))
+			
+
 			if isinstance(subject,Variable):
-				#TODO: consultar o indice
-				return 0
+				#Triple's subject is a variable
+				#all subject must be a URI, not a LITERAL
+				id_hash_subject = uri_to_hash(subject)
+				if id_hash_subject in vars_query:
+					#var already parsed
+					vars_query[id_hash_subject]['class'].update(domains) 
+					vars_query[id_hash_subject]['context'].append(triple)
+				else:
+					#new var found
+					name = subject.n3().replace("?","")
+					typee = URI
+					vars_query[id_hash_subject] = new_var(name,typee,domains,context=(triple))
+
+
 			if isinstance(objectt,Variable):
-				#TODO: consultar o indice
-				return 0
-		#TODO: Verificar casos de CVs
+				#Triple's object is a variable
+				id_hash_object = uri_to_hash(objectt)
+				if id_hash_object in vars_query:
+					#var already parsed
+					vars_query[id_hash_object]['class'].update(ranges) 
+					vars_query[id_hash_object]['context'].append(triple)
+					vars_query[id_hash_object]['type'] = LITERAL
+				else:
+					#new var found
+					name = objectt.n3().replace("?","")
+					typee = URI
+					if predicate_type == 2:
+						typee = LITERAL
+					vars_query[id_hash_object] = new_var(name,typee,domains,context=(triple))
 
 	return vars_query
