@@ -11,6 +11,10 @@ from rdflib.namespace import Namespace
 DC = Namespace('http://purl.org/dc/elements/1.1/')
 DCTERMS = Namespace('http://purl.org/dc/terms/')
 
+#Consts definitions
+URI = 0
+LITERAL = 1
+#end consts definitions
 
 
 #Load Graph
@@ -140,41 +144,82 @@ def load_classes_index(schema):
 	return classes
 
 #parser sparql query to interpretate context variables meaning
-def parser_sparql(query_string):
+def parser_sparql(query_string,schema):
 	query_object = processor.prepareQuery(query_string)
 	# print(query_object.algebra)
 	# print("\n\n")
-	parser_algebra(query_object.algebra)
+	return parser_algebra(query_object.algebra,schema)
+
+
+# #vars_query's struct
+# {
+# 	'hash_id':{
+# 		'name': '?var_name',
+# 		'type' : (URI|LITERAL),
+# 		'class': Set(URIRef(Class)),
+# 		'context': [(subject,predicate,object)], #Where current var is replaced by None
+# 		'filter': ?
+# 		'only_optional': True|False
+# 	},
+# }
+
+def new_var(name,typee,classs,context=None,filterr=None,only_optional=False):
+	if context == None:
+		context = []
+	else:
+		context = [context]
+	return {'name':name,'type':typee,'class':[classs],'context':context,'filter':filterr,'only_optional':only_optional}
 
 #parser utilities functions
-def parser_algebra(algebra,depth=0):
+def parser_algebra(algebra,schema,depth=0,vars_query={}):
 	for element in algebra:
 		children = algebra[element]
 		if re.search("^p\d*",element):
-			print("depth:{}- {}".format(depth,element))
-			parser_algebra(children,depth+1)
+			#print("depth:{}- {}".format(depth,element))
+			parser_algebra(children,schema,depth+1,vars_query)
 		elif element == "expr":
-			parser_expr(children)
+			parser_expr(children,vars_query)
 		elif element == "triples":
-			parser_triples(children)
+			parser_triples(children,schema,vars_query)
+	return vars_query
 
 
-def parser_expr(expr,depth=0):
+def parser_expr(expr,depth=0,vars_query={}):
 	print("Expressão de pofundidade {}:\n{}".format(depth,expr))
 	#expr.name tem o tipo da expressão
 	#TODO: interpretar expressões
+	return vars_query
 
-def parser_triples(triples):
+def parser_triples(triples,schema,vars_query={}):
 	for triple in triples:
 		subject,predicate,objectt = triple
 		if predicate == RDF.type and isinstance(subject,Variable):
 			#is a variable type declaration
-
-			print("declarou {} como um {}".format(subject.n3(),objectt))
+			id_var = uri_to_hash(subject.n3())
+			if id_var in vars_query:
+				#var already parsed
+				vars_query[id_var]['class'].append(objectt)
+			else:
+				#new var found
+				name = subject.n3().replace("?","")
+				typee = LITERAL
+				if isinstance(subject,URIRef):
+					typee = URIRef
+				vars_query[id_var] = new_var(name,typee,objectt)
+			#print("declarou {} como um {}".format(subject.n3(),objectt))
 		elif isinstance(subject,Variable) or isinstance(objectt,Variable):
 			#subject or object are variables, so its types may be infered by property
-			print("S:{},\tP:{},\tO:{}".format(subject,predicate,objectt))
-			print("\n")
+			print("S:{},\tP:{},\tO:{}\n".format(subject,predicate,objectt))
+			#print("\n")
+
+			id_hash_property = uri_to_hash(predicate)
+
+			# TODO: shcema dividido em [0] propriedade,[1] object[2]datatype, arrumar
+			if id_hash_property in schema[1]:
+				#Known Predicate
+				domains = schema[1][id_hash_property]['domains']
+				ranges = schema[1][id_hash_property]['ranges']
+				print("Propriedade {} já conhecida.\nDomains:{}\nRanges:{}".format(predicate,domains,ranges))
 			if isinstance(subject,Variable):
 				#TODO: consultar o indice
 				return 0
@@ -182,3 +227,5 @@ def parser_triples(triples):
 				#TODO: consultar o indice
 				return 0
 		#TODO: Verificar casos de CVs
+
+	return vars_query
