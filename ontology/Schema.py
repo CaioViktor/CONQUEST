@@ -178,16 +178,32 @@ def parser_algebra(algebra,schema,depth=0,vars_query={}):
 		children = algebra[element]
 		if re.search("^p\d*",element):
 			#print("depth:{}- {}".format(depth,element))
+			print(dir(children))
 			parser_algebra(children,schema,depth+1,vars_query)
 		elif element == "expr":
 			parser_expr(children,vars_query)
-		elif element == "triples":
-			parser_triples(children,schema,vars_query)
+		# elif element == "triples":
+		# 	parser_triples(children,schema,vars_query)
 	return vars_query
 
 
-def parser_expr(expr,depth=0,vars_query={}):
+def parser_expr(expr,vars_query={},depth=0):
 	print("Expressão de pofundidade {}:\n{}".format(depth,expr))
+	for node in expr:
+		print("no: {}\n".format(node))
+
+	if 'expr' in expr:
+		#left node expression
+		parser_expr(expr['expr'],vars_query,depth+1)
+
+	if 'op' in expr:
+		#Operation, when binary expression
+		print(expr['op'])
+
+	if 'other' in expr:
+		#right node expression
+		parser_expr(expr['other'],vars_query,depth+1)
+
 	#expr.name tem o tipo da expressão
 	#TODO: interpretar expressões
 	return vars_query

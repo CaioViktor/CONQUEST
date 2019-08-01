@@ -1,6 +1,7 @@
 import pprint
 import qai.QAI_Manager as q
 import ontology.Schema as sc
+import rdflib.plugins.sparql.processor as processor
 
 
 # QAIM = q.QAI_Manager("example_QAIs.js")
@@ -30,7 +31,20 @@ q = '''
         FILTER (lang(?tituloSubstanciaPt) = 'pt')
       }
 '''
+
+q = '''
+	SELECT ?a
+      WHERE {
+      	FILTER(STR(?a))
+
+      	
+    }
+'''
+
+# query_object = processor.prepareQuery(q)
+# pp.pprint(query_object.algebra)
+
 varss = sc.parser_sparql(q,s)
-pp.pprint(varss)
+# pp.pprint(varss)
 
 schema.close()
