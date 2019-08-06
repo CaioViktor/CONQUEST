@@ -5,8 +5,9 @@ import hashlib
 from rdflib.resource import Resource
 import re
 import rdflib.plugins.sparql.processor as processor
-from rdflib import OWL, RDF, RDFS, OWL, XSD,URIRef,BNode,Variable
+from rdflib import OWL, RDF, RDFS, OWL, XSD,URIRef,BNode,Variable,Literal
 from rdflib.namespace import Namespace
+from rdflib.plugins.sparql.parserutils import Expr
 
 DC = Namespace('http://purl.org/dc/elements/1.1/')
 DCTERMS = Namespace('http://purl.org/dc/terms/')
@@ -178,35 +179,158 @@ def parser_algebra(algebra,schema,depth=0,vars_query={}):
 		children = algebra[element]
 		if re.search("^p\d*",element):
 			#print("depth:{}- {}".format(depth,element))
-			print(dir(children))
+			# print(dir(children))
 			parser_algebra(children,schema,depth+1,vars_query)
 		elif element == "expr":
 			parser_expr(children,vars_query)
-		# elif element == "triples":
-		# 	parser_triples(children,schema,vars_query)
+		elif element == "triples":
+			parser_triples(children,schema,vars_query)
 	return vars_query
 
 
+
+#Parse expression. both, filters and binds
 def parser_expr(expr,vars_query={},depth=0):
-	print("Expressão de pofundidade {}:\n{}".format(depth,expr))
-	for node in expr:
-		print("no: {}\n".format(node))
+	unary_built_in_function = set(['Builtin_ABS','Builtin_BNODE','Builtin_BOUND','Builtin_CEIL','Builtin_DATATYPE','Builtin_DAY','Builtin_HOURS','Builtin_MINUTES','Builtin_MONTH','Builtin_SECONDS','Builtin_YEAR','Builtin_FLOOR','Builtin_IRI','Builtin_LANG','Builtin_LCASE','Builtin_UCASE','Builtin_ROUND','Builtin_STR','Builtin_STRLEN','Builtin_isIRI','Builtin_isBLANK','Builtin_isLITERAL','Builtin_isNUMERIC'])
+	if(isinstance(expr,Expr)):
+		#Branch node
+		if(expr.name == "RelationalExpression"):
+			#Binary expression
 
-	if 'expr' in expr:
-		#left node expression
-		parser_expr(expr['expr'],vars_query,depth+1)
+			#left node expression
+			left = parser_expr(expr['expr'],vars_query,depth+1)
+			#Operation,
+			op = expr['op']
+			#right node expression
+			right = parser_expr(expr['other'],vars_query,depth+1)
+		elif(expr.name == "ConditionalAndExpression"):
+			#and: &&
+			nodes = list()
 
-	if 'op' in expr:
-		#Operation, when binary expression
-		print(expr['op'])
+			#first node
+			nodes.append(parser_expr(expr['expr'],vars_query,depth+1))
+			
+			for node in expr['other']:
+				#remainder nodes
+				nodes.append(parser_expr(node,vars_query,depth+1))
 
-	if 'other' in expr:
-		#right node expression
-		parser_expr(expr['other'],vars_query,depth+1)
+		elif(expr.name == "ConditionalOrExpression"):
+			#or: ||
+			nodes = list()
 
-	#expr.name tem o tipo da expressão
-	#TODO: interpretar expressões
-	return vars_query
+			#first node
+			nodes.append(parser_expr(expr['expr'],vars_query,depth+1))
+			
+			for node in expr['other']:
+				#remainder nodes
+				nodes.append(parser_expr(node,vars_query,depth+1))
+		elif(expr.name == "UnaryNot"):
+			#not: !
+			node = parser_expr(expr['expr'],vars_query,depth+1)
+
+		#Math operations
+		elif(expr.name == "AdditiveExpression" or expr.name == "AdditiveExpression"):
+			#left node expression
+			left = parser_expr(expr['expr'],vars_query,depth+1)
+			#right node expression
+			#Operation,#+,-,*,/
+			ops = list()
+			i = 0
+
+			nodes = list()
+			for node in expr['other']:
+				#remainder nodes
+				ops.append(expr['op'][i] ) 
+				nodes.append(parser_expr(node,vars_query,depth+1))
+				i+=1
+
+		elif(expr.name == "Builtin_CONCAT"):
+			#CONCAT strings function
+			node = list()
+			for exp in expr['arg']:
+				node.append(parser_expr(exp,vars_query,depth+1))
+
+		elif(expr.name == "Builtin_CONTAINS" or expr.name == "Builtin_STRAFTER" or expr.name == "Builtin_STRBEFORE" or expr.name == "Builtin_STRENDS" or expr.name == "Builtin_STRSTARTS"):
+			#CONTAINS ,STRAFTER, STRBEFORE strings functions
+
+			#full - string
+			string = parser_expr(expr['arg1'],vars_query,depth+1)
+
+			#sub-string searched - string
+			sub_string = parser_expr(expr['arg2'],vars_query,depth+1)
+
+		elif(expr.name == "Builtin_LANGMATCHES" or expr.name == "Builtin_STRLANG"):
+			#langmatches, STRLANG strings functions
+
+			#string
+			string = parser_expr(expr['arg1'],vars_query,depth+1)
+
+			#language code
+			lang = parser_expr(expr['arg2'],vars_query,depth+1)
+
+		elif(expr.name == "Builtin_REGEX"):
+			#regex strings function
+
+			#full-string
+			text = parser_expr(expr['text'],vars_query,depth+1)
+
+			#regex pattern
+			pattern = parser_expr(expr['pattern'],vars_query,depth+1)
+
+			#flags mode
+			flags = parser_expr(expr['flags'],vars_query,depth+1)	
+			
+
+		elif(expr.name == "Builtin_REPLACE"):
+			#replace strings function
+
+			#full-string
+			text = parser_expr(expr['arg'],vars_query,depth+1)
+
+			#pattern to be replaced
+			pattern = parser_expr(expr['pattern'],vars_query,depth+1)
+
+			#string to be replace
+			replacement = parser_expr(expr['replacement'],vars_query,depth+1)
+
+			#flags mode
+			flags = parser_expr(expr['flags'],vars_query,depth+1)		
+
+		elif(expr.name == "Builtin_SUBSTR"):
+			#substring strings function
+
+			#full-string
+			text = parser_expr(expr['arg'],vars_query,depth+1)
+
+			#starting position
+			text = parser_expr(expr['start'],vars_query,depth+1)
+
+			if 'length' in expr:
+				length = parser_expr(expr['length'],vars_query,depth+1)
+
+
+		elif(expr.name == "Builtin_sameTerm"):
+			#langmatches, STRLANG strings functions
+
+			#string
+			term1 = parser_expr(expr['arg1'],vars_query,depth+1)
+
+			#language code
+			ter2 = parser_expr(expr['arg2'],vars_query,depth+1)
+
+		elif(expr.name in unary_built_in_function):
+			arg = parser_expr(expr['arg'],vars_query,depth+1)
+
+
+
+	else:
+		#leaf node
+		if(isinstance(expr,Variable)):
+			print("Var:{}".format(expr))
+		elif(isinstance(expr,URIRef)):
+			print("URI:{}".format(expr))
+		elif(isinstance(expr,Literal)):
+			print("Literal:{}".format(expr))
 
 def parser_triples(triples,schema,vars_query={}):
 	for triple in triples:
