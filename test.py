@@ -30,10 +30,9 @@ q = '''
         ?substancia dc:title ?tituloSubstanciaPt .
         FILTER(regex(str(?tituloSubstanciaPt), $principioAtivo, "i"))
         FILTER (lang(?tituloSubstanciaPt) = 'pt')
-        BIND(<teste> as ?s)
       }
 '''
-
+#FILTER(regex(str(?nomeMedicamento), $nome, "i"))
 # q = '''
 # 	SELECT ?a
 #       WHERE {

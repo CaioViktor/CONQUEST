@@ -182,56 +182,77 @@ def parser_algebra(algebra,schema,depth=0,vars_query={}):
 			# print(dir(children))
 			parser_algebra(children,schema,depth+1,vars_query)
 		elif element == "expr":
-			parser_expr(children,vars_query)
+			vars_in_expr = list()
+			meta_nodes = {}
+			#get relation between variables in query's expressions
+			parser_expr(children,vars_in_expr,meta_nodes=meta_nodes)
+
+			#Compute the Lowest Comum Ancestor (LCA). In future try to use Tarjan's off-line lowest common ancestors algorithm
+			print(meta_nodes)
+			for var1 in vars_in_expr:
+				for index2 in range(vars_in_expr.index(var1)+1,len(vars_in_expr)):
+					var2 = vars_in_expr[index2]
+					common_ancestry = list(var1[0].intersection(var2[0]))
+					# print("Intesec entre {} e {}:{}".format(var1[1],var2[1],common_ancestry))
+					LCA = common_ancestry[0][1:] #Supose that the ancestry is ordered in inverse depth order
+					# print("test:{}".format(LCA))
+					ancestor = meta_nodes[LCA]
+					print("var:{}\tOP:{}\tvar2:{}".format(var1[1],ancestor[1],var2[1]))
+				# print("Variável:{}\tAntes:{}\n".format(var[1],var[0]))
 		elif element == "triples":
 			parser_triples(children,schema,vars_query)
 	return vars_query
 
 
 
-#Parse expression. both, filters and binds
-def parser_expr(expr,vars_query={},depth=0):
+#Parse expression for both, filters and binds
+def parser_expr(expr,vars_query=list(),depth=0,ancestry=set(),meta_nodes={}):
 	unary_built_in_function = set(['Builtin_ABS','Builtin_BNODE','Builtin_BOUND','Builtin_CEIL','Builtin_DATATYPE','Builtin_DAY','Builtin_HOURS','Builtin_MINUTES','Builtin_MONTH','Builtin_SECONDS','Builtin_YEAR','Builtin_FLOOR','Builtin_IRI','Builtin_LANG','Builtin_LCASE','Builtin_UCASE','Builtin_ROUND','Builtin_STR','Builtin_STRLEN','Builtin_isIRI','Builtin_isBLANK','Builtin_isLITERAL','Builtin_isNUMERIC'])
 	if(isinstance(expr,Expr)):
+		id_parent = uri_to_hash(expr)
+		if id_parent not in meta_nodes:
+			meta_nodes[id_parent] = (depth,expr.name)
+		ancestry_new = ancestry.copy()
+		ancestry_new.add(str(depth)+id_parent)
 		#Branch node
 		if(expr.name == "RelationalExpression"):
 			#Binary expression
 
 			#left node expression
-			left = parser_expr(expr['expr'],vars_query,depth+1)
+			left = parser_expr(expr['expr'],vars_query,depth+1,ancestry_new,meta_nodes)
 			#Operation,
 			op = expr['op']
 			#right node expression
-			right = parser_expr(expr['other'],vars_query,depth+1)
+			right = parser_expr(expr['other'],vars_query,depth+1,ancestry_new,meta_nodes)
 		elif(expr.name == "ConditionalAndExpression"):
 			#and: &&
 			nodes = list()
 
 			#first node
-			nodes.append(parser_expr(expr['expr'],vars_query,depth+1))
+			nodes.append(parser_expr(expr['expr'],vars_query,depth+1,ancestry_new,meta_nodes))
 			
 			for node in expr['other']:
 				#remainder nodes
-				nodes.append(parser_expr(node,vars_query,depth+1))
+				nodes.append(parser_expr(node,vars_query,depth+1,ancestry_new,meta_nodes))
 
 		elif(expr.name == "ConditionalOrExpression"):
 			#or: ||
 			nodes = list()
 
 			#first node
-			nodes.append(parser_expr(expr['expr'],vars_query,depth+1))
+			nodes.append(parser_expr(expr['expr'],vars_query,depth+1,ancestry_new,meta_nodes))
 			
 			for node in expr['other']:
 				#remainder nodes
-				nodes.append(parser_expr(node,vars_query,depth+1))
+				nodes.append(parser_expr(node,vars_query,depth+1,ancestry_new,meta_nodes))
 		elif(expr.name == "UnaryNot"):
 			#not: !
-			node = parser_expr(expr['expr'],vars_query,depth+1)
+			node = parser_expr(expr['expr'],vars_query,depth+1,ancestry_new,meta_nodes)
 
 		#Math operations
 		elif(expr.name == "AdditiveExpression" or expr.name == "AdditiveExpression"):
 			#left node expression
-			left = parser_expr(expr['expr'],vars_query,depth+1)
+			left = parser_expr(expr['expr'],vars_query,depth+1,ancestry_new,meta_nodes)
 			#right node expression
 			#Operation,#+,-,*,/
 			ops = list()
@@ -241,96 +262,97 @@ def parser_expr(expr,vars_query={},depth=0):
 			for node in expr['other']:
 				#remainder nodes
 				ops.append(expr['op'][i] ) 
-				nodes.append(parser_expr(node,vars_query,depth+1))
+				nodes.append(parser_expr(node,vars_query,depth+1,ancestry_new,meta_nodes))
 				i+=1
 
 		elif(expr.name == "Builtin_CONCAT"):
 			#CONCAT strings function
 			node = list()
 			for exp in expr['arg']:
-				node.append(parser_expr(exp,vars_query,depth+1))
+				node.append(parser_expr(exp,vars_query,depth+1,ancestry_new,meta_nodes))
 
 		elif(expr.name == "Builtin_CONTAINS" or expr.name == "Builtin_STRAFTER" or expr.name == "Builtin_STRBEFORE" or expr.name == "Builtin_STRENDS" or expr.name == "Builtin_STRSTARTS"):
 			#CONTAINS ,STRAFTER, STRBEFORE strings functions
 
 			#full - string
-			string = parser_expr(expr['arg1'],vars_query,depth+1)
+			string = parser_expr(expr['arg1'],vars_query,depth+1,ancestry_new,meta_nodes)
 
 			#sub-string searched - string
-			sub_string = parser_expr(expr['arg2'],vars_query,depth+1)
+			sub_string = parser_expr(expr['arg2'],vars_query,depth+1,ancestry_new,meta_nodes)
 
 		elif(expr.name == "Builtin_LANGMATCHES" or expr.name == "Builtin_STRLANG"):
 			#langmatches, STRLANG strings functions
 
 			#string
-			string = parser_expr(expr['arg1'],vars_query,depth+1)
+			string = parser_expr(expr['arg1'],vars_query,depth+1,ancestry_new,meta_nodes)
 
 			#language code
-			lang = parser_expr(expr['arg2'],vars_query,depth+1)
+			lang = parser_expr(expr['arg2'],vars_query,depth+1,ancestry_new,meta_nodes)
 
 		elif(expr.name == "Builtin_REGEX"):
 			#regex strings function
 
 			#full-string
-			text = parser_expr(expr['text'],vars_query,depth+1)
+			text = parser_expr(expr['text'],vars_query,depth+1,ancestry_new,meta_nodes)
 
 			#regex pattern
-			pattern = parser_expr(expr['pattern'],vars_query,depth+1)
+			pattern = parser_expr(expr['pattern'],vars_query,depth+1,ancestry_new,meta_nodes)
 
 			#flags mode
-			flags = parser_expr(expr['flags'],vars_query,depth+1)	
+			flags = parser_expr(expr['flags'],vars_query,depth+1,ancestry_new,meta_nodes)	
 			
 
 		elif(expr.name == "Builtin_REPLACE"):
 			#replace strings function
 
 			#full-string
-			text = parser_expr(expr['arg'],vars_query,depth+1)
+			text = parser_expr(expr['arg'],vars_query,depth+1,ancestry_new,meta_nodes)
 
 			#pattern to be replaced
-			pattern = parser_expr(expr['pattern'],vars_query,depth+1)
+			pattern = parser_expr(expr['pattern'],vars_query,depth+1,ancestry_new,meta_nodes)
 
 			#string to be replace
-			replacement = parser_expr(expr['replacement'],vars_query,depth+1)
+			replacement = parser_expr(expr['replacement'],vars_query,depth+1,ancestry_new,meta_nodes)
 
 			#flags mode
-			flags = parser_expr(expr['flags'],vars_query,depth+1)		
+			flags = parser_expr(expr['flags'],vars_query,depth+1,ancestry_new,meta_nodes)		
 
 		elif(expr.name == "Builtin_SUBSTR"):
 			#substring strings function
 
 			#full-string
-			text = parser_expr(expr['arg'],vars_query,depth+1)
+			text = parser_expr(expr['arg'],vars_query,depth+1,ancestry_new,meta_nodes)
 
 			#starting position
-			text = parser_expr(expr['start'],vars_query,depth+1)
+			text = parser_expr(expr['start'],vars_query,depth+1,ancestry_new,meta_nodes)
 
 			if 'length' in expr:
-				length = parser_expr(expr['length'],vars_query,depth+1)
-
-
+				length = parser_expr(expr['length'],vars_query,depth+1,ancestry_new,meta_nodes)
 		elif(expr.name == "Builtin_sameTerm"):
 			#langmatches, STRLANG strings functions
 
 			#string
-			term1 = parser_expr(expr['arg1'],vars_query,depth+1)
+			term1 = parser_expr(expr['arg1'],vars_query,depth+1,ancestry_new,meta_nodes)
 
 			#language code
-			ter2 = parser_expr(expr['arg2'],vars_query,depth+1)
+			ter2 = parser_expr(expr['arg2'],vars_query,depth+1,ancestry_new,meta_nodes)
 
 		elif(expr.name in unary_built_in_function):
-			arg = parser_expr(expr['arg'],vars_query,depth+1)
-
-
-
+			arg = parser_expr(expr['arg'],vars_query,depth+1,ancestry_new,meta_nodes)
 	else:
-		#leaf node
+		#Leaf node
+		# print("Ascendência:{}\t".format(ancestry))
 		if(isinstance(expr,Variable)):
-			print("Var:{}".format(expr))
+			# print("Var:{}".format(expr))
+			vars_query.append((ancestry,expr))
 		elif(isinstance(expr,URIRef)):
-			print("URI:{}".format(expr))
+			# print("URI:{}".format(expr))
+			#Do something?
+			return
 		elif(isinstance(expr,Literal)):
-			print("Literal:{}".format(expr))
+			# print("Literal:{}".format(expr))
+			#Do something?
+			return
 
 def parser_triples(triples,schema,vars_query={}):
 	for triple in triples:
