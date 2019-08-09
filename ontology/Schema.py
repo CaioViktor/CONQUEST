@@ -233,6 +233,7 @@ def parser_expr(expr,vars_query,vars_in_expr=list(),depth=0):
 							datatype = expr['other'].datatype
 							vars_query[left]['class'].update([datatype])
 							vars_query[left]['type'] = LITERAL
+							
 		elif(expr.name == "ConditionalAndExpression"):
 			#and: &&
 
@@ -339,7 +340,7 @@ def parser_expr(expr,vars_query,vars_in_expr=list(),depth=0):
 			#flags mode
 			if 'flags' in expr:
 				flags = parser_expr(expr['flags'],vars_query,vars_in_expr,depth+1)	
-				
+
 			# infers type
 			if text != None and text in vars_query:
 				vars_query[text]['class'].update([XSD.string])
@@ -410,10 +411,11 @@ def parser_expr(expr,vars_query,vars_in_expr=list(),depth=0):
 			# infers type
 			if term1 != None and term1 in vars_query:
 				vars_query[term1]['class'].update([XSD.string])
+				vars_query[term1]['type'] = LITERAL
 
-				arg1 = parser_expr(expr['arg1'],vars_query,vars_in_expr,depth+1)
-
-				arg2 = parser_expr(expr['arg2'],vars_query,vars_in_expr,depth+1)
+			if ter2 != None and ter2 in vars_query:
+				vars_query[ter2]['class'].update([XSD.string])
+				vars_query[ter2]['type'] = LITERAL
 
 
 		elif(expr.name == "Builtin_sameTerm"):
