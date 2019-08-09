@@ -190,47 +190,29 @@ def parser_algebra(algebra,schema,depth=0,vars_query={}):
 
 	#Evalute expression only after triples evaluation
 	if expr != None:		
-		vars_in_expr = list()
-		meta_nodes = {}
-		#get relation between variables in query's expressions
-		parser_expr(expr,vars_query,vars_in_expr,meta_nodes=meta_nodes)
-
-		#Compute the Lowest Comum Ancestor (LCA). In future try to use Tarjan's off-line lowest common ancestors algorithm
-		# print(meta_nodes)
-		for var1 in vars_in_expr:
-			for index2 in range(vars_in_expr.index(var1)+1,len(vars_in_expr)):
-				var2 = vars_in_expr[index2]
-				common_ancestry = list(var1[0].intersection(var2[0]))
-				# print("Intesec entre {} e {}:{}".format(var1[1],var2[1],common_ancestry))
-				LCA = common_ancestry[0][1:] #Supose that the ancestry is ordered in inverse depth order
-				# print("test:{}".format(LCA))
-				ancestor = meta_nodes[LCA]
-				# print("var:{}\tOP:{}\tvar2:{}".format(var1[1],ancestor[1],var2[1]))
-			# print("Variável:{}\tAntes:{}\n".format(var[1],var[0]))
+		#Parse expressions
+		parser_expr(expr,vars_query)
 
 	return vars_query
 
 
 
 #Parse expression for both, filters and binds
-def parser_expr(expr,vars_query,vars_in_expr=list(),depth=0,ancestry=set(),meta_nodes={}):
+def parser_expr(expr,vars_query,vars_in_expr=list(),depth=0):
 	unary_built_in_function = set(['Builtin_ABS','Builtin_BNODE','Builtin_BOUND','Builtin_CEIL','Builtin_DATATYPE','Builtin_DAY','Builtin_HOURS','Builtin_MINUTES','Builtin_MONTH','Builtin_SECONDS','Builtin_YEAR','Builtin_FLOOR','Builtin_IRI','Builtin_LANG','Builtin_LCASE','Builtin_UCASE','Builtin_ROUND','Builtin_STR','Builtin_STRLEN','Builtin_isIRI','Builtin_isBLANK','Builtin_isLITERAL','Builtin_isNUMERIC'])
 	if(isinstance(expr,Expr)):
 		id_parent = uri_to_hash(expr)
-		if id_parent not in meta_nodes:
-			meta_nodes[id_parent] = (depth,expr.name)
-		ancestry_new = ancestry.copy()
-		ancestry_new.add(str(depth)+id_parent)
+		
 		#Branch node
 		if(expr.name == "RelationalExpression"):
 			#Binary expression
 			
 			#left node expression
-			left = parser_expr(expr['expr'],vars_query,vars_in_expr,depth+1,ancestry_new,meta_nodes)
+			left = parser_expr(expr['expr'],vars_query,vars_in_expr,depth+1)
 			#Operation,
 			op = expr['op']
 			#right node expression
-			right = parser_expr(expr['other'],vars_query,vars_in_expr,depth+1,ancestry_new,meta_nodes)
+			right = parser_expr(expr['other'],vars_query,vars_in_expr,depth+1)
 
 			#infers types 
 			if not op == "!=":
@@ -243,25 +225,25 @@ def parser_expr(expr,vars_query,vars_in_expr=list(),depth=0,ancestry=set(),meta_
 			nodes = list()
 
 			#first node
-			nodes.append(parser_expr(expr['expr'],vars_query,vars_in_expr,depth+1,ancestry_new,meta_nodes))
+			nodes.append(parser_expr(expr['expr'],vars_query,vars_in_expr,depth+1))
 			
 			for node in expr['other']:
 				#remainder nodes
-				nodes.append(parser_expr(node,vars_query,vars_in_expr,depth+1,ancestry_new,meta_nodes))
+				nodes.append(parser_expr(node,vars_query,vars_in_expr,depth+1))
 
 		elif(expr.name == "ConditionalOrExpression"):
 			#or: ||
 			nodes = list()
 
 			#first node
-			nodes.append(parser_expr(expr['expr'],vars_query,vars_in_expr,depth+1,ancestry_new,meta_nodes))
+			nodes.append(parser_expr(expr['expr'],vars_query,vars_in_expr,depth+1))
 			
 			for node in expr['other']:
 				#remainder nodes
-				nodes.append(parser_expr(node,vars_query,vars_in_expr,depth+1,ancestry_new,meta_nodes))
+				nodes.append(parser_expr(node,vars_query,vars_in_expr,depth+1))
 		elif(expr.name == "UnaryNot"):
 			#not: !
-			node = parser_expr(expr['expr'],vars_query,vars_in_expr,depth+1,ancestry_new,meta_nodes)
+			node = parser_expr(expr['expr'],vars_query,vars_in_expr,depth+1)
 
 		#Math operations
 		elif(expr.name == "AdditiveExpression" or expr.name == "MultiplicativeExpression"):
@@ -269,18 +251,18 @@ def parser_expr(expr,vars_query,vars_in_expr=list(),depth=0,ancestry=set(),meta_
 			# ops = list()
 
 			# nodes = list()
-			# nodes.append(parser_expr(expr['expr'],vars_query,vars_in_expr,depth+1,ancestry_new,meta_nodes))
+			# nodes.append(parser_expr(expr['expr'],vars_query,vars_in_expr,depth+1))
 			
 			#left node expression
-			left = parser_expr(expr['expr'],vars_query,vars_in_expr,depth+1,ancestry_new,meta_nodes)
+			left = parser_expr(expr['expr'],vars_query,vars_in_expr,depth+1)
 			
 			i = 0
 			#right node expression
 			for node in expr['other']:
 				# ops.append(expr['op'][i] ) 
-				# nodes.append(parser_expr(node,vars_query,vars_in_expr,depth+1,ancestry_new,meta_nodes))
+				# nodes.append(parser_expr(node,vars_query,vars_in_expr,depth+1))
 				#remainder nodes
-				right = parser_expr(node,vars_query,vars_in_expr,depth+1,ancestry_new,meta_nodes)
+				right = parser_expr(node,vars_query,vars_in_expr,depth+1)
 				op = expr['op'][i]
 
 				#infers types
@@ -293,8 +275,8 @@ def parser_expr(expr,vars_query,vars_in_expr=list(),depth=0,ancestry=set(),meta_
 			#CONCAT strings function
 			# node = list()
 			for exp in expr['arg']:
-				# node.append(parser_expr(exp,vars_query,vars_in_expr,depth+1,ancestry_new,meta_nodes))
-				node = parser_expr(exp,vars_query,vars_in_expr,depth+1,ancestry_new,meta_nodes)
+				# node.append(parser_expr(exp,vars_query,vars_in_expr,depth+1))
+				node = parser_expr(exp,vars_query,vars_in_expr,depth+1)
 				#infers type
 				# if node != None and node in vars_query:
 				# 	vars_query[node]['class'].update([XSD.string])
@@ -303,10 +285,10 @@ def parser_expr(expr,vars_query,vars_in_expr=list(),depth=0,ancestry=set(),meta_
 			#CONTAINS ,STRAFTER, STRBEFORE strings functions
 
 			#full - string
-			string = parser_expr(expr['arg1'],vars_query,vars_in_expr,depth+1,ancestry_new,meta_nodes)
+			string = parser_expr(expr['arg1'],vars_query,vars_in_expr,depth+1)
 
 			#sub-string searched - string
-			sub_string = parser_expr(expr['arg2'],vars_query,vars_in_expr,depth+1,ancestry_new,meta_nodes)
+			sub_string = parser_expr(expr['arg2'],vars_query,vars_in_expr,depth+1)
 
 			# infers type
 			if string != None and string in vars_query:
@@ -318,10 +300,10 @@ def parser_expr(expr,vars_query,vars_in_expr=list(),depth=0,ancestry=set(),meta_
 			#langmatches, STRLANG strings functions
 
 			#string
-			string = parser_expr(expr['arg1'],vars_query,vars_in_expr,depth+1,ancestry_new,meta_nodes)
+			string = parser_expr(expr['arg1'],vars_query,vars_in_expr,depth+1)
 
 			#language code
-			lang = parser_expr(expr['arg2'],vars_query,vars_in_expr,depth+1,ancestry_new,meta_nodes)
+			lang = parser_expr(expr['arg2'],vars_query,vars_in_expr,depth+1)
 
 			# infers type
 			if string != None and string in vars_query:
@@ -331,13 +313,13 @@ def parser_expr(expr,vars_query,vars_in_expr=list(),depth=0,ancestry=set(),meta_
 			#regex strings function
 
 			#full-string
-			text = parser_expr(expr['text'],vars_query,vars_in_expr,depth+1,ancestry_new,meta_nodes)
+			text = parser_expr(expr['text'],vars_query,vars_in_expr,depth+1)
 
 			#regex pattern
-			pattern = parser_expr(expr['pattern'],vars_query,vars_in_expr,depth+1,ancestry_new,meta_nodes)
+			pattern = parser_expr(expr['pattern'],vars_query,vars_in_expr,depth+1)
 
 			#flags mode
-			flags = parser_expr(expr['flags'],vars_query,vars_in_expr,depth+1,ancestry_new,meta_nodes)	
+			flags = parser_expr(expr['flags'],vars_query,vars_in_expr,depth+1)	
 			# infers type
 			if text != None and text in vars_query:
 				vars_query[text]['class'].update([XSD.string])
@@ -348,17 +330,17 @@ def parser_expr(expr,vars_query,vars_in_expr=list(),depth=0,ancestry=set(),meta_
 			#replace strings function
 
 			#full-string
-			text = parser_expr(expr['arg'],vars_query,vars_in_expr,depth+1,ancestry_new,meta_nodes)
+			text = parser_expr(expr['arg'],vars_query,vars_in_expr,depth+1)
 
 			#pattern to be replaced
-			pattern = parser_expr(expr['pattern'],vars_query,vars_in_expr,depth+1,ancestry_new,meta_nodes)
+			pattern = parser_expr(expr['pattern'],vars_query,vars_in_expr,depth+1)
 
 			#string to be replace
-			replacement = parser_expr(expr['replacement'],vars_query,vars_in_expr,depth+1,ancestry_new,meta_nodes)
+			replacement = parser_expr(expr['replacement'],vars_query,vars_in_expr,depth+1)
 
 			if 'flags' in expr:
 				#flags mode
-				flags = parser_expr(expr['flags'],vars_query,vars_in_expr,depth+1,ancestry_new,meta_nodes)	
+				flags = parser_expr(expr['flags'],vars_query,vars_in_expr,depth+1)	
 
 			# infers type
 			if text != None and text in vars_query:
@@ -372,13 +354,13 @@ def parser_expr(expr,vars_query,vars_in_expr=list(),depth=0,ancestry=set(),meta_
 			#substring strings function
 
 			#full-string
-			text = parser_expr(expr['arg'],vars_query,vars_in_expr,depth+1,ancestry_new,meta_nodes)
+			text = parser_expr(expr['arg'],vars_query,vars_in_expr,depth+1)
 
 			#starting position
-			index = parser_expr(expr['start'],vars_query,vars_in_expr,depth+1,ancestry_new,meta_nodes)
+			index = parser_expr(expr['start'],vars_query,vars_in_expr,depth+1)
 
 			if 'length' in expr:
-				length = parser_expr(expr['length'],vars_query,vars_in_expr,depth+1,ancestry_new,meta_nodes)
+				length = parser_expr(expr['length'],vars_query,vars_in_expr,depth+1)
 
 			# infers type
 			if text != None and text in vars_query:
@@ -388,25 +370,25 @@ def parser_expr(expr,vars_query,vars_in_expr=list(),depth=0,ancestry=set(),meta_
 		elif(expr.name == "Builtin_LANGMATCHES" or expr.name == "Builtin_STRLANG"):
 			#langmatches, STRLANG strings functions
 			#string
-			term1 = parser_expr(expr['arg1'],vars_query,vars_in_expr,depth+1,ancestry_new,meta_nodes)
+			term1 = parser_expr(expr['arg1'],vars_query,vars_in_expr,depth+1)
 
 			#language code
-			ter2 = parser_expr(expr['arg2'],vars_query,vars_in_expr,depth+1,ancestry_new,meta_nodes)
+			ter2 = parser_expr(expr['arg2'],vars_query,vars_in_expr,depth+1)
 
 			# infers type
 			if term1 != None and term1 in vars_query:
 				vars_query[term1]['class'].update([XSD.string])
 
-				arg1 = parser_expr(expr['arg1'],vars_query,vars_in_expr,depth+1,ancestry_new,meta_nodes)
+				arg1 = parser_expr(expr['arg1'],vars_query,vars_in_expr,depth+1)
 
-				arg2 = parser_expr(expr['arg2'],vars_query,vars_in_expr,depth+1,ancestry_new,meta_nodes)
+				arg2 = parser_expr(expr['arg2'],vars_query,vars_in_expr,depth+1)
 
 
 		elif(expr.name == "Builtin_sameTerm"):
 			print(expr)
 
 		elif(expr.name in unary_built_in_function):
-			arg = parser_expr(expr['arg'],vars_query,vars_in_expr,depth+1,ancestry_new,meta_nodes)
+			arg = parser_expr(expr['arg'],vars_query,vars_in_expr,depth+1)
 			#infers type
 			if arg != None and arg in vars_query:
 				if expr.name in ['Builtin_ABS','Builtin_CEIL','Builtin_FLOOR','Builtin_ROUND']:
@@ -420,10 +402,8 @@ def parser_expr(expr,vars_query,vars_in_expr=list(),depth=0,ancestry=set(),meta_
 					vars_query[arg]['class'].update([XSD.string])
 	else:
 		#Leaf node
-		# print("Ascendência:{}\t".format(ancestry))
 		if(isinstance(expr,Variable)):
 			# print("Var:{}".format(expr))
-			vars_in_expr.append((ancestry,expr))
 			var_id = uri_to_hash(expr)
 			if not var_id in vars_query:
 				#New Var, probaly a Context Variable
