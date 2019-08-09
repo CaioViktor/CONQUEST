@@ -37,16 +37,16 @@ q = '''
 
 
 
-q = '''
-	SELECT ?a
-      WHERE {
-      	FILTER(REGEX(?a,$b,"i"))
-    }
-'''
+# q = '''
+# 	SELECT ?a
+#       WHERE {
+#       	FILTER(REGEX(?a,$b,"i"))
+#     }
+# '''
 
-query_object = processor.prepareQuery(q)
+# query_object = processor.prepareQuery(q)
 # query_object = parseQuery(q)
-print(query_object.algebra)
+# print(query_object.algebra)
 
 varss = sc.parser_sparql(q,s)
 pp.pprint(varss)
