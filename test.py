@@ -32,21 +32,23 @@ q = '''
         FILTER (lang(?tituloSubstanciaPt) = 'pt')
       }
 '''
-#FILTER(regex(str(?nomeMedicamento), $nome, "i"))
-# q = '''
-# 	SELECT ?a
-#       WHERE {
-#       	FILTER("efe")
 
-      	
-#     }
-# '''
+# FILTER(regex(str(?nomeMedicamento), $nome, "i"))
+
+
+
+q = '''
+	SELECT ?a
+      WHERE {
+      	FILTER(UCASE(?a))
+    }
+'''
 
 # query_object = processor.prepareQuery(q)
 # query_object = parseQuery(q)
 # print(query_object.asDict())
 
 varss = sc.parser_sparql(q,s)
-# pp.pprint(varss)
+pp.pprint(varss)
 
 schema.close()
