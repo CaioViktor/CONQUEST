@@ -40,7 +40,7 @@ q = '''
 q = '''
 	SELECT ?a
       WHERE {
-      	FILTER(UCASE(?a))
+      	FILTER((?a && ?b) && ?c)
     }
 '''
 

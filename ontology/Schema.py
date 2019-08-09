@@ -222,25 +222,33 @@ def parser_expr(expr,vars_query,vars_in_expr=list(),depth=0):
 					vars_query[right]['class'].update(vars_query[left]['class'])
 		elif(expr.name == "ConditionalAndExpression"):
 			#and: &&
-			nodes = list()
 
 			#first node
-			nodes.append(parser_expr(expr['expr'],vars_query,vars_in_expr,depth+1))
+			left = parser_expr(expr['expr'],vars_query,vars_in_expr,depth+1)
 			
 			for node in expr['other']:
 				#remainder nodes
-				nodes.append(parser_expr(node,vars_query,vars_in_expr,depth+1))
+				right = parser_expr(node,vars_query,vars_in_expr,depth+1)
+				#Do something?
+
+				#Did
+				left = right
 
 		elif(expr.name == "ConditionalOrExpression"):
 			#or: ||
-			nodes = list()
+			
 
 			#first node
-			nodes.append(parser_expr(expr['expr'],vars_query,vars_in_expr,depth+1))
+			left = parser_expr(expr['expr'],vars_query,vars_in_expr,depth+1)
 			
 			for node in expr['other']:
 				#remainder nodes
-				nodes.append(parser_expr(node,vars_query,vars_in_expr,depth+1))
+				right = parser_expr(node,vars_query,vars_in_expr,depth+1)
+				#Do something?
+
+				#Did
+				left = right
+
 		elif(expr.name == "UnaryNot"):
 			#not: !
 			node = parser_expr(expr['expr'],vars_query,vars_in_expr,depth+1)
@@ -248,19 +256,12 @@ def parser_expr(expr,vars_query,vars_in_expr=list(),depth=0):
 		#Math operations
 		elif(expr.name == "AdditiveExpression" or expr.name == "MultiplicativeExpression"):
 			#Operation,#+,-,*,/
-			# ops = list()
-
-			# nodes = list()
-			# nodes.append(parser_expr(expr['expr'],vars_query,vars_in_expr,depth+1))
 			
 			#left node expression
 			left = parser_expr(expr['expr'],vars_query,vars_in_expr,depth+1)
 			
 			i = 0
-			#right node expression
 			for node in expr['other']:
-				# ops.append(expr['op'][i] ) 
-				# nodes.append(parser_expr(node,vars_query,vars_in_expr,depth+1))
 				#remainder nodes
 				right = parser_expr(node,vars_query,vars_in_expr,depth+1)
 				op = expr['op'][i]
@@ -273,9 +274,7 @@ def parser_expr(expr,vars_query,vars_in_expr=list(),depth=0):
 				i+=1			
 		elif(expr.name == "Builtin_CONCAT"):
 			#CONCAT strings function
-			# node = list()
 			for exp in expr['arg']:
-				# node.append(parser_expr(exp,vars_query,vars_in_expr,depth+1))
 				node = parser_expr(exp,vars_query,vars_in_expr,depth+1)
 				#infers type
 				# if node != None and node in vars_query:
