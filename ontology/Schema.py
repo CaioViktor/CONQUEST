@@ -159,19 +159,17 @@ def parser_sparql(query_string,schema):
 # 		'type' : (URI|LITERAL),
 # 		'class': Set(URIRef(Class)),
 # 		'context': [(subject,predicate,object)], #Where current var is replaced by None
-# 		'filter': ?
-# 		'only_optional': True|False
 # 	},
 # }
 
-def new_var(name,typee,classs=list(),context=None,filterr=None,only_optional=False):
+def new_var(name,typee,classs=list(),context=None):
 	if context == None:
 		context = []
 	else:
 		context = [context]
 	if not isinstance(classs,list):
 		classs = [classs]
-	return {'name':name,'type':typee,'class':set(classs),'context':context,'filter':filterr,'only_optional':only_optional}
+	return {'name':name,'type':typee,'class':set(classs),'context':context}
 
 #parser utilities functions
 def parser_algebra(algebra,schema,depth=0,vars_query={}):
@@ -199,7 +197,7 @@ def parser_algebra(algebra,schema,depth=0,vars_query={}):
 
 #Parse expression for both, filters and binds
 def parser_expr(expr,vars_query,vars_in_expr=list(),depth=0):
-	unary_built_in_function = set(['Builtin_ABS','Builtin_BNODE','Builtin_BOUND','Builtin_CEIL','Builtin_DATATYPE','Builtin_DAY','Builtin_HOURS','Builtin_MINUTES','Builtin_MONTH','Builtin_SECONDS','Builtin_YEAR','Builtin_FLOOR','Builtin_IRI','Builtin_LANG','Builtin_LCASE','Builtin_UCASE','Builtin_ROUND','Builtin_STR','Builtin_STRLEN','Builtin_isIRI','Builtin_isBLANK','Builtin_isLITERAL','Builtin_isNUMERIC'])
+	unary_built_in_function = set(['Builtin_ABS','Builtin_BNODE','Builtin_BOUND','Builtin_CEIL','Builtin_DATATYPE','Builtin_DAY','Builtin_HOURS','Builtin_MINUTES','Builtin_MONTH','Builtin_SECONDS','Builtin_YEAR','Builtin_TIMEZONE','Builtin_FLOOR','Builtin_IRI','Builtin_LANG','Builtin_LCASE','Builtin_UCASE','Builtin_ROUND','Builtin_STR','Builtin_STRLEN','Builtin_isIRI','Builtin_isBLANK','Builtin_isLITERAL','Builtin_isNUMERIC'])
 	if(isinstance(expr,Expr)):
 		id_parent = uri_to_hash(expr)
 		
@@ -216,10 +214,25 @@ def parser_expr(expr,vars_query,vars_in_expr=list(),depth=0):
 
 			#infers types 
 			if not op == "!=":
-				if left in vars_query and right in vars_query:
-					#Both are variables
-					vars_query[left]['class'].update(vars_query[right]['class'])
-					vars_query[right]['class'].update(vars_query[left]['class'])
+				if left in vars_query or right in vars_query:
+					if left in vars_query and right in vars_query:
+						#Both are variables
+						vars_query[left]['class'].update(vars_query[right]['class'])
+						vars_query[right]['class'].update(vars_query[left]['class'])
+					elif left not in vars_query:
+						#Only right is a variable
+						if (isinstance(expr['expr'],Literal)):
+							#left is literal
+							datatype = expr['expr'].datatype
+							vars_query[right]['class'].update([datatype])
+							vars_query[right]['type'] = LITERAL
+					else:
+						#Only left is a variable
+						if (isinstance(expr['other'],Literal)):
+							#right is literal
+							datatype = expr['other'].datatype
+							vars_query[left]['class'].update([datatype])
+							vars_query[left]['type'] = LITERAL
 		elif(expr.name == "ConditionalAndExpression"):
 			#and: &&
 
@@ -237,7 +250,6 @@ def parser_expr(expr,vars_query,vars_in_expr=list(),depth=0):
 		elif(expr.name == "ConditionalOrExpression"):
 			#or: ||
 			
-
 			#first node
 			left = parser_expr(expr['expr'],vars_query,vars_in_expr,depth+1)
 			
@@ -269,8 +281,11 @@ def parser_expr(expr,vars_query,vars_in_expr=list(),depth=0):
 				#infers types
 				if left != None and left in vars_query:
 					vars_query[left]['class'].update([XSD.decimal])
+					vars_query[left]['type'] = LITERAL
+
 				if right != None and right in vars_query:
 					vars_query[right]['class'].update([XSD.decimal])
+					vars_query[right]['type'] = LITERAL
 				i+=1			
 		elif(expr.name == "Builtin_CONCAT"):
 			#CONCAT strings function
@@ -292,8 +307,11 @@ def parser_expr(expr,vars_query,vars_in_expr=list(),depth=0):
 			# infers type
 			if string != None and string in vars_query:
 				vars_query[string]['class'].update([XSD.string])
+				vars_query[string]['type'] = LITERAL
+
 			if sub_string != None and sub_string in vars_query:
 				vars_query[sub_string]['class'].update([XSD.string])
+				vars_query[sub_string]['type'] = LITERAL
 
 		elif(expr.name == "Builtin_LANGMATCHES" or expr.name == "Builtin_STRLANG"):
 			#langmatches, STRLANG strings functions
@@ -307,6 +325,7 @@ def parser_expr(expr,vars_query,vars_in_expr=list(),depth=0):
 			# infers type
 			if string != None and string in vars_query:
 				vars_query[string]['class'].update([XSD.string])
+				vars_query[string]['type'] = LITERAL
 
 		elif(expr.name == "Builtin_REGEX"):
 			#regex strings function
@@ -318,12 +337,17 @@ def parser_expr(expr,vars_query,vars_in_expr=list(),depth=0):
 			pattern = parser_expr(expr['pattern'],vars_query,vars_in_expr,depth+1)
 
 			#flags mode
-			flags = parser_expr(expr['flags'],vars_query,vars_in_expr,depth+1)	
+			if 'flags' in expr:
+				flags = parser_expr(expr['flags'],vars_query,vars_in_expr,depth+1)	
+				
 			# infers type
 			if text != None and text in vars_query:
 				vars_query[text]['class'].update([XSD.string])
+				vars_query[text]['type'] = LITERAL
+
 			if pattern != None and pattern in vars_query:
 				vars_query[pattern]['class'].update([XSD.string])
+				vars_query[pattern]['type'] = LITERAL
 
 		elif(expr.name == "Builtin_REPLACE"):
 			#replace strings function
@@ -344,10 +368,15 @@ def parser_expr(expr,vars_query,vars_in_expr=list(),depth=0):
 			# infers type
 			if text != None and text in vars_query:
 				vars_query[text]['class'].update([XSD.string])
+				vars_query[text]['type'] = LITERAL
+
 			if pattern != None and pattern in vars_query:
 				vars_query[pattern]['class'].update([XSD.string])	
+				vars_query[pattern]['type'] = LITERAL
+
 			if replacement != None and replacement in vars_query:
 				vars_query[replacement]['class'].update([XSD.string])
+				vars_query[replacement]['type'] = LITERAL
 
 		elif(expr.name == "Builtin_SUBSTR"):
 			#substring strings function
@@ -364,8 +393,12 @@ def parser_expr(expr,vars_query,vars_in_expr=list(),depth=0):
 			# infers type
 			if text != None and text in vars_query:
 				vars_query[text]['class'].update([XSD.string])
+				vars_query[text]['type'] = LITERAL
+
 			if index != None and index in vars_query:
 				vars_query[index]['class'].update([XSD.integer])
+				vars_query[index]['type'] = LITERAL
+
 		elif(expr.name == "Builtin_LANGMATCHES" or expr.name == "Builtin_STRLANG"):
 			#langmatches, STRLANG strings functions
 			#string
@@ -384,7 +417,11 @@ def parser_expr(expr,vars_query,vars_in_expr=list(),depth=0):
 
 
 		elif(expr.name == "Builtin_sameTerm"):
-			print(expr)
+			#string
+			term1 = parser_expr(expr['arg1'],vars_query,vars_in_expr,depth+1)
+
+			#language code
+			ter2 = parser_expr(expr['arg2'],vars_query,vars_in_expr,depth+1)
 
 		elif(expr.name in unary_built_in_function):
 			arg = parser_expr(expr['arg'],vars_query,vars_in_expr,depth+1)
@@ -393,12 +430,16 @@ def parser_expr(expr,vars_query,vars_in_expr=list(),depth=0):
 				if expr.name in ['Builtin_ABS','Builtin_CEIL','Builtin_FLOOR','Builtin_ROUND']:
 					#Var is a decimal
 					vars_query[arg]['class'].update([XSD.decimal])
-				elif expr.name in ['Builtin_DAY','Builtin_HOURS','Builtin_MINUTES','Builtin_MONTH','Builtin_SECONDS','Builtin_YEAR']:
+					vars_query[arg]['type'] = LITERAL
+
+				elif expr.name in ['Builtin_DAY','Builtin_HOURS','Builtin_MINUTES','Builtin_MONTH','Builtin_SECONDS','Builtin_YEAR','Builtin_TIMEZONE']:
 					#Var is a #Var is a decimal
 					vars_query[arg]['class'].update([XSD.dateTime])
-				elif expr.name in ['Builtin_LANG','Builtin_LCASE','Builtin_UCASE','Builtin_STRLEN']:
+					vars_query[arg]['type'] = LITERAL
+				elif expr.name in ['Builtin_LANG','Builtin_LCASE','Builtin_UCASE','Builtin_STRLEN','Builtin_ENCODE_FOR_URI']:
 					#Var is a #Var is a string
 					vars_query[arg]['class'].update([XSD.string])
+					vars_query[arg]['type'] = LITERAL
 	else:
 		#Leaf node
 		if(isinstance(expr,Variable)):
@@ -415,7 +456,6 @@ def parser_expr(expr,vars_query,vars_in_expr=list(),depth=0):
 			#Do something?
 			return None
 		elif(isinstance(expr,Literal)):
-			# print("Literal:{}".format(expr))
 			#Do something?
 			return None
 

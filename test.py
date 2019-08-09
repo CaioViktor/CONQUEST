@@ -40,13 +40,13 @@ q = '''
 q = '''
 	SELECT ?a
       WHERE {
-      	FILTER((?a && ?b) && ?c)
+      	FILTER(REGEX(?a,$b,"i"))
     }
 '''
 
-# query_object = processor.prepareQuery(q)
+query_object = processor.prepareQuery(q)
 # query_object = parseQuery(q)
-# print(query_object.asDict())
+print(query_object.algebra)
 
 varss = sc.parser_sparql(q,s)
 pp.pprint(varss)
