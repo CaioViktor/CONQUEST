@@ -59,7 +59,7 @@ class QAI:
 		vars_Set.update(re.findall("\$\w+",SP))
 
 		result_Set = set()
-		result_list = (re.search("select .+ WHERE",SP,re.IGNORECASE)).group()
+		result_list = (re.search("select (.|\n)+ WHERE",SP,re.IGNORECASE)).group()
 		result_Set.update(re.findall("\?\w+",result_list))
 		
 
