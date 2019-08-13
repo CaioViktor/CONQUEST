@@ -1,0 +1,10 @@
+Constructor not supported in Expr parser:
+	Builtin_COALESCE
+	Builtin_ENCODE_FOR_URI
+	Builtin_EXISTS
+	Builtin_STRDT
+	Builtin_SHA1
+	Builtin_SHA256
+	Builtin_SHA384
+	Builtin_SHA512
+

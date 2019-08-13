@@ -43,10 +43,11 @@ QAIM = q.QAI_Manager("MediBot.json")
 #       	FILTER(REGEX(?a,$b,"i"))
 #     }
 # '''
+# q = "PREFIX drugs: <http://www.linkedmed.com.br/ontology/drugs/>\n PREFIX dc: <http://purl.org/dc/elements/1.1/>\nSELECT  DISTINCT (GROUP_CONCAT(DISTINCT LCASE(?auxLabel);separator='\\nOU\\n') AS ?titles) (GROUP_CONCAT( DISTINCT LCASE(?auxTipo);separator=' ; ') as ?types) (GROUP_CONCAT(DISTINCT LCASE(?auxComment);separator=' . ') as ?comments) WHERE{\n        {?termo rdfs:label ?auxLabel}UNION\n        {?termo dc:title ?auxLabel}\n        OPTIONAL{\n          ?termo rdfs:comment ?auxComment\n       }\n        OPTIONAL{\n         ?termo a _:tipo.\n         _:tipo rdfs:label ?auxTipo.\n        }\n        FILTER(REGEX(str(?auxLabel),$termo_in , 'i'))\n      }GROUP BY ?termo"
 
 # query_object = processor.prepareQuery(q)
 # query_object = parseQuery(q)
-# print(query_object.algebra)
+# print(query_object.algebra['PV'])
 
 # varss = sc.parser_sparql(q,s)
 # pp.pprint(varss)

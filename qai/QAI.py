@@ -1,5 +1,6 @@
 import json
 import re
+import rdflib.plugins.sparql.processor as processor
 
 class QAI:
 	def __init__(self):
@@ -17,6 +18,8 @@ class QAI:
 		self.RP = QAIj['RP']
 
 		vars_Set,result_Set = self.get_variables_SP(self.SP);
+
+		# print("QAI:{}\n\tin:{}\n\tout:{}".format(self.id,vars_Set,result_Set))
 
 		try:
 			self.check_variables(vars_Set,result_Set,self.QPs,self.RP)
@@ -55,12 +58,16 @@ class QAI:
 
 	@staticmethod
 	def get_variables_SP(SP):
+		#Get CVs
 		vars_Set = set()
 		vars_Set.update(re.findall("\$\w+",SP))
 
+		#Get RVs
 		result_Set = set()
-		result_list = (re.search("select (.|\n)+ WHERE",SP,re.IGNORECASE)).group()
-		result_Set.update(re.findall("\?\w+",result_list))
+		query_object = processor.prepareQuery(SP)
+		for var in query_object.algebra['PV']:
+			result_Set.add(var.n3())
+
 		
 
 		return vars_Set,result_Set
