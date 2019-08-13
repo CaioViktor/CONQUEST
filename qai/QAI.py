@@ -1,6 +1,7 @@
 import json
 import re
 import rdflib.plugins.sparql.processor as processor
+import ontology.Schema as schema_processor
 
 class QAI:
 	def __init__(self):
@@ -10,30 +11,46 @@ class QAI:
 		self.SP = ""
 		self.RP = {'header':"",'body':"",'footer':""}
 
-	def __init__(self,QAIj,QAI_id):
+	def __init__(self,QAIj,QAI_id,propertyIndex):
 		self.id = QAI_id
 		self.description = QAIj['description']
 		self.QPs = QAIj['QPs']
 		self.SP = QAIj['SP']
 		self.RP = QAIj['RP']
+		self.CVs = {}
+		self.RVs = {}
+		self.IVs = {} #Inner Variables. Vars used only inside the query
 
-		vars_Set,result_Set = self.get_variables_SP(self.SP);
+		cvs_Set,rvs_Set = self.get_variables_SP(self.SP);
 
 		# print("QAI:{}\n\tin:{}\n\tout:{}".format(self.id,vars_Set,result_Set))
 
 		try:
-			self.check_variables(vars_Set,result_Set,self.QPs,self.RP)
+			self.check_variables(cvs_Set,rvs_Set,self.QPs,self.RP)
 		except:
 			print("Error on loading QAI {}".format(self.id))
 			raise 
 
 		#TODO: computar CVs e RVs
-		
+		vars_set = schema_processor.parser_sparql(self.SP,propertyIndex)
 
+		for var in cvs_Set:
+			id_var = schema_processor.name_to_id_var(var)
+			self.CVs[id_var] = vars_set[id_var]
+			self.CVs[id_var]['name'] = var
 
+		for var in rvs_Set:
+			id_var = schema_processor.name_to_id_var(var)
+			if id_var in vars_set:
+				self.RVs[id_var] = vars_set[id_var]
+			else:
+				self.RVs[id_var] = schema_processor.new_var(var,schema_processor.LITERAL)
 
-		# print("{}\n{}".format(vars_Set,result_Set))
+		for id_var in vars_set:
+			if id_var not in self.CVs and id_var not in self.RVs:
+				self.IVs[id_var] = vars_set[id_var]
 
+		#TODO: Armazenar no DB? Melhor treinar modelo logo
 		# print(str(self))
 
 	#Load QAI already computed

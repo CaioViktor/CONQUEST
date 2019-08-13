@@ -38,6 +38,9 @@ def get_Resource(graph,uri):
 def uri_to_hash(uri):
 	return hashlib.md5(str(uri).encode('utf-8')).hexdigest()
 
+def name_to_id_var(var):
+	return uri_to_hash(Variable(var.replace("$","?")))
+
 def get_range_damain(schema,types=RDF.Property):
 	properties = {}
 	for prop in schema.subjects( RDF.type, types):

@@ -16,7 +16,7 @@ schema = sc.getGraph("ontology.ttl")
 
 
 s = sc.load_properties_index(schema)
-QAIM = q.QAI_Manager("MediBot.json")
+QAIM = q.QAI_Manager("MediBot.json",s)
 
 # pp.pprint(s)
 # q = '''

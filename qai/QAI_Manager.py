@@ -12,7 +12,7 @@ class QAI_Manager():
 		self.created_date = ""
 		self.QAIs = []
 
-	def __init__(self,file,path = "configurations/"):
+	def __init__(self,file,propertyIndex,path = "configurations/"):
 		file_path = os.path.join(path,file)
 		
 		with open(file_path,"r", encoding="utf-8") as json_file:
@@ -35,7 +35,7 @@ class QAI_Manager():
 			count_id = 1
 			for qaiD in qais['QAIs']:
 				try:
-					qai = QAI.QAI(qaiD,count_id)
+					qai = QAI.QAI(qaiD,count_id,propertyIndex)
 					self.QAIs.append(qai)
 				except:
 					print('Error on loading QAI Manager on file: "{}"'.format(file_path))
