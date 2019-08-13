@@ -290,6 +290,7 @@ def parser_expr(expr,vars_query,vars_in_expr=list(),depth=0):
 					#update context
 					vars_query[left]['context'].append((left,op,right))
 
+
 				if right != None and right in vars_query:
 					vars_query[right]['class'].update([XSD.decimal])
 					vars_query[right]['type'] = LITERAL
@@ -320,13 +321,19 @@ def parser_expr(expr,vars_query,vars_in_expr=list(),depth=0):
 				vars_query[string]['class'].update([XSD.string])
 				vars_query[string]['type'] = LITERAL
 				#update context
-				vars_query[string]['context'].append((expr['arg1'],expr.name,expr['arg2']))
+				if sub_string in vars_query:
+					vars_query[string]['context'].append((expr['arg1'],expr.name,expr['arg2']))
+				else:
+					vars_query[string]['context'].append((expr['arg1'],expr.name,sub_string))
 
 			if sub_string != None and sub_string in vars_query:
 				vars_query[sub_string]['class'].update([XSD.string])
 				vars_query[sub_string]['type'] = LITERAL
 				#update context
-				vars_query[sub_string]['context'].append((expr['arg1'],expr.name,expr['arg2']))
+				if  string in vars_query:
+					vars_query[sub_string]['context'].append((expr['arg1'],expr.name,expr['arg2']))
+				else:
+					vars_query[sub_string]['context'].append((string,expr.name,expr['arg2']))
 
 		elif(expr.name == "Builtin_LANGMATCHES" or expr.name == "Builtin_STRLANG"):
 			#langmatches, STRLANG strings functions
@@ -362,14 +369,19 @@ def parser_expr(expr,vars_query,vars_in_expr=list(),depth=0):
 				vars_query[text]['class'].update([XSD.string])
 				vars_query[text]['type'] = LITERAL
 				#update context
-				vars_query[text]['context'].append((expr['text'],expr.name,expr['pattern']))
-				#TODO:It is Inserting the expression in context, instead the variable
+				if pattern in vars_query:
+					vars_query[text]['context'].append((expr['text'],expr.name,expr['pattern']))
+				else:
+					vars_query[text]['context'].append((expr['text'],expr.name,pattern))
 
 			if pattern != None and pattern in vars_query:
 				vars_query[pattern]['class'].update([XSD.string])
 				vars_query[pattern]['type'] = LITERAL
 				#update context
-				vars_query[pattern]['context'].append((expr['text'],expr.name,expr['pattern']))
+				if text in vars_query:
+					vars_query[pattern]['context'].append((expr['text'],expr.name,expr['pattern']))
+				else:
+					vars_query[pattern]['context'].append((text,expr.name,expr['pattern']))
 
 		elif(expr.name == "Builtin_REPLACE"):
 			#replace strings function
@@ -392,13 +404,19 @@ def parser_expr(expr,vars_query,vars_in_expr=list(),depth=0):
 				vars_query[text]['class'].update([XSD.string])
 				vars_query[text]['type'] = LITERAL
 				#update context
-				vars_query[text]['context'].append((expr['arg'],expr.name,expr['pattern']))
+				if pattern in vars_query:
+					vars_query[text]['context'].append((expr['arg'],expr.name,expr['pattern']))
+				else:
+					vars_query[text]['context'].append((expr['arg'],expr.name,pattern))
 
 			if pattern != None and pattern in vars_query:
 				vars_query[pattern]['class'].update([XSD.string])	
 				vars_query[pattern]['type'] = LITERAL
 				#update context
-				vars_query[pattern]['context'].append((expr['arg'],expr.name,expr['pattern']))
+				if text in vars_query:
+					vars_query[pattern]['context'].append((expr['arg'],expr.name,expr['pattern']))
+				else:
+					vars_query[pattern]['context'].append((text,expr.name,expr['pattern']))
 
 			if replacement != None and replacement in vars_query:
 				vars_query[replacement]['class'].update([XSD.string])
@@ -423,13 +441,18 @@ def parser_expr(expr,vars_query,vars_in_expr=list(),depth=0):
 				vars_query[text]['class'].update([XSD.string])
 				vars_query[text]['type'] = LITERAL
 				#update context
-				vars_query[text]['context'].append((expr['arg'],expr.name,expr['start']))
-
+				if index in vars_query:
+					vars_query[text]['context'].append((expr['arg'],expr.name,expr['start']))
+				else:
+					vars_query[text]['context'].append((expr['arg'],expr.name,index))
 			if index != None and index in vars_query:
 				vars_query[index]['class'].update([XSD.integer])
 				vars_query[index]['type'] = LITERAL
 				#update context
-				vars_query[index]['context'].append((expr['arg'],expr.name,expr['start']))
+				if text in vars_query:
+					vars_query[index]['context'].append((expr['arg'],expr.name,expr['start']))
+				else:
+					vars_query[index]['context'].append((text,expr.name,expr['start']))
 
 		elif(expr.name == "Builtin_LANGMATCHES" or expr.name == "Builtin_STRLANG"):
 			#langmatches, STRLANG strings functions
@@ -444,13 +467,19 @@ def parser_expr(expr,vars_query,vars_in_expr=list(),depth=0):
 				vars_query[term1]['class'].update([XSD.string])
 				vars_query[term1]['type'] = LITERAL
 				#update context
-				vars_query[term1]['context'].append((expr['arg1'],expr.name,expr['arg2']))
+				if ter2 in vars_query:
+					vars_query[term1]['context'].append((expr['arg1'],expr.name,expr['arg2']))
+				else:
+					vars_query[term1]['context'].append((expr['arg1'],expr.name,ter2))
 
 			if ter2 != None and ter2 in vars_query:
 				vars_query[ter2]['class'].update([XSD.string])
 				vars_query[ter2]['type'] = LITERAL
 				#update context
-				vars_query[ter2]['context'].append((expr['arg1'],expr.name,expr['arg2']))
+				if term1 in vars_query:
+					vars_query[ter2]['context'].append((expr['arg1'],expr.name,expr['arg2']))
+				else:
+					vars_query[ter2]['context'].append((term1,expr.name,expr['arg2']))
 
 		elif(expr.name == "Builtin_sameTerm"):
 			#string
@@ -480,6 +509,10 @@ def parser_expr(expr,vars_query,vars_in_expr=list(),depth=0):
 				vars_query[arg]['type'] = LITERAL
 				#update context
 				vars_query[arg]['context'].append((expr['arg'],expr.name,None))
+				
+				return expr['arg']
+			elif arg != None:
+				return arg
 
 	else:
 		#Leaf node
