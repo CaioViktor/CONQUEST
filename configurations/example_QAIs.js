@@ -8,14 +8,14 @@
 			"id": 1,
 			"description": "Consulta pessoas pelo nome",
 			"QPs": [
-				"Quem é $nome?",
-				"Fale sobre o $nome",
-				"Busque pela pessoa com o nome $nome"
+				"Quem é $principioAtivo com idade maior que $ida",
+				"Fale sobre o $principioAtivo com idade maior que $ida",
+				"Busque pela pessoa com o nome $principioAtivo com idade maior que $ida"
 			],
-			"SP": "PREFIX foaf:<http://xmlns.com/foaf/0.1/> SELECT ?name ?idade WHERE{ ?a a foaf:Person; foaf:name ?name; foaf:age ?age. FILTER(REGEX(STR(?name), $nome ,'i'))}",
+			"SP": "PREFIX dc:<http://purl.org/dc/elements/1.1/>\n PREFIX drugs:<http://www.linkedmed.com.br/ontology/drugs/>\n SELECT distinct ?nomeMedicamento \n WHERE { \n   ?s a drugs:Medicamento,drugs:MedicamentoAlopatico;\n dc:title ?nomeMedicamento;\n drugs:temApresentacao ?ap.\n ?s drugs:substancia ?substancia .\n ?substancia dc:title ?tituloSubstanciaPt .\n ?ap drugs:ean ?ean.\n FILTER(regex(str(?tituloSubstanciaPt), $principioAtivo, 'i') && ?ean > $ida)\n }",
 			"RP": {
 				"header": "Eu encontrei as seguintes pessoas:",
-				"body": "?name ?idade",
+				"body": "?nomeMedicamento",
 				"footer":"Você desaja mais alguma coisa?"
 			}
 		}

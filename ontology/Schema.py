@@ -3,11 +3,11 @@ from rdflib import Graph
 from rdflib.util import guess_format
 import hashlib
 from rdflib.resource import Resource
+from rdflib.plugins.sparql.parserutils import Expr
 import re
 import rdflib.plugins.sparql.processor as processor
 from rdflib import OWL, RDF, RDFS, OWL, XSD,URIRef,BNode,Variable,Literal
 from rdflib.namespace import Namespace
-from rdflib.plugins.sparql.parserutils import Expr
 
 DC = Namespace('http://purl.org/dc/elements/1.1/')
 DCTERMS = Namespace('http://purl.org/dc/terms/')
@@ -34,23 +34,25 @@ def get_Resource(graph,uri):
 		uri = URIRef(uri)
 	return Resource(graph,uri)
 
-
-def uri_to_hash(uri):
-	return hashlib.md5(str(uri).encode('utf-8')).hexdigest()
-
-def name_to_id_var(var):
-	return uri_to_hash(Variable(var.replace("$","?")))
+def normalize_datatype(datatype_xsd):
+	if datatype_xsd == XSD.int:
+		return XSD.integer
+	if datatype_xsd == XSD.float or datatype_xsd == XSD.double or datatype_xsd == XSD.real:
+		return XSD.decimal
+	if datatype_xsd == XSD.date:
+		return XSD.dateTime
+	return datatype_xsd
 
 def get_range_damain(schema,types=RDF.Property):
 	properties = {}
 	for prop in schema.subjects( RDF.type, types):
 		domains = []
 		for domain in schema.objects(prop,RDFS.domain):
-			domains.append(domain)
+			domains.append(normalize_datatype(domain))
 
 		ranges = []
 		for rangep in schema.objects(prop,RDFS.range):
-			ranges.append(rangep)
+			ranges.append(normalize_datatype(rangep))
 
 		comments = []
 		for comment in schema.objects(prop,RDFS.comment):
@@ -87,7 +89,6 @@ def load_properties_index(schema):
 #Get all information for make the index of a class
 def get_info_class(classe,schema):
 	info = {'uri':classe}
-
 
 	#get labels
 	labels = []
@@ -224,8 +225,8 @@ def parser_expr(expr,vars_query,vars_in_expr=list(),depth=0):
 						vars_query[left]['class'].update(vars_query[right]['class'])
 						vars_query[right]['class'].update(vars_query[left]['class'])
 						#update context
-						vars_query[left]['context'].append((expr['expr']),expr['op'],expr['other'])
-						vars_query[right]['context'].append((expr['expr']),expr['op'],expr['other'])
+						vars_query[left]['context'].append((expr['expr'],expr['op'],expr['other']))
+						vars_query[right]['context'].append((expr['expr'],expr['op'],expr['other']))
 					elif left not in vars_query:
 						#Only right is a variable
 						if (isinstance(expr['expr'],Literal)):
@@ -614,3 +615,14 @@ def parser_triples(triples,schema,vars_query={}):
 					vars_query[id_hash_object] = new_var(name,typee,domains,context=(triple))
 
 	return vars_query
+
+
+#Utility methods
+
+def uri_to_hash(uri):
+	if isinstance(uri,URIRef):
+		return hashlib.md5(str(uri).encode('utf-8')).hexdigest()
+	elif isinstance(uri,str):
+		return hashlib.md5(str(URIRef(uri)).encode('utf-8')).hexdigest()
+def name_to_id_var(var):
+	return uri_to_hash(Variable(var.replace("$","?")))

@@ -3,6 +3,7 @@ import qai.QAI_Manager as q
 import ontology.Schema as sc
 import rdflib.plugins.sparql.processor as processor
 from rdflib.plugins.sparql.parser import parseQuery
+import context.Factory_ContextVariables as fCV
 
 
 
@@ -15,8 +16,18 @@ schema = sc.getGraph("ontology.ttl")
 
 
 
-s = sc.load_properties_index(schema)
-QAIM = q.QAI_Manager("MediBot.json",s)
+sp = sc.load_properties_index(schema)
+scl = sc.load_classes_index(schema)
+# QAIM = q.QAI_Manager("MediBot.json",sp)
+QAIM = q.QAI_Manager("example_QAIs.js",sp)
+f = fCV.Factory_ContextVariables(scl)
+
+for qai in QAIM.QAIs:
+	print(qai.CVs)
+	print("QAI {}:\n".format(qai.id))
+	CV = f.build_ContextVariables_vector(qai.CVs)
+	print(CV.max())
+
 
 # pp.pprint(s)
 # q = '''

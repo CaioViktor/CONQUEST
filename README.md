@@ -1,7 +1,18 @@
 # CONQUEST
 Chatbot ONtology QUESTion
 
-#Dependencies
+<h2>Dependencies</h2>
 
-RDFLib:
-easy_install rdflib
+<ul>
+	<li>RDFLib:
+		<ul>
+			<li>easy_install rdflib	</li>
+		</ul>
+	</li>
+	<li>Pandas:
+		<ul>
+			<li>sudo pip install numpy</li>
+			<li>sudo pip install pandas</li>
+		</ul>
+	</li>
+</ul>
