@@ -16,17 +16,17 @@ schema = sc.getGraph("ontology.ttl")
 
 
 
-sp = sc.load_properties_index(schema)
+# sp = sc.load_properties_index(schema)
 scl = sc.load_classes_index(schema)
 # QAIM = q.QAI_Manager("MediBot.json",sp)
-QAIM = q.QAI_Manager("example_QAIs.js",sp)
-f = fCV.Factory_ContextVariables(scl)
+# QAIM = q.QAI_Manager("example_QAIs.js",sp)
+# f = fCV.Factory_ContextVariables(scl)
 
-for qai in QAIM.QAIs:
-	print(qai.CVs)
-	print("QAI {}:\n".format(qai.id))
-	CV = f.build_ContextVariables_vector(qai.CVs)
-	print(CV.max())
+# for qai in QAIM.QAIs:
+# 	print(qai.CVs)
+# 	print("QAI {}:\n".format(qai.id))
+# 	CV = f.build_ContextVariables_vector(qai.CVs)
+# 	print(CV.max())
 
 
 # pp.pprint(s)
@@ -62,5 +62,7 @@ for qai in QAIM.QAIs:
 
 # varss = sc.parser_sparql(q,s)
 # pp.pprint(varss)
-
+for classs in scl:
+	if 'identifiers' in scl[classs]:
+		print("{}:\n{}\n\n".format(scl[classs]['uri'],scl[classs]['identifiers']))
 schema.close()

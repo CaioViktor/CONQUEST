@@ -11,6 +11,8 @@ from rdflib.namespace import Namespace
 
 DC = Namespace('http://purl.org/dc/elements/1.1/')
 DCTERMS = Namespace('http://purl.org/dc/terms/')
+SKOS = Namespace('http://www.w3.org/2004/02/skos/core#')
+CMO = Namespace('https://github.com/CaioViktor/CONQUEST/tree/master/ontology/ConquestMarkupOntology#')
 
 #Consts definitions
 URI = 0
@@ -130,6 +132,12 @@ def get_info_class(classe,schema):
 	info['sub_classes'] = sub_classes
 	
 
+	#get Instances Identifier
+	if (classe,RDF.type,CMO.RecognizableClass) in schema:
+		identifiers = set([RDFS.label,SKOS.prefLabel,DC.title])
+		for identifier in schema.objects(classe,CMO.entityIdentifier):
+			identifiers.add(identifier)
+		info['identifiers'] =list(identifiers)
 
 	return info
 

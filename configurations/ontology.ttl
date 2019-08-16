@@ -4,6 +4,7 @@
 @prefix xml: <http://www.w3.org/XML/1998/namespace> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix cmo: <https://github.com/CaioViktor/CONQUEST/tree/master/ontology/ConquestMarkupOntology#> .
 @base <http://www.linkedmed.com.br/ontology/drugs> .
 
 <http://www.linkedmed.com.br/ontology/drugs> rdf:type owl:Ontology .
@@ -394,7 +395,10 @@ Inicialmente as substâncias eram classificadas de acordo com a classificação 
                                                                        <http://www.linkedmed.com.br/ontology/drugs/TipoTarja> ,
                                                                        <http://www.linkedmed.com.br/ontology/drugs/Tributo> ;
                                                       rdfs:comment "As formas farmacêuticas são as formas físicas de apresentação do medicamento, e elas podem ser classificadas em sólidas, líquidas, semi- sólidas e gasosas. As formas sólidas podem ser pós, granulados, comprimidos, drágeas, cápsulas, supositórios e óvulos."@pt ;
-                                                      rdfs:label "Apresentação"@pt .
+                                                      rdfs:label "Apresentação"@pt ;
+                                                      rdf:type cmo:RecognizableClass ;
+                                                      cmo:entityIdentifier <http://www.linkedmed.com.br/ontology/drugs/ean> ,
+                                                                           <http://www.linkedmed.com.br/ontology/drugs/numeroRegistro>.
 
 
 ###  http://www.linkedmed.com.br/ontology/drugs/BiologicoNovo
@@ -484,7 +488,8 @@ Inicialmente as substâncias eram classificadas de acordo com a classificação 
                                                                                  <http://www.linkedmed.com.br/ontology/drugs/TipoTarja> ,
                                                                                  <http://www.linkedmed.com.br/ontology/drugs/Tributo> ;
                                                                 rdfs:comment "Enquadramento desenvolvido pela Food and Drug Administration(FDA) em que os fármacos são categorizados de acordo com o risco de causar dano ao feto durante a gravidez,baseando-se em estudos em animais ou humanos. Os fármacos são categorizados em 5 (cinco) categorias: A,B, C, D e X;"@pt ;
-                                                                rdfs:label "Categoria de risco na gravidez"@pt .
+                                                                rdfs:label "Categoria de risco na gravidez"@pt ;
+                                                                rdf:type cmo:RecognizableClass .
 
 
 ###  http://www.linkedmed.com.br/ontology/drugs/CategoriaUsoAleitamento
@@ -598,7 +603,9 @@ O segundo sub-grupo é representado por uma letra e corresponde ao grupo farmaco
 O terceiro sub-grupo é representado por uma letra e corresponde ao grupo químico;
 O quarto sub-grupo é representado por dois números e corresponde à substância química."""@pt ;
                                                            rdfs:label "ATC"@en ,
-                                                                      "Classe terapêutica"@pt .
+                                                                      "Classe terapêutica"@pt ;
+                                                           rdf:type cmo:RecognizableClass ;
+                                                           cmo:entityIdentifier <http://www.linkedmed.com.br/ontology/drugs/codigoTerapeutico>.
 
 
 ###  http://www.linkedmed.com.br/ontology/drugs/EfeitoColateral
@@ -646,7 +653,8 @@ O quarto sub-grupo é representado por dois números e corresponde à substânci
                                                                           <http://www.linkedmed.com.br/ontology/drugs/TipoTarja> ,
                                                                           <http://www.linkedmed.com.br/ontology/drugs/Tributo> ;
                                                          rdfs:comment "Efeito colateral causado pela substância"@pt ;
-                                                         rdfs:label "Efeito colateral"@pt .
+                                                         rdfs:label "Efeito colateral"@pt ;
+                                                         rdf:type cmo:RecognizableClass .
 
 
 ###  http://www.linkedmed.com.br/ontology/drugs/Estado
@@ -691,7 +699,8 @@ O quarto sub-grupo é representado por dois números e corresponde à substânci
                                                 rdfs:comment "As unidades federativas do Brasil são entidades subnacionais com certo grau de autonomia e dotadas de governo e constituição próprios, que unidas formam a República Federativa do Brasil."@pt ;
                                                 rdfs:label "Estado"@pt ,
                                                            "UF"@pt ,
-                                                           "Unidade Federativa"@pt .
+                                                           "Unidade Federativa"@pt ;
+                                                           rdf:type cmo:RecognizableClass .
 
 
 ###  http://www.linkedmed.com.br/ontology/drugs/ICMS
@@ -780,7 +789,8 @@ Sua regulamentação constitucional está prevista na Lei Complementar 87/1996 (
                                                                     <http://www.linkedmed.com.br/ontology/drugs/TipoTarja> ,
                                                                     <http://www.linkedmed.com.br/ontology/drugs/Tributo> ;
                                                    rdfs:comment "Indicação de tratamento do medicamento"@pt ;
-                                                   rdfs:label "Indicação"@pt .
+                                                   rdfs:label "Indicação"@pt ;
+                                                   rdf:type cmo:RecognizableClass .
 
 
 ###  http://www.linkedmed.com.br/ontology/drugs/LCCT
@@ -867,7 +877,9 @@ Sua regulamentação constitucional está prevista na Lei Complementar 87/1996 (
                                                                       <http://www.linkedmed.com.br/ontology/drugs/TipoTarja> ,
                                                                       <http://www.linkedmed.com.br/ontology/drugs/Tributo> ;
                                                      rdfs:comment "Empresas produtoras ou importadoras do produto. Pessoa jurídica detentora do registro do medicamento na Agência Nacional de Vigilância Sanitária - ANVISA"@pt ;
-                                                     rdfs:label "Laboratório"@pt .
+                                                     rdfs:label "Laboratório"@pt ;
+                                                     rdf:type cmo:RecognizableClass ;
+                                                     cmo:entityIdentifier <http://www.linkedmed.com.br/ontology/drugs/cnpj> .
 
 
 ###  http://www.linkedmed.com.br/ontology/drugs/Localidade
@@ -959,7 +971,8 @@ Sua regulamentação constitucional está prevista na Lei Complementar 87/1996 (
                                                                       <http://www.linkedmed.com.br/ontology/drugs/Tributo> ;
                                                      rdfs:comment "substância ou preparado us. no tratamento de uma afecção ou de uma manifestação mórbida; medicação, remédio, fármaco"@pt ;
                                                      rdfs:label "Medicamento"@pt ,
-                                                                "Produto"@pt .
+                                                                "Produto"@pt ;
+                                                     rdf:type cmo:RecognizableClass .
 
 
 ###  http://www.linkedmed.com.br/ontology/drugs/MedicamentoAlopatico
@@ -1556,7 +1569,8 @@ O radiofármaco é empregado na Medicina Nuclear tanto para diagnóstico (95%) q
                                                                    ] ;
                                                    owl:disjointWith <http://www.linkedmed.com.br/ontology/drugs/Tributo> ;
                                                    rdfs:comment "As tarjas são uma classificação visual do grau de risco que o medicamento oferece ao consumidor, sendo a tarja amarela a única exceção. Deste modo, encontramos no mercado medicamentos sem tarja (baixo risco) e medicamentos tarjados, com risco que varia de moderado a alto."@pt ;
-                                                   rdfs:label "Tipo de tarja"@pt .
+                                                   rdfs:label "Tipo de tarja"@pt ;
+                                                   rdf:type cmo:RecognizableClass .
 
 
 ###  http://www.linkedmed.com.br/ontology/drugs/Tributo

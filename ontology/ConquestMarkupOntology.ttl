@@ -8,24 +8,26 @@
 @prefix dc: <http://purl.org/dc/elements/1.1/> .
 
 
+
 cmo:entityIdentifier rdf:type owl:ObjectProperty,
 							  owl:AsymmetricProperty ,
                               owl:IrreflexiveProperty ;
-						rdfs:label "Entity identifier property"@en,
-								   "Propriedade idetificadora de entidades"@pt;
-						rdfs:comment "Specifies properties that act as identifiers for entities of a given class. Used in the CONQUEST framework for Named Entity Recognition (NER) model training"@en,
-									 "Especifica as propriedades que atuam como identificadores para entidades de uma determinada classe. Utilizado no framework CONQUEST para treinamento do modelo de Named Entity Recognition (NER)"@pt;
-						rdfs:domain owl:Class;
-						rdfs:range owl:DatatypeProperty.
+					 rdfs:label "Entity identifier property"@en,
+								"Propriedade idetificadora de entidades"@pt;
+					 rdfs:comment "Specifies properties that act as identifiers for entities of a given class. Used in the CONQUEST framework for Named Entity Recognition (NER) model training as a feature for classification."@en,
+								  "Especifica as propriedades que atuam como identificadores para entidades de uma determinada classe. Utilizado no framework CONQUEST para treinamento do modelo de Named Entity Recognition (NER) como feature para a classificação."@pt;
+					 rdfs:domain cmo:RecognizableClass;
+					 rdfs:range owl:DatatypeProperty.
 
 
-owl:Class rdfs:subClassOf [
-							rdf:type owl:Restriction;
-							owl:onProperty cmo:entityIdentifier;
-							owl:hasValue rdfs:label, skos:prefLabel, dc:title
-							].
 
-rdfs:Class rdfs:subClassOf [
+cmo:RecognizableClass rdf:type owl:Class;
+					  rdfs:subClassOf owl:Class;
+					  rdfs:label "Recognizable class"@en,
+								 "Classe reconhecível"@pt;
+					  rdfs:comment "Specifies a class to which its instances are recognizable named entities. Used in the CONQUEST framework for Named Entity Recognition (NER) model training as a possible output class."@en,
+								   "Especifica uma classa a qual suas instâncias são entidades nomeadas reconhecíveis. Utilizada no framework CONQUEST para treinamento do modelo de Named Entity Recognition (NER) como uma possível classe de saída."@pt;
+					  rdfs:subClassOf [
 							rdf:type owl:Restriction;
 							owl:onProperty cmo:entityIdentifier;
 							owl:hasValue rdfs:label, skos:prefLabel, dc:title
