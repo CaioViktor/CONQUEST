@@ -1,0 +1,32 @@
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix xml: <http://www.w3.org/XML/1998/namespace> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix cmo: <https://github.com/CaioViktor/CONQUEST/tree/master/ontology/ConquestMarkupOntology#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix dc: <http://purl.org/dc/elements/1.1/> .
+
+
+cmo:entityIdentifier rdf:type owl:ObjectProperty,
+							  owl:AsymmetricProperty ,
+                              owl:IrreflexiveProperty ;
+						rdfs:label "Entity identifier property"@en,
+								   "Propriedade idetificadora de entidades"@pt;
+						rdfs:comment "Specifies properties that act as identifiers for entities of a given class. Used in the CONQUEST framework for Named Entity Recognition (NER) model training"@en,
+									 "Especifica as propriedades que atuam como identificadores para entidades de uma determinada classe. Utilizado no framework CONQUEST para treinamento do modelo de Named Entity Recognition (NER)"@pt;
+						rdfs:domain owl:Class;
+						rdfs:range owl:DatatypeProperty.
+
+
+owl:Class rdfs:subClassOf [
+							rdf:type owl:Restriction;
+							owl:onProperty cmo:entityIdentifier;
+							owl:hasValue rdfs:label, skos:prefLabel, dc:title
+							].
+
+rdfs:Class rdfs:subClassOf [
+							rdf:type owl:Restriction;
+							owl:onProperty cmo:entityIdentifier;
+							owl:hasValue rdfs:label, skos:prefLabel, dc:title
+							].
