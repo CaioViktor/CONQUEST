@@ -1527,7 +1527,8 @@ Sua regulamentação constitucional está prevista na Lei Complementar 87/1996 (
                                                                      "É uma substância química ativa, fármaco, droga ou matéria-prima que tenha propriedades farmacológicas com finalidade medicamentosa, utilizada para diagnóstico, alívio ou tratamento, empregada para modificar ou explorar sistemas fisiológicos ou estados patológicos, em benefício da pessoa na qual se administra."@pt ;
                                                         rdfs:label "Insumo famacêutico ativo"@pt ,
                                                                    "Princípio ativo"@pt ,
-                                                                   "Substância"@pt .
+                                                                   "Substância"@pt ;
+                                                                   rdf:type cmo:RecognizableClass .
 
 
 ###  http://www.linkedmed.com.br/ontology/drugs/Radiofarmaco
