@@ -4,12 +4,13 @@ import ontology.Schema as sc
 import rdflib.plugins.sparql.processor as processor
 from rdflib.plugins.sparql.parser import parseQuery
 import context.Factory_ContextVariables as fCV
+import nlp.pt.NER_Trainer as nt
 
 
 
 pp = pprint.PrettyPrinter(indent=4)
 
-schema = sc.getGraph("ontology.ttl")
+# schema = sc.getGraph("ontology.ttl")
 # pp.pprint(sc.load_properties_index(schema))
 # sc.load_classes_index(schema)
 #pp.pprint(sc.load_classes_index(schema))
@@ -17,7 +18,7 @@ schema = sc.getGraph("ontology.ttl")
 
 
 # sp = sc.load_properties_index(schema)
-scl = sc.load_classes_index(schema)
+# scl = sc.load_classes_index(schema)
 # QAIM = q.QAI_Manager("MediBot.json",sp)
 # QAIM = q.QAI_Manager("example_QAIs.js",sp)
 # f = fCV.Factory_ContextVariables(scl)
@@ -62,7 +63,13 @@ scl = sc.load_classes_index(schema)
 
 # varss = sc.parser_sparql(q,s)
 # pp.pprint(varss)
-for classs in scl:
-	if 'identifiers' in scl[classs]:
-		print("{}:\n{}\n\n".format(scl[classs]['uri'],scl[classs]['identifiers']))
-schema.close()
+# for classs in scl:
+# 	if 'identifiers' in scl[classs]:
+# 		print("{}:\n{}\n\n".format(scl[classs]['uri'],scl[classs]['identifiers']))
+# schema.close()
+
+
+
+
+ner_trainer = nt.NER_Trainer("http://localhost:8890/sparql","<http://localhost:8890/DAV/drugs>")
+pp.pprint(ner_trainer.labels)
