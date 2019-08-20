@@ -5,6 +5,8 @@ import rdflib.plugins.sparql.processor as processor
 from rdflib.plugins.sparql.parser import parseQuery
 import context.Factory_ContextVariables as fCV
 import nlp.pt.NER_Trainer as nt
+import spacy
+from spacy.lang.pt.examples import sentences 
 
 
 
@@ -70,6 +72,9 @@ pp = pprint.PrettyPrinter(indent=4)
 
 
 
+nlp = spacy.load('pt_core_news_sm')
 
-ner_trainer = nt.NER_Trainer("http://localhost:8890/sparql","<http://localhost:8890/DAV/drugs>")
-pp.pprint(ner_trainer.labels)
+ner_trainer = nt.NER_Trainer("http://localhost:8890/sparql","<http://localhost:8890/DAV/drugs>",nlp)
+ner_trainer.add_labels_to_nlp()
+print(nlp.entity.labels)
+# ner_trainer.make_train_dataset(None)
