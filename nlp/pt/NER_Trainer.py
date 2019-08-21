@@ -38,7 +38,7 @@ class NER_Trainer():
 			if self.filter_label(result["class"]["value"],result["p"]["value"]):
 				# print("Formando uri:\n{}".format(result["class"]["value"]+result["p"]["value"]))
 				id_property = sc.uri_to_hash(result["class"]["value"]+result["p"]["value"])
-				labels[id_property] = {'class':result["class"]["value"],'property':result["p"]["value"]}
+				labels[id_property] = {'class':result["class"]["value"],'property':result["p"]["value"],'id':id_property}
 
 		#Filtering properties in sub-classes, when these already apear in its super-classes.
 		# print(labels)
@@ -122,7 +122,7 @@ class NER_Trainer():
 		print(count_t)
 		while offset <= count_t:
 			#print("\t{}/{}".format(str(offset),str(count_t)))
-			#train_data = self.query_examples(label_class['class'],label_class['property'],offset)
+			train_data = self.query_examples(label_class['class'],offset)
 
 
 			#TODO: Train model
@@ -130,7 +130,13 @@ class NER_Trainer():
 
 
 
-	def query_examples(self,classs,propertyy,offset):
+	def query_examples(self,label_class,offset):
+		
+		classs = label_class['class']
+		propertyy = label_class['property']
+		id_property = label_class['id']
+		labels = label_class['labels']
+
 		#Get values from properties in knowledge graph
 		sparql = SPARQLWrapper(self.endpoint)
 
@@ -160,16 +166,19 @@ class NER_Trainer():
 		results = sparql.query().convert()
 		train_data = []
 		for result in results["results"]["bindings"]:
-			s = result["s"]["value"]
 			val = result["val"]["value"]
 
 
-			#TODO: Examples
-			example = ""
-			label_data = (0,0,"")
-			train_data.append( (example , [label_data]))
+			for label in labels:
+				#TODO: Examples
+				string = "".format()
+				train_data.append( create_example(string,str(val),id_property))
+
+			train_data.append( create_example(str(val),str(val),id_property))
 			
 		return train_data
+
+
 
 
 	def add_labels_to_nlp(self):
@@ -227,3 +236,12 @@ class NER_Trainer():
 			if prefix in propertyy:
 				return False
 		return True
+
+	@staticmethod
+	def create_example(string,entity,label):
+		entities_array = []
+		if entity in string:
+			initial_index = string.index(entity)
+			final_index = initial_index + len(entity)
+			entities_array.append((initial_index,final_index,label))
+		return (string,entities_array)
