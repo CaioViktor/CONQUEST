@@ -12,9 +12,10 @@ from spacy.lang.pt.examples import sentences
 
 pp = pprint.PrettyPrinter(indent=4)
 
-# schema = sc.getGraph("ontology.ttl")
+schema = sc.getGraph("ontology.ttl")
 # pp.pprint(sc.load_properties_index(schema))
-# sc.load_classes_index(schema)
+classIndex = sc.load_classes_index(schema)
+# pp.pprint(classIndex)
 #pp.pprint(sc.load_classes_index(schema))
 
 
@@ -74,7 +75,7 @@ pp = pprint.PrettyPrinter(indent=4)
 
 nlp = spacy.load('pt_core_news_sm')
 
-ner_trainer = nt.NER_Trainer("http://localhost:8890/sparql","<http://localhost:8890/DAV/drugs>",nlp)
-ner_trainer.add_labels_to_nlp()
-print(nlp.entity.labels)
-# ner_trainer.make_train_dataset(None)
+ner_trainer = nt.NER_Trainer(classIndex,"http://localhost:8890/sparql","<http://localhost:8890/DAV/drugs>",nlp)
+# ner_trainer.add_labels_to_nlp()
+# print(nlp.entity.labels)
+ner_trainer.train_dataset(None)
