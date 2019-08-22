@@ -1,8 +1,17 @@
+from __future__ import unicode_literals, print_function
 from SPARQLWrapper import SPARQLWrapper, JSON
 import os
 import ontology.Schema as sc
+import plac
+import random
+from pathlib import Path
+import spacy
+from spacy.util import minibatch, compounding
+#spacy imports
+
 
 LIMIT = 10000
+n_iter = 10
 
 #Train Named Entity Recognition to recognize class properties values in senteces. It's values will be used in Context Variables
 #Class to model in Brazilian portuguese
@@ -101,36 +110,38 @@ class NER_Trainer():
 
 
 
-	def train_dataset(self,IQAs):
+	def train_NER(self,IQAs):
 	#Create dataset to train the NLP model
 		#make dataset
 		self.add_labels_to_nlp()
+		train_data = []
 		i = 1
 		for label_class in self.labels:
 			print("{}/{}".format(str(i),str(len(self.labels))))
-			self.train_to_label(self.labels[label_class])
+			self.get_train_to_label(self.labels[label_class],train_data)
 			i+=1
 		#end dataset
-
+		#Train model
+		print("\n\n\n\n-----------------TRAINING MODEL-----------------")
+		print("\ttamanho dataset:{}".format(len(train_data)))
+		print("\tExemplo:{}".format(train_data[0]))
+		self.train_model(train_data)
 		return
 
-	def train_to_label(self,label_class):
+	def get_train_to_label(self,label_class,train_data):
 		#write examples for a label to dataset
 		count_t = self.count_triples(label_class['class'],label_class['property'])
 		print("{}:{}:\t{}".format(label_class['class'].split("/")[-1],label_class['property'].split("/")[-1],count_t))
 		offset= 0
 		while offset <= count_t:
 			print("\t{}/{}".format(str(offset),str(count_t)))
-			train_data = self.query_examples(label_class,offset)
-			print("\ttamanho dataset:{}".format(len(train_data)))
-
-			#TODO: Train model
+			#Get train data
+			self.query_examples(label_class,offset,train_data)
 			
 			offset+= LIMIT
 
 
-
-	def query_examples(self,label_class,offset):
+	def query_examples(self,label_class,offset,train_data):
 		
 		classs = label_class['class']
 		propertyy = label_class['property']
@@ -166,19 +177,18 @@ class NER_Trainer():
 		sparql.setQuery(query)
 		sparql.setReturnFormat(JSON)
 		results = sparql.query().convert()
-		train_data = []
+
 		for result in results["results"]["bindings"]:
-			val = result["val"]["value"]
+			val = result["val"]["value"].strip()
 
+			if val != "":
+				for label in labels:
+					#TODO: Examples
+					string = "{} {}".format(label,val)
+					train_data.append( self.create_example(string,str(val),id_property))
 
-			for label in labels:
-				#TODO: Examples
-				string = "{} {}".format(label,val)
-				train_data.append( self.create_example(string,str(val),id_property))
-
-			train_data.append( self.create_example(str(val),str(val),id_property))
+				train_data.append( self.create_example(str(val),str(val),id_property))
 			
-		return train_data
 
 
 
@@ -195,6 +205,28 @@ class NER_Trainer():
 			if label not in self.nlp.entity.labels:
 				ner.add_label(label)
 
+	def train_model(self,TRAIN_DATA):
+		#Train model
+		optimizer = self.nlp.entity.create_optimizer()
+		other_pipes = [pipe for pipe in self.nlp.pipe_names if pipe != 'ner']
+		with self.nlp.disable_pipes(*other_pipes):  # only train NER
+			for itn in range(n_iter):
+				print("Train iteration:{}\n".format(itn))
+				random.shuffle(TRAIN_DATA)
+				losses = {}
+				# batch up the examples using spaCy's minibatch
+				batches = minibatch(TRAIN_DATA, size=compounding(4., 32., 1.001))
+				for batch in batches:
+					texts, annotations = zip(*batch) 
+					# Updating the weights
+					self.nlp.update(texts, annotations, sgd=optimizer, drop=0.35, losses=losses)
+				print('Losses', losses)
+
+		 # test the trained model
+		# for text, _ in TRAIN_DATA:
+		# 	doc = self.nlp(text)
+		# 	print("Entities", [(ent.text, ent.label_) for ent in doc.ents])
+		# 	print("Tokens", [(t.text, t.ent_type_, t.ent_iob) for t in doc])
 
 ##Utility functions
 	def count_triples(self,classs,propertyy):
@@ -243,9 +275,11 @@ class NER_Trainer():
 
 	@staticmethod
 	def create_example(string,entity,label):
+		string = string.strip()
+		entity = entity.strip()
 		entities_array = []
 		if entity in string:
 			initial_index = string.index(entity)
 			final_index = initial_index + len(entity)
 			entities_array.append((initial_index,final_index,label))
-		return (string,entities_array)
+		return (string,{'entities':entities_array})
