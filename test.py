@@ -75,7 +75,7 @@ classIndex = sc.load_classes_index(schema)
 
 nlp = spacy.load('pt_core_news_sm')
 
-ner_trainer = nt.NER_Trainer(classIndex,"http://localhost:8890/sparql","<http://localhost:8890/DAV/drugs>",nlp)
+ner_trainer = nt.NER_Trainer(classIndex,"http://localhost:8890/sparql","<http://localhost:8890/DAV/drugs>",nlp,fulldata=False)
 # ner_trainer.add_labels_to_nlp()
 # print(nlp.entity.labels)
 ner_trainer.train_NER(None)

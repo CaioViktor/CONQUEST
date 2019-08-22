@@ -10,19 +10,22 @@ from spacy.util import minibatch, compounding
 #spacy imports
 
 
-LIMIT = 10000
-n_iter = 10
 
 #Train Named Entity Recognition to recognize class properties values in senteces. It's values will be used in Context Variables
 #Class to model in Brazilian portuguese
 class NER_Trainer():
-	def __init__(self,classIndex,endpoint,graph,nlp):
+	def __init__(self,classIndex,endpoint,graph,nlp,fulldata=True,n_iter=100,limit=10000,limit_not_full = 10):
 		self.classIndex = classIndex
 		self.endpoint = endpoint
 		self.graph = graph
 		self.nlp = nlp
 		self.labels = self.retrieve_NER_Labels()
 		self.retrieve_Property_Labels()
+		self.fulldata = fulldata
+		self.LIMIT = limit
+		self.n_iter = n_iter
+		if not fulldata:
+			self.LIMIT = limit_not_full
 
 
 
@@ -124,7 +127,7 @@ class NER_Trainer():
 		#Train model
 		print("\n\n\n\n-----------------TRAINING MODEL-----------------")
 		print("\ttamanho dataset:{}".format(len(train_data)))
-		print("\tExemplo:{}".format(train_data[0]))
+		# print("\tExemplo:{}".format(train_data[0]))
 		self.train_model(train_data)
 		return
 
@@ -133,12 +136,16 @@ class NER_Trainer():
 		count_t = self.count_triples(label_class['class'],label_class['property'])
 		print("{}:{}:\t{}".format(label_class['class'].split("/")[-1],label_class['property'].split("/")[-1],count_t))
 		offset= 0
+
+		if not self.fulldata:
+			self.query_examples(label_class,offset,train_data)
+			return
 		while offset <= count_t:
 			print("\t{}/{}".format(str(offset),str(count_t)))
 			#Get train data
 			self.query_examples(label_class,offset,train_data)
 			
-			offset+= LIMIT
+			offset+= self.LIMIT
 
 
 	def query_examples(self,label_class,offset,train_data):
@@ -170,7 +177,7 @@ class NER_Trainer():
 					}ORDER BY ?val
 				}
 			}
-			LIMIT """+str(LIMIT)+"""
+			LIMIT """+str(self.LIMIT)+"""
 			OFFSET """+str(offset)+"""
 		"""
 		# print(query)
@@ -210,7 +217,7 @@ class NER_Trainer():
 		optimizer = self.nlp.entity.create_optimizer()
 		other_pipes = [pipe for pipe in self.nlp.pipe_names if pipe != 'ner']
 		with self.nlp.disable_pipes(*other_pipes):  # only train NER
-			for itn in range(n_iter):
+			for itn in range(self.n_iter):
 				print("Train iteration:{}\n".format(itn))
 				random.shuffle(TRAIN_DATA)
 				losses = {}
@@ -222,6 +229,7 @@ class NER_Trainer():
 					self.nlp.update(texts, annotations, sgd=optimizer, drop=0.35, losses=losses)
 				print('Losses', losses)
 
+		#TODO: Test an save model
 		 # test the trained model
 		# for text, _ in TRAIN_DATA:
 		# 	doc = self.nlp(text)
