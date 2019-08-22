@@ -28,7 +28,7 @@ class NER_Trainer():
 			SELECT DISTINCT ?class ?p FROM """+self.graph+""" WHERE{
 				?s ?p ?o;
 					rdf:type ?class.
-				FILTER(isLiteral(?o) )
+				FILTER(isLiteral(?o) && !isNumeric(?o))
 			}
 		""")
 		sparql.setReturnFormat(JSON)
@@ -119,13 +119,13 @@ class NER_Trainer():
 		count_t = self.count_triples(label_class['class'],label_class['property'])
 		print("{}:{}:\t{}".format(label_class['class'].split("/")[-1],label_class['property'].split("/")[-1],count_t))
 		offset= 0
-		print(count_t)
 		while offset <= count_t:
-			#print("\t{}/{}".format(str(offset),str(count_t)))
-			train_data = self.query_examples(label_class['class'],offset)
-
+			print("\t{}/{}".format(str(offset),str(count_t)))
+			train_data = self.query_examples(label_class,offset)
+			print("\ttamanho dataset:{}".format(len(train_data)))
 
 			#TODO: Train model
+			
 			offset+= LIMIT
 
 
@@ -146,13 +146,15 @@ class NER_Trainer():
 			SELECT ?val
 			WHERE{
 				{
-					SELECT DISTINCT ?val FROM """+self.graph+""" WHERE{
+					SELECT ?val FROM """+self.graph+""" WHERE{
 						{
 							_:s a <"""+classs+""">;
-								<"""+propertyy+"""> ?val.
+								<"""+propertyy+"""> ?val_raw.
+								BIND(LCASE(SUBSTR(str(?val_raw),1,1000)) as ?val)
 						}UNION{
 							_:s rdf:type/rdfs:subClassOf+ <"""+classs+""">;
-								<"""+propertyy+"""> ?val.
+								<"""+propertyy+"""> ?val_raw.
+								BIND(LCASE(SUBSTR(str(?val_raw),1,0000)) as ?val)
 						}
 					}ORDER BY ?val
 				}
@@ -171,10 +173,10 @@ class NER_Trainer():
 
 			for label in labels:
 				#TODO: Examples
-				string = "".format()
-				train_data.append( create_example(string,str(val),id_property))
+				string = "{} {}".format(label,val)
+				train_data.append( self.create_example(string,str(val),id_property))
 
-			train_data.append( create_example(str(val),str(val),id_property))
+			train_data.append( self.create_example(str(val),str(val),id_property))
 			
 		return train_data
 
@@ -204,14 +206,16 @@ class NER_Trainer():
 			SELECT count(DISTINCT ?val) as ?count_t FROM """+self.graph+""" WHERE{
 				{
 					_:s a <"""+classs+""">;
-						<"""+propertyy+"""> ?val.
+						<"""+propertyy+"""> ?val_raw.
+						BIND(LCASE(SUBSTR(str(?val_raw),1,1000)) as ?val)
 				}UNION{
 					_:s rdf:type/rdfs:subClassOf+ <"""+classs+""">;
-						<"""+propertyy+"""> ?val.
+						<"""+propertyy+"""> ?val_raw.
+						BIND(LCASE(SUBSTR(str(?val_raw),1,1000)) as ?val)
 				}
 			}
 		"""
-		print(query)
+		# print(query)
 		sparql.setQuery(query)
 		sparql.setReturnFormat(JSON)
 		results = sparql.query().convert()
