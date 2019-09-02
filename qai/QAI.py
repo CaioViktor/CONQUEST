@@ -2,6 +2,7 @@ import json
 import re
 import rdflib.plugins.sparql.processor as processor
 import ontology.Schema as schema_processor
+from rdflib import URIRef
 
 class QAI:
 	def __init__(self):
@@ -31,13 +32,38 @@ class QAI:
 			print("Error on loading QAI {}".format(self.id))
 			raise 
 
-		#TODO: computar CVs e RVs
+		
 		vars_set = schema_processor.parser_sparql(self.SP,propertyIndex)
+
 
 		for var in cvs_Set:
 			id_var = schema_processor.name_to_id_var(var)
 			self.CVs[id_var] = vars_set[id_var]
 			self.CVs[id_var]['name'] = var
+			for s,p,o in self.CVs[id_var]['context']:
+				id_s = schema_processor.name_to_id_var(s)
+				id_o = schema_processor.name_to_id_var(o)
+				if self.is_Binary_Comparator(p):
+					other = None
+					if id_var == id_o:
+						#current var is triple's object
+						other = vars_set[id_s]
+					elif id_var == id_s:
+						#current var is triple's subject
+						other = vars_set[id_o]
+					if other != None:
+						for (class_owner, property_owner , aux) in other['context']:
+							if isinstance(property_owner,URIRef):
+								id_class_owner = schema_processor.name_to_id_var(class_owner)
+								classes = []
+								for classs in vars_set[id_class_owner]['class']:
+									if isinstance(classs,URIRef):
+										classes.append(classs)
+								print(var," é de ",classes,property_owner)
+					#TODO:set Class owner e property
+
+				elif id_s in vars_set :
+					print("Var ",var," é do ",vars_set[id_s])
 
 		for var in rvs_Set:
 			id_var = schema_processor.name_to_id_var(var)
@@ -52,6 +78,10 @@ class QAI:
 
 		#TODO: Armazenar no DB? Melhor treinar modelo logo
 		# print(str(self))
+
+	@staticmethod
+	def is_Binary_Comparator(op):
+		return op in ['=','<','>','>=','<=','!=','Builtin_CONTAINS','Builtin_STRAFTER','Builtin_STRBEFORE','Builtin_STRENDS','Builtin_STRSTARTS','Builtin_REGEX','Builtin_sameTerm']
 
 	#Load QAI already computed
 	@classmethod
@@ -129,7 +159,3 @@ class QAI:
 		if not vars_Set_RP_F.issubset(vars_Set):
 			print('Error in RP footer: "{}". Variables: {} not in SP set: {}'.format(RP['footer'],str(vars_Set_RP_F.difference(vars_Set)),str(vars_Set)))
 			raise
-			
-
-
-		

@@ -20,13 +20,22 @@ classIndex = sc.load_classes_index(schema)
 
 
 
-# sp = sc.load_properties_index(schema)
-# scl = sc.load_classes_index(schema)
-# QAIM = q.QAI_Manager("MediBot.json",sp)
+sp = sc.load_properties_index(schema)
+scl = sc.load_classes_index(schema)
+QAIM = q.QAI_Manager("MediBot.json",sp)
 # QAIM = q.QAI_Manager("example_QAIs.js",sp)
 # f = fCV.Factory_ContextVariables(scl)
 
-# for qai in QAIM.QAIs:
+for qai in QAIM.QAIs:
+	print("QPs:")
+	for qp in qai.QPs:
+		print(qp)
+	print("-------------------------------------------------")
+	print("cvs")
+	for cv_id in qai.CVs:
+		cv = qai.CVs[cv_id]
+		pp.pprint(cv)
+	print("*************************************************")
 # 	print(qai.CVs)
 # 	print("QAI {}:\n".format(qai.id))
 # 	CV = f.build_ContextVariables_vector(qai.CVs)
@@ -73,9 +82,9 @@ classIndex = sc.load_classes_index(schema)
 
 
 
-nlp = spacy.load('pt_core_news_sm')
+# nlp = spacy.load('pt_core_news_sm')
 
-ner_trainer = nt.NER_Trainer(classIndex,"http://localhost:8890/sparql","<http://localhost:8890/DAV/drugs>",nlp,fulldata=False)
+# ner_trainer = nt.NER_Trainer(classIndex,"http://localhost:8890/sparql","<http://localhost:8890/DAV/drugs>",nlp,fulldata=False)
 # ner_trainer.add_labels_to_nlp()
 # print(nlp.entity.labels)
-ner_trainer.train_NER(None)
+# ner_trainer.train_NER(None)
