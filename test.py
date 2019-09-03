@@ -4,9 +4,10 @@ import ontology.Schema as sc
 import rdflib.plugins.sparql.processor as processor
 from rdflib.plugins.sparql.parser import parseQuery
 import context.Factory_ContextVariables as fCV
-import nlp.pt.NER_Trainer as nt
 import spacy
 from spacy.lang.pt.examples import sentences 
+
+from nlp.pt.NER_Trainer_PT import NER_Trainer #Change package to change language
 
 
 
@@ -26,16 +27,19 @@ QAIM = q.QAI_Manager("MediBot.json",sp)
 # QAIM = q.QAI_Manager("example_QAIs.js",sp)
 # f = fCV.Factory_ContextVariables(scl)
 
-for qai in QAIM.QAIs:
-	print("QPs:")
-	for qp in qai.QPs:
-		print(qp)
-	print("-------------------------------------------------")
-	print("cvs")
-	for cv_id in qai.CVs:
-		cv = qai.CVs[cv_id]
-		pp.pprint(cv)
-	print("*************************************************")
+ner_trainer = NER_Trainer(QAIM.QAIs,classIndex,"http://localhost:8890/sparql","http://localhost:8890/DAV/drugs")
+ner_trainer.print()
+
+# for qai in QAIM.QAIs:
+# 	print("QPs:")
+# 	for qp in qai.QPs:
+# 		print(qp)
+# 	print("-------------------------------------------------")
+# 	print("cvs")
+# 	for cv_id in qai.CVs:
+# 		cv = qai.CVs[cv_id]
+# 		pp.pprint(cv)
+# 	print("*************************************************")
 # 	print(qai.CVs)
 # 	print("QAI {}:\n".format(qai.id))
 # 	CV = f.build_ContextVariables_vector(qai.CVs)
