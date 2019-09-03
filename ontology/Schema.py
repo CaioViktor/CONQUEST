@@ -638,7 +638,6 @@ def parser_triples(triples,schema,vars_query={}):
 				if id_hash_object in vars_query:
 					#var already parsed
 					vars_query[id_hash_object]['class'].update(ranges) 
-					
 					update_context(vars_query[id_hash_object]['context'],triple)
 					vars_query[id_hash_object]['type'] = LITERAL
 				else:

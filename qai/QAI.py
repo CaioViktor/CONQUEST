@@ -37,13 +37,16 @@ class QAI:
 
 
 		for var in cvs_Set:
+			#Getting CV's Owners (classes and properties)
 			id_var = schema_processor.name_to_id_var(var)
 			self.CVs[id_var] = vars_set[id_var]
 			self.CVs[id_var]['name'] = var
+			self.CVs[id_var]['owners'] = {}
 			for s,p,o in self.CVs[id_var]['context']:
 				id_s = schema_processor.name_to_id_var(s)
 				id_o = schema_processor.name_to_id_var(o)
 				if self.is_Binary_Comparator(p):
+					#CV is used to compare inner variable's value
 					other = None
 					if id_var == id_o:
 						#current var is triple's object
@@ -53,17 +56,13 @@ class QAI:
 						other = vars_set[id_o]
 					if other != None:
 						for (class_owner, property_owner , aux) in other['context']:
-							if isinstance(property_owner,URIRef):
-								id_class_owner = schema_processor.name_to_id_var(class_owner)
-								classes = []
-								for classs in vars_set[id_class_owner]['class']:
-									if isinstance(classs,URIRef):
-										classes.append(classs)
-								print(var," é de ",classes,property_owner)
-					#TODO:set Class owner e property
+							self.get_Property_Owner(vars_set,class_owner,property_owner,id_var)
 
 				elif id_s in vars_set :
-					print("Var ",var," é do ",vars_set[id_s])
+					#CV is used inside (not as a comparator in filter) triples query
+					if id_var == id_o:
+						#current var is triple's object
+						self.get_Property_Owner(vars_set,s,p,id_var)
 
 		for var in rvs_Set:
 			id_var = schema_processor.name_to_id_var(var)
@@ -82,6 +81,23 @@ class QAI:
 	@staticmethod
 	def is_Binary_Comparator(op):
 		return op in ['=','<','>','>=','<=','!=','Builtin_CONTAINS','Builtin_STRAFTER','Builtin_STRBEFORE','Builtin_STRENDS','Builtin_STRSTARTS','Builtin_REGEX','Builtin_sameTerm']
+
+
+	def get_Property_Owner(self,vars_set,class_owner,property_owner,id_var):
+		if isinstance(property_owner,URIRef):
+			id_class_owner = schema_processor.name_to_id_var(class_owner)
+			classes = set()
+			for classs in vars_set[id_class_owner]['class']:
+				if isinstance(classs,URIRef):
+					classes.add(classs)
+			id_property = schema_processor.uri_to_hash(property_owner)
+			if id_property not in self.CVs[id_var]['owners']:
+				#First time seeing CV's owner
+				self.CVs[id_var]['owners'][id_property]	={'uri':property_owner,'classes':classes}	
+			else:
+				#Adding a new CV's owner
+				self.CVs[id_var]['owners'][id_property]['classes'].update(classes) 
+			# print(var," é de ",classes,property_owner)
 
 	#Load QAI already computed
 	@classmethod
