@@ -27,8 +27,12 @@ QAIM = q.QAI_Manager("MediBot.json",sp)
 # QAIM = q.QAI_Manager("example_QAIs.js",sp)
 # f = fCV.Factory_ContextVariables(scl)
 
-ner_trainer = NER_Trainer(QAIM.QAIs,classIndex,"http://localhost:8890/sparql","http://localhost:8890/DAV/drugs")
-ner_trainer.print()
+ner_trainer = NER_Trainer(QAIM.QAIs,classIndex,"http://localhost:8890/sparql","http://localhost:8890/DAV/drugs",number_samples=10)
+# dataset = ner_trainer.make_train_dataset(savePath="temp/").train_NER()
+dataset = ner_trainer.train_NER(loadPath="temp/")
+
+print("labels:\n{}\n-------------------------\n".format(ner_trainer.get_labels()))
+print(dataset)
 
 # for qai in QAIM.QAIs:
 # 	print("QPs:")

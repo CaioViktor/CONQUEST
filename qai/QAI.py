@@ -55,7 +55,8 @@ class QAI:
 						#current var is triple's subject
 						other = vars_set[id_o]
 					if other != None:
-						for (class_owner, property_owner , aux) in other['context']:
+						for (class_owner,property_owner,aux) in other['context']:
+		
 							self.get_Property_Owner(vars_set,class_owner,property_owner,id_var)
 
 				elif id_s in vars_set :
@@ -84,6 +85,7 @@ class QAI:
 
 
 	def get_Property_Owner(self,vars_set,class_owner,property_owner,id_var):
+
 		if isinstance(property_owner,URIRef):
 			id_class_owner = schema_processor.name_to_id_var(class_owner)
 			classes = set()

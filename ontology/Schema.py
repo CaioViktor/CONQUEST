@@ -661,6 +661,7 @@ def uri_to_hash(uri):
 def name_to_id_var(var):
 	return uri_to_hash(Variable(var.replace("$","?")))
 
+
 def update_context(context,triple):
 	if triple not in context:
 		context.append(triple)
