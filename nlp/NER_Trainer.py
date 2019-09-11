@@ -2,6 +2,11 @@ from abc import ABC, abstractmethod
 from nlp.Train_Maker import Train_Maker
 import pickle as pic
 import os
+import spacy
+from spacy.util import minibatch, compounding
+from pathlib import Path
+import random
+from datetime import datetime
 
 #Template method pattern design
 
@@ -11,11 +16,16 @@ class NER_Trainer_Template(ABC):
 		self.class_index = class_index
 		self.number_iterations = number_iterations
 		self.train_maker = Train_Maker(QAIs,class_index,url_endpoint,graph_name,number_samples)
+		#self.model NLP: Model instantiated in children class
+		#self.name_model: name NER Model instantiated in children class
 		self.train_dataset = None
 
 	def make_train_dataset(self,savePath=""):
 		dataset = self.train_maker.make_train_dataset()
 		if savePath != "":
+			saveDir = Path(savePath)
+			if not saveDir.exists():
+				saveDir.mkdir(parents=True)
 			pathOut = os.path.join(savePath,"train_dataset.pickle")
 			with open(pathOut,"wb") as pickle_file:
 				pic.dump(dataset,pickle_file)
@@ -34,22 +44,91 @@ class NER_Trainer_Template(ABC):
 		pathOut_labels = os.path.join(loadPath,"labels.pickle")
 		with open(pathOut_labels,"rb") as pickle_file:
 			self.train_maker.labels = pic.load(pickle_file)
+		print("Dataset loaded from {}".format(loadPath))
 		return self
 
 
-	def train_NER(self,loadPath=""):
+	def train_NER(self,loadPath="",outputPath=""):
+		satart_time = datetime.now()
+		random.seed(0)
 		if loadPath != "":
 			self.load_train_dataset(loadPath)
 		if self.train_dataset == None:
 			self.make_train_dataset()
 		#TODO: Train model
-		return self.train_dataset
+		print(self.train_dataset)
+
+		# Add entity recognizer to model if it's not in the pipeline
+		# nlp.create_pipe works for built-ins that are registered with spaCy
+		if "ner" not in self.model.pipe_names:
+			ner = self.model.create_pipe("ner")
+			self.model.add_pipe(ner)
+		# otherwise, get it, so we can add labels to it
+		else:
+			ner = self.model.get_pipe("ner")
+
+		#Add labels to NER
+		labels = self.get_labels()
+		self.add_labels_to_nlp(labels)
+
+
+		#Init trainer optimizer
+		if loadPath == "":
+			#New model
+			optimizer = self.model.begin_training()
+		else:
+			#Loading model
+			optimizer = self.model.resume_training()
+
+		move_names = list(ner.move_names)
+		# get names of other pipes to disable them during training
+		other_pipes = [pipe for pipe in self.model.pipe_names if pipe != "ner"]
+		with self.model.disable_pipes(*other_pipes):  # only train NER
+			sizes = compounding(1.0, 4.0, 1.001)
+			# batch up the examples using spaCy's minibatch
+			for itn in range(self.number_iterations):
+				random.shuffle(self.train_dataset)
+				batches = minibatch(self.train_dataset, size=sizes)
+				losses = {}
+				for batch in batches:
+					texts, annotations = zip(*batch)
+					self.model.update(texts, annotations, sgd=optimizer, drop=0.35, losses=losses)
+
+				print("Training in {}%({}/{})".format(str((itn/self.number_iterations)*100),itn,self.number_iterations))
+				print("Losses", losses)
+
+		if outputPath == "":
+			self.save_NER()
+		else:
+			self.save_NER(outputPath)
+		finish_time = datetime.now()
+		print("Elapsed time: {}".format(str(finish_time - satart_time)))
+		return self.model
+
 
 	def get_labels(self):
 		return self.train_maker.labels
 
-		
 
+	def add_labels_to_nlp(self,labels):
+		#Add labels in NER
+		ner = None
+		if 'ner' not in self.model.pipe_names:
+			ner = self.model.create_pipe('ner')
+			self.model.add_pipe(ner)
+		else:
+			ner = self.model.get_pipe('ner')
 
-	
+		for label in labels:
+			if label not in self.model.entity.labels:
+				ner.add_label(label)
+
+	def save_NER(self,outputPath="temp/NER"):
+		outputPath = os.path.join(outputPath,self.name_model)
+		outputPath = Path(outputPath)
+		if not outputPath.exists():
+			outputPath.mkdir(parents=True)
+		self.model.meta["name"] = self.name_model  # rename model
+		self.model.to_disk(outputPath)
+		print("Saved model to", outputPath)
 

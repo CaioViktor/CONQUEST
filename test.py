@@ -25,14 +25,16 @@ sp = sc.load_properties_index(schema)
 scl = sc.load_classes_index(schema)
 QAIM = q.QAI_Manager("MediBot.json",sp)
 # QAIM = q.QAI_Manager("example_QAIs.js",sp)
-# f = fCV.Factory_ContextVariables(scl)
+f = fCV.Factory_ContextVariables(scl)
 
-ner_trainer = NER_Trainer(QAIM.QAIs,classIndex,"http://localhost:8890/sparql","http://localhost:8890/DAV/drugs",number_samples=10)
-# dataset = ner_trainer.make_train_dataset(savePath="temp/").train_NER()
-dataset = ner_trainer.train_NER(loadPath="temp/")
+ner_trainer = NER_Trainer(QAIM.QAIs,classIndex,"http://localhost:8890/sparql","http://localhost:8890/DAV/drugs",number_iterations=10,number_samples=3)
+model = ner_trainer.make_train_dataset(savePath="temp/dataset").train_NER()
+# model = ner_trainer.train_NER(loadPath="temp/dataset")
 
-print("labels:\n{}\n-------------------------\n".format(ner_trainer.get_labels()))
-print(dataset)
+
+
+# print("labels:\n{}\n-------------------------\n".format(ner_trainer.get_labels()))
+# pp.pprint(dataset)
 
 # for qai in QAIM.QAIs:
 # 	print("QPs:")

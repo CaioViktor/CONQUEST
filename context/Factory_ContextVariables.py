@@ -2,6 +2,9 @@ import pandas as pd
 import ontology.Schema as schema_processor
 from rdflib import OWL, RDF, RDFS, OWL, XSD,URIRef,BNode,Variable,Literal
 
+#TODO: Vai Mudar completamente
+
+
 class Factory_ContextVariables():
 	def __init__(self,classes):
 		self.id_index = {}

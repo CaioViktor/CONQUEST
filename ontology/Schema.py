@@ -638,6 +638,8 @@ def parser_triples(triples,schema,vars_query={}):
 				if id_hash_object in vars_query:
 					#var already parsed
 					vars_query[id_hash_object]['class'].update(ranges) 
+					# print(objectt,":\n",triple)
+					#TODO: Ver por que está aparecendo tripla estranha, nessa linha de baixo
 					update_context(vars_query[id_hash_object]['context'],triple)
 					vars_query[id_hash_object]['type'] = LITERAL
 				else:
