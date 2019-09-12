@@ -8,14 +8,17 @@ from pathlib import Path
 import random
 from datetime import datetime
 
+#os.environ["OMP_NUM_THREADS"] = "1"
+
 #Template method pattern design
 
 #Train Named Entity Recognition to recognize class properties values in senteces. It's values will be used in Context Variables
 class NER_Trainer_Template(ABC):
-	def __init__(self,QAIs,class_index,url_endpoint,graph_name="",number_iterations=100,number_samples=0):
+	def __init__(self,QAIs,class_index,url_endpoint,graph_name="",number_iterations=100,number_samples_train=0,number_samples_examples=0):
 		self.class_index = class_index
 		self.number_iterations = number_iterations
-		self.train_maker = Train_Maker(QAIs,class_index,url_endpoint,graph_name,number_samples)
+		self.number_samples = number_samples_train
+		self.train_maker = Train_Maker(QAIs,class_index,url_endpoint,graph_name,number_samples_examples)
 		#self.model NLP: Model instantiated in children class
 		#self.name_model: name NER Model instantiated in children class
 		self.train_dataset = None
@@ -49,14 +52,16 @@ class NER_Trainer_Template(ABC):
 
 
 	def train_NER(self,loadPath="",outputPath=""):
+		print("Starting training...")
 		satart_time = datetime.now()
 		random.seed(0)
 		if loadPath != "":
 			self.load_train_dataset(loadPath)
+			print("Loaded dataset from ",loadPath)
 		if self.train_dataset == None:
 			self.make_train_dataset()
 		#TODO: Train model
-		print(self.train_dataset)
+		# print(self.train_dataset)
 
 		# Add entity recognizer to model if it's not in the pipeline
 		# nlp.create_pipe works for built-ins that are registered with spaCy
@@ -87,8 +92,12 @@ class NER_Trainer_Template(ABC):
 			sizes = compounding(1.0, 4.0, 1.001)
 			# batch up the examples using spaCy's minibatch
 			for itn in range(self.number_iterations):
-				random.shuffle(self.train_dataset)
-				batches = minibatch(self.train_dataset, size=sizes)
+				DATASET = self.train_dataset
+				if self.number_samples > 0 and self.number_samples < len(self.train_dataset):
+					DATASET = random.sample(self.train_dataset,self.number_samples)
+				else:
+					random.shuffle(DATASET)
+				batches = minibatch(DATASET, size=sizes)
 				losses = {}
 				for batch in batches:
 					texts, annotations = zip(*batch)

@@ -27,9 +27,10 @@ QAIM = q.QAI_Manager("MediBot.json",sp)
 # QAIM = q.QAI_Manager("example_QAIs.js",sp)
 f = fCV.Factory_ContextVariables(scl)
 
-ner_trainer = NER_Trainer(QAIM.QAIs,classIndex,"http://localhost:8890/sparql","http://localhost:8890/DAV/drugs",number_iterations=10,number_samples=3)
-model = ner_trainer.make_train_dataset(savePath="temp/dataset").train_NER()
-# model = ner_trainer.train_NER(loadPath="temp/dataset")
+ner_trainer = NER_Trainer(QAIM.QAIs,classIndex,"http://localhost:8890/sparql","http://localhost:8890/DAV/drugs",number_iterations=200,number_samples_train=1000)
+# model = ner_trainer.make_train_dataset(savePath="temp/dataset").train_NER()
+# model = ner_trainer.make_train_dataset(savePath="temp/dataset_full")
+model = ner_trainer.train_NER(loadPath="temp/dataset_full")
 
 
 

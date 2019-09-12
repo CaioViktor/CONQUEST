@@ -9,11 +9,13 @@ class Train_Maker():
 		self.instance_retriever = Instances_Retriever(url_endpoint,graph_name,number_samples)
 
 	def make_train_dataset(self):
+		print("Creating train dataset")
 	#create whole train dataset
 		train_dataset = []
 		for qai in self.QAIs:
 			qai_training_examples = self.make_qai_training_examples(qai)
 			train_dataset+=qai_training_examples
+		print("Created train dataset")
 		return self.filter_dataset(train_dataset)
 
 	def make_qai_training_examples(self,qai):
