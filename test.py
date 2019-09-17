@@ -3,13 +3,19 @@ import qai.QAI_Manager as q
 import ontology.Schema as sc
 import rdflib.plugins.sparql.processor as processor
 from rdflib.plugins.sparql.parser import parseQuery
-import context.Factory_ContextVariables as fCV
 import spacy
 from spacy.lang.pt.examples import sentences 
+from nlp.NLP_Processor import NLP_Processor
+import pickle
+from classifier.ML_Classifier import ML_Classifier
 
 from nlp.pt.NER_Trainer_PT import NER_Trainer #Change package to change language
 
 
+
+def load_labels(filePath):
+	with open(filePath,"rb") as file:
+		return pickle.load(file)
 
 pp = pprint.PrettyPrinter(indent=4)
 
@@ -25,12 +31,14 @@ sp = sc.load_properties_index(schema)
 scl = sc.load_classes_index(schema)
 QAIM = q.QAI_Manager("MediBot.json",sp)
 # QAIM = q.QAI_Manager("example_QAIs.js",sp)
-f = fCV.Factory_ContextVariables(scl)
+# f = fCV.Factory_ContextVariables(scl)
 
-ner_trainer = NER_Trainer(QAIM.QAIs,classIndex,"http://localhost:8890/sparql","http://localhost:8890/DAV/drugs",number_iterations=200,number_samples_train=1000)
+# ner_trainer = NER_Trainer(QAIM.QAIs,classIndex,"http://localhost:8890/sparql","http://localhost:8890/DAV/drugs",number_iterations=200,number_samples_train=1000)
 # model = ner_trainer.make_train_dataset(savePath="temp/dataset").train_NER()
 # model = ner_trainer.make_train_dataset(savePath="temp/dataset_full")
-model = ner_trainer.train_NER(loadPath="temp/dataset_full")
+# model = ner_trainer.train_NER(loadPath="temp/dataset_full")
+
+
 
 
 
@@ -99,3 +107,17 @@ model = ner_trainer.train_NER(loadPath="temp/dataset_full")
 # ner_trainer.add_labels_to_nlp()
 # print(nlp.entity.labels)
 # ner_trainer.train_NER(None)
+
+
+
+
+
+nlp_processor = NLP_Processor("temp/NER/NER_PT_2019-09-12_14-31-39")
+labels_NER = load_labels("temp/dataset_full/labels.pickle")
+dataset = ML_Classifier.pre_process_data(QAIM.QAIs,labels_NER,nlp_processor)
+print(dataset)
+with open("temp/dataset.sav","wb") as output:
+	pickle.dump(dataset,output)
+	print("Dataset daved to temp/dataset.sav")
+
+

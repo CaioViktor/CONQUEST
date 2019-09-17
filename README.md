@@ -22,4 +22,9 @@ Chatbot ONtology QUESTion
 			<li>python -m spacy download pt_core_news_sm</li>
 		</ul>
 	</li>
+	<li>SciKit Learn:
+		<ul>
+			<li>pip install -U scikit-learn</li>
+		</ul>
+	</li>
 </ul>
