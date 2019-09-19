@@ -7,6 +7,8 @@ import pickle as pic
 from rdflib import XSD
 import hashlib
 from nlp.Train_Maker import Train_Maker
+from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import train_test_split
 
 
 MODEL_FILE = "ml_classifier.sav"
@@ -21,6 +23,7 @@ class ML_Classifier():
 		#Transform QAIs in train dataset to train the classifier
 		#QV: Question Vector; SV: Sentence Vector; CVec: Context Vector
 		dataset = []
+		labels_dataset = []
 
 		#Getting CVec structure
 		columns = [XSD.integer,XSD.decimal,XSD.dateTime] + labels_NER
@@ -35,9 +38,12 @@ class ML_Classifier():
 		#Getting train dataset
 		for qai in QAIs:
 			for qp in qai.QPs:
+				#Getting QV = SV+CVec.  
+
+				labels_dataset.append(qai.id)
+
 				sentence = qp
 				CVec = [0] * len(columns)
-				#Getting QV = SV+CVec.  
 				for cv_id in qai.CVs:
 					#Getting CVec: Context Vector
 					cv = qai.CVs[cv_id]
@@ -68,7 +74,14 @@ class ML_Classifier():
 				dataset.append(QV)
 		columns_header = list(range(0,nlp_processor.vector_size))+columns
 
-		return pd.DataFrame(dataset,columns=columns_header)
+
+		features_dataframe = pd.DataFrame(dataset,columns=columns_header)
+		label_dataframe = pd.DataFrame(labels_dataset,columns=['label'])
+
+		
+
+
+		return features_dataframe,label_dataframe
 
 	@staticmethod
 	def load_model(loadPath=MODEL_PATH,modelFile=MODEL_FILE):
@@ -81,8 +94,13 @@ class ML_Classifier():
 
 
 
-	def fit(self,X,Y):
-		self.model.fit(X,Y)
+	def fit(self,X,y):
+		#Normalizer
+		scaler = StandardScaler()
+		X = scaler.fit_transform(X.astype(np.float64))
+		X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2)
+		
+		self.model.fit(X,y)
 
 
 	def predict(self,X):

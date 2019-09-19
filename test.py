@@ -114,10 +114,16 @@ QAIM = q.QAI_Manager("MediBot.json",sp)
 
 nlp_processor = NLP_Processor("temp/NER/NER_PT_2019-09-12_14-31-39")
 labels_NER = load_labels("temp/dataset_full/labels.pickle")
-dataset = ML_Classifier.pre_process_data(QAIM.QAIs,labels_NER,nlp_processor)
+dataset,labels = ML_Classifier.pre_process_data(QAIM.QAIs,labels_NER,nlp_processor)
 print(dataset)
-with open("temp/dataset.sav","wb") as output:
+print(labels)
+with open("temp/X.sav","wb") as output:
 	pickle.dump(dataset,output)
-	print("Dataset daved to temp/dataset.sav")
+	print("X daved to temp/X.sav")
+
+
+with open("temp/y.sav","wb") as output:
+	pickle.dump(labels,output)
+	print("y daved to temp/y.sav")
 
 
