@@ -26,7 +26,7 @@ class ML_Classifier():
 		labels_dataset = []
 
 		#Getting CVec structure
-		columns = [XSD.integer,XSD.decimal,XSD.dateTime] + labels_NER
+		columns = [XSD.integer.n3(),XSD.decimal.n3(),XSD.dateTime.n3()] + labels_NER
 		columns.sort()
 		type_CV_to_CVec_idx = {}
 		for column in columns:
