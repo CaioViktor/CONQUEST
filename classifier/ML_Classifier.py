@@ -12,11 +12,12 @@ from sklearn.model_selection import train_test_split
 
 
 MODEL_FILE = "ml_classifier.sav"
-MODEL_PATH = "temp/classifier"
+MODEL_PATH = "persistence/temp/classifier"
 
 class ML_Classifier():
 	def __init__(self):
 		self.model = GaussianNB()
+		#TODO: Usar melhor modelo
 
 	@staticmethod
 	def pre_process_data(QAIs,labels_NER,nlp_processor):
@@ -99,6 +100,7 @@ class ML_Classifier():
 		scaler = StandardScaler()
 		X = scaler.fit_transform(X.astype(np.float64))
 		X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2)
+		#TODO: Train model
 		
 		self.model.fit(X,y)
 
