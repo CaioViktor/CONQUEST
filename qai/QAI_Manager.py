@@ -12,8 +12,7 @@ class QAI_Manager():
 		self.created_date = ""
 		self.QAIs = []
 
-	def __init__(self,file,propertyIndex,path = "configurations/"):
-		file_path = os.path.join(path,file)
+	def __init__(self,file_path,propertyIndex):
 		
 		with open(file_path,"r", encoding="utf-8") as json_file:
 			qais = json.load(json_file)
