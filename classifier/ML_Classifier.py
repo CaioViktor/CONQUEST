@@ -13,13 +13,16 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import  VotingClassifier
 from sklearn.model_selection import cross_val_score
+from datetime import datetime
 
 
 MODEL_FILE = "ml_classifier.sav"
-MODEL_PATH = "persistence/temp/classifier"
-
-class ML_Classifier():
+MODEL_PATH = "persistence/classifier/"
+MODEL_PATH_TEMP = "persistence/temp/classifier/"
+class ML_Classifier(model_path=MODEL_PATH,model_file=MODEL_FILE):
 	def __init__(self):
+		self.model_path = model_path
+		self.model_file = model_file
 		gaussian = GaussianNB()
 		linear = LogisticRegression(random_state=0, solver='lbfgs',multi_class='multinomial',n_jobs=-1)
 
@@ -100,8 +103,8 @@ class ML_Classifier():
 			return ml_classifier
 
 	def save_XY(self,X,y):
-		path_X = os.path.join(loadPath,"X.sav")
-		path_Y = os.path.join(loadPath,"y.sav")
+		path_X = os.path.join(MODEL_PATH_TEMP,"X.sav")
+		path_Y = os.path.join(MODEL_PATH_TEMP,"y.sav")
 
 		with open(path_X,"wb") as file:
 			pic.dump(X,file)
@@ -111,12 +114,12 @@ class ML_Classifier():
 			pic.dump(y,file)
 			print("Saved Y")
 
-		print("Features vector saved to {}\nClasses vector saved to {}",path_X,path_Y)
+	# 	print("Features vector saved to {}\nClasses vector saved to {}",path_X,path_Y)
 
 
 	def load_XY(self):
-		path_X = os.path.join(loadPath,"X.sav")
-		path_Y = os.path.join(loadPath,"y.sav")
+		path_X = os.path.join(MODEL_PATH_TEMP,"X.sav")
+		path_Y = os.path.join(MODEL_PATH_TEMP,"y.sav")
 		with open( path_X,"rb") as file:
     		X = pic.load(file)
     	with open( path_Y,"rb") as file:
@@ -127,6 +130,7 @@ class ML_Classifier():
     	return X,y
 
 	def fit(self,X,y):
+		satart_time = datetime.now()
 		#Normalizer
 		scaler = StandardScaler()
 		X = scaler.fit_transform(X.astype(np.float64))
@@ -136,7 +140,10 @@ class ML_Classifier():
 
 		self.eval_model(X,y)
 
-		self.save_model()
+		finish_time = datetime.now()
+		print("Training classifier done! Elapsed time: {}".format(str(finish_time - satart_time)))
+
+		# self.save_model()
 
 
 	def update(self,x,y):
@@ -161,8 +168,8 @@ class ML_Classifier():
 	def predict(self,X):
 		return self.model.predict(X)
 
-	def save_model(self,savePath=MODEL_PATH):
-		savePath = os.path.join(savePath,MODEL_FILE)
+	def save_model(self,savePath=self.model_path,model_file=self.model_file):
+		savePath = os.path.join(savePath,model_file)
 		savePath = Path(savePath)
 		if not savePath.exists():
 			savePath.mkdir(parents=True)

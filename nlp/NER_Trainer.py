@@ -29,10 +29,10 @@ class NER_Trainer_Template(ABC):
 			saveDir = Path(savePath)
 			if not saveDir.exists():
 				saveDir.mkdir(parents=True)
-			pathOut = os.path.join(savePath,"train_dataset.pickle")
+			pathOut = os.path.join(savePath,"train_dataset.sav")
 			with open(pathOut,"wb") as pickle_file:
 				pic.dump(dataset,pickle_file)
-			pathOut_labels = os.path.join(savePath,"labels.pickle")
+			pathOut_labels = os.path.join(savePath,"labels.sav")
 			with open(pathOut_labels,"wb") as pickle_file:
 				pic.dump(self.get_labels(),pickle_file)
 		self.train_dataset = dataset
@@ -40,11 +40,11 @@ class NER_Trainer_Template(ABC):
 
 
 	def load_train_dataset(self,loadPath):
-		pathOut = os.path.join(loadPath,"train_dataset.pickle")
+		pathOut = os.path.join(loadPath,"train_dataset.sav")
 		with open(pathOut,"rb") as pickle_file:
 			self.train_dataset = pic.load(pickle_file)
 
-		pathOut_labels = os.path.join(loadPath,"labels.pickle")
+		pathOut_labels = os.path.join(loadPath,"labels.sav")
 		with open(pathOut_labels,"rb") as pickle_file:
 			self.train_maker.labels = pic.load(pickle_file)
 		print("Dataset loaded from {}".format(loadPath))
@@ -60,8 +60,7 @@ class NER_Trainer_Template(ABC):
 			print("Loaded dataset from ",loadPath)
 		if self.train_dataset == None:
 			self.make_train_dataset()
-		#TODO: Train model
-		# print(self.train_dataset)
+		
 
 		# Add entity recognizer to model if it's not in the pipeline
 		# nlp.create_pipe works for built-ins that are registered with spaCy
@@ -111,7 +110,7 @@ class NER_Trainer_Template(ABC):
 		else:
 			self.save_NER(outputPath)
 		finish_time = datetime.now()
-		print("Elapsed time: {}".format(str(finish_time - satart_time)))
+		print("Training NLP done! Elapsed time: {}".format(str(finish_time - satart_time)))
 		return self.model
 
 
@@ -132,12 +131,13 @@ class NER_Trainer_Template(ABC):
 			if label not in self.model.entity.labels:
 				ner.add_label(label)
 
-	def save_NER(self,outputPath="temp/NER"):
+	def save_NER(self,outputPath="persistence/temp/nlp/model"):
 		outputPath = os.path.join(outputPath,self.name_model)
 		outputPath = Path(outputPath)
 		if not outputPath.exists():
 			outputPath.mkdir(parents=True)
-		self.model.meta["name"] = self.name_model  # rename model
+		# self.model.meta["name"] = self.name_model  # rename model
+		self.model.meta["name"] = "nlp_model"  # rename model
 		self.model.to_disk(outputPath)
-		print("Saved model to", outputPath)
+		# print("NLP model saved to", outputPath)
 
