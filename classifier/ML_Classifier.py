@@ -9,6 +9,10 @@ import hashlib
 from nlp.Train_Maker import Train_Maker
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
+from sklearn.naive_bayes import GaussianNB
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import  VotingClassifier
+from sklearn.model_selection import cross_val_score
 
 
 MODEL_FILE = "ml_classifier.sav"
@@ -16,8 +20,10 @@ MODEL_PATH = "persistence/temp/classifier"
 
 class ML_Classifier():
 	def __init__(self):
-		self.model = GaussianNB()
-		#TODO: Usar melhor modelo
+		gaussian = GaussianNB()
+		linear = LogisticRegression(random_state=0, solver='lbfgs',multi_class='multinomial',n_jobs=-1)
+
+		self.model = VotingClassifier(estimators=[('gaus', gaussian), ('line', linear)],voting='hard',n_jobs=-1)
 
 	@staticmethod
 	def pre_process_data(QAIs,labels_NER,nlp_processor):
@@ -79,7 +85,7 @@ class ML_Classifier():
 		features_dataframe = pd.DataFrame(dataset,columns=columns_header)
 		label_dataframe = pd.DataFrame(labels_dataset,columns=['label'])
 
-		
+		self.save_XY(features_dataframe,label_dataframe)
 
 
 		return features_dataframe,label_dataframe
@@ -93,17 +99,64 @@ class ML_Classifier():
 			print("Loaded classifier model from", file_path)
 			return ml_classifier
 
+	def save_XY(self,X,y):
+		path_X = os.path.join(loadPath,"X.sav")
+		path_Y = os.path.join(loadPath,"y.sav")
 
+		with open(path_X,"wb") as file:
+			pic.dump(X,file)
+			print("Saved X")
+
+		with open(path_Y,"wb") as file:
+			pic.dump(y,file)
+			print("Saved Y")
+
+		print("Features vector saved to {}\nClasses vector saved to {}",path_X,path_Y)
+
+
+	def load_XY(self):
+		path_X = os.path.join(loadPath,"X.sav")
+		path_Y = os.path.join(loadPath,"y.sav")
+		with open( path_X,"rb") as file:
+    		X = pic.load(file)
+    	with open( path_Y,"rb") as file:
+    		y = pic.load(file)
+
+
+    	print("Load X and y from Persistence:\nX from {}\nY from {}",path_X,path_Y)
+    	return X,y
 
 	def fit(self,X,y):
 		#Normalizer
 		scaler = StandardScaler()
 		X = scaler.fit_transform(X.astype(np.float64))
-		X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2)
-		#TODO: Train model
+		#X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2)
 		
 		self.model.fit(X,y)
 
+		self.eval_model(X,y)
+
+		self.save_model()
+
+
+	def update(self,x,y):
+		# TODO: Update model
+		return
+
+
+	def eval_model(self,X,y):
+		cv = 7
+		precision = cross_val_score(self.model, X, y.values.ravel(), cv=cv,scoring='precision_weighted')
+		p = precision.mean()
+
+		recall = cross_val_score(self.model, X, y.values.ravel(), cv=cv,scoring='recall_weighted')
+		r = recall.mean()
+
+		f1 = cross_val_score(self.model, X, y.values.ravel(), cv=cv,scoring='f1_weighted')
+		f = f1.mean()
+
+		print("Score evaluations using cross validation with cv = {}:\nPrecision = {}\nRecall = {}\nF-1 Score = {}",cv,p,r,f)
+		return
 
 	def predict(self,X):
 		return self.model.predict(X)

@@ -1,0 +1,1 @@
+Temporary files used by classifier trainer
