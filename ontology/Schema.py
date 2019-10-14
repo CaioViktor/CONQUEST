@@ -21,8 +21,7 @@ LITERAL = 1
 
 
 #Load Graph
-def getGraph(file,path="configurations/"):
-	file_path = os.path.join(path,file)
+def getGraph(file_path):
 	
 	g = Graph()
 	# print(guess_format(file_path))
@@ -587,6 +586,7 @@ def parser_triples(triples,schema,vars_query={}):
 			#print("declarou {} como um {}".format(subject.n3(),objectt))
 		elif isinstance(subject,Variable) or isinstance(objectt,Variable):
 			#subject or object are variables, so its types may be infered by property
+			# print("******************************",schema,"******************************")
 			id_hash_property = uri_to_hash(predicate)
 
 			#get iformation about the predicate if it is known

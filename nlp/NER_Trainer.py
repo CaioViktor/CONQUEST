@@ -132,7 +132,7 @@ class NER_Trainer_Template(ABC):
 				ner.add_label(label)
 
 	def save_NER(self,outputPath="persistence/temp/nlp/model"):
-		outputPath = os.path.join(outputPath,self.name_model)
+		outputPath = os.path.join(outputPath,"nlp_model")
 		outputPath = Path(outputPath)
 		if not outputPath.exists():
 			outputPath.mkdir(parents=True)

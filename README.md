@@ -9,10 +9,13 @@ Chatbot ONtology QUESTion
 			<li>easy_install rdflib	</li>
 		</ul>
 	</li>
+	<li>
+		<ul><li>pip install SPARQLWrapper</li></ul>
+	</li>
 	<li>Pandas:
 		<ul>
-			<li>sudo pip install numpy</li>
-			<li>sudo pip install pandas</li>
+			<li>pip install numpy</li>
+			<li>pip install pandas</li>
 		</ul>
 	</li>
 	<li>SpaCy:

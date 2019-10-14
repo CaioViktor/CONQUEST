@@ -12,6 +12,8 @@ from nlp.NLP_Processor import NLP_Processor
 from classifier.ML_Classifier import ML_Classifier
 from nlp.pt.NER_Trainer_PT import NER_Trainer #Change package to change language
 from datetime import datetime
+import pprint
+pp = pprint.PrettyPrinter(indent=4)
 
 
 
@@ -33,9 +35,9 @@ ontology_path = "input/medibot/ontology.ttl"
 QAIs_path = "input/medibot/MediBot.json"
 sparql_endpoint = "http://localhost:8890/sparql"
 graph_name = "http://localhost:8890/DAV/drugs"
-path_train_NER = "persistence/temp/nlp/dataset.sav"
-ner_nlp_model_path = "persistence/temp/nlp/model/nlp_model"
-ner_number_iterations = 100
+path_train_NER_temp = "persistence/temp/nlp"
+ner_nlp_model_path = "persistence/nlp/"
+ner_number_iterations = 10
 ner_number_samples_train = 1000
 ner_number_samples_examples = 0
 # End Parameters
@@ -46,6 +48,12 @@ ner_number_samples_examples = 0
 )
 
 def main(mode='zero',point = None):
+
+
+	global satart_time_trainer
+
+	#TODO: Resume
+
 	if mode.lower() == 'zero':
 		satart_time_trainer = datetime.now()
 		make_indexes()
@@ -58,18 +66,30 @@ def main(mode='zero',point = None):
 	return
 
 def make_indexes():
+
+
+	global classes_index
+	global properties_index
+
+
 	print("Reading ontology schema...")
 	schema = sc.getGraph(ontology_path)
 	
 	print("Creating classes index...")
 	classes_index = sc.load_classes_index(schema)
+
+	# pp.pprint(classes_index)
 	out_path = os.path.join("persistence/index","class.sav") 
 	with open(out_path ,"wb") as file:
 		pickle.dump(classes_index,file)
-		print("Classes index saved to {}"format(out_path))
+		print("Classes index saved to {}".format(out_path))
+
+	
 
 	print("Creating properties index...")
 	properties_index = sc.load_properties_index(schema)
+
+	# pp.pprint(properties_index)
 	out_path = os.path.join("persistence/index","property.sav") 
 	with open(out_path ,"wb") as file:
 		pickle.dump(properties_index,file)
@@ -79,6 +99,12 @@ def make_indexes():
 	process_QAIs()
 
 def process_QAIs():
+
+
+	global properties_index
+	global QAI_Manager
+
+
 	print("Loading Question Answering Itens (QAIs) from {}...".format(QAIs_path))
 	QAI_Manager = q.QAI_Manager(QAIs_path,properties_index)
 
@@ -87,28 +113,48 @@ def process_QAIs():
 		pickle.dump(QAI_Manager,file)
 		print("QAI Manager saved to {}".format(out_path))
 
-	make_and_train_NER()
+	make_train_NER()
 
 def make_train_NER():
+
+
+	global classes_index
+	global QAI_Manager
+	global ner_trainer
+	
+
 	print("Starting NLP stage. This could take several minutes...")
 	ner_trainer = NER_Trainer(QAI_Manager.QAIs,classes_index,sparql_endpoint,graph_name,number_iterations=ner_number_iterations,number_samples_train=ner_number_samples_train,number_samples_examples=ner_number_samples_examples)
 	print("Creating NER training dataset. This could take several minutes...")
 	
-	ner_trainer.make_train_dataset(savePath=path_train_NER)
-	print("NER training dataset saved to {}.\nNumber of examples {}.\n{} labels contained in examples:{}".format(path_train_NER,len(ner_trainer.train_dataset),len(ner_trainer.get_labels),ner_trainer.get_labels))
+	ner_trainer.make_train_dataset(savePath=path_train_NER_temp)
+	print("NER training dataset saved to {}.\nNumber of examples {}.\n{} labels contained in examples:{}".format(path_train_NER_temp,len(ner_trainer.train_dataset),len(ner_trainer.get_labels()),ner_trainer.get_labels()))
 	
 	train_NLP()
 
 def train_NLP():
+
+
+	global ner_trainer
+	global nlp_model
+
+
 	print("Training NLP model. This could take several minutes...")
 	nlp_model = ner_trainer.train_NER(outputPath=ner_nlp_model_path)
 	print("NLP model saved to", ner_nlp_model_path)
 	make_train_classifier()
 
 def make_train_classifier():
+
+
+	global X
+	global y
+	global classifier
+
+
 	print("Starting Classifier stage. This could take several minutes...")
 	nlp_model_path = os.path.join(ner_nlp_model_path,"nlp_model")
-	labels_path = os.path.join(path_train_NER,"labels.sav")
+	labels_path = os.path.join(path_train_NER_temp,"labels.sav")
 
 	nlp_processor = NLP_Processor(nlp_model_path)
 	labels_NER = load_labels(labels_path)
@@ -121,7 +167,6 @@ def make_train_classifier():
 		pickle.dump(X,output)
 		print("Features vector X saved to",output_path)
 
-
 	output_path = "persistence/temp/classifier/y.sav"
 	with open(output_path,"wb") as output:
 		pickle.dump(y,output)
@@ -133,14 +178,32 @@ def make_train_classifier():
 	train_classifier()
 
 def train_classifier():
+
+
+	global X
+	global y
+	global classifier
+
+
 	print("Training classifier. This could take several minutes...")
 	classifier.fit(X,y)
 	classifier.save_model()
 	finish()
 
 def finish():
+
+
+	global satart_time_trainer
+
+
 	finish_time = datetime.now()
 	print("\n\n\nFinished training chatbot process!!!\nElapsed time: {}".format(str(finish_time - satart_time_trainer)))
+
+
+
+def load_labels(filePath):
+	with open(filePath,"rb") as file:
+		return pickle.load(file)
 
 if __name__ == "__main__":
     plac.call(main)
