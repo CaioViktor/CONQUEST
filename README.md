@@ -9,7 +9,7 @@ Chatbot ONtology QUESTion
 			<li>easy_install rdflib	</li>
 		</ul>
 	</li>
-	<li>
+	<li>SPARQLWrapper:
 		<ul><li>pip install SPARQLWrapper</li></ul>
 	</li>
 	<li>Pandas:
