@@ -165,7 +165,7 @@ class ML_Classifier():
 		f1 = cross_val_score(self.model, X, y.values.ravel(), cv=cv,scoring='f1_weighted')
 		f = f1.mean()
 
-		print("Score evaluations using cross validation with cv = {}:\nPrecision = {}\nRecall = {}\nF-1 Score = {}".format(cv,p,r,f))
+		print("\n\nScore evaluations using cross validation with cv = {}:\nPrecision = {}\nRecall = {}\nF-1 Score = {}".format(cv,p,r,f))
 		return
 
 	def predict(self,X):

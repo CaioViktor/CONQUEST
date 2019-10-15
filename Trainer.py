@@ -13,6 +13,8 @@ from classifier.ML_Classifier import ML_Classifier
 from nlp.pt.NER_Trainer_PT import NER_Trainer #Change package to change language
 from datetime import datetime
 import pprint
+import spacy
+
 pp = pprint.PrettyPrinter(indent=4)
 
 
@@ -44,28 +46,55 @@ ner_number_samples_examples = 0
 
 @plac.annotations(
     mode =("Training mode:\nzero - Training the chatbot from starting point (default).\nresume - Resume the training from a saved point.\nupdate - Update models", "option", "m", str),
-    point = ("Point to resume training.", "option", "p", str)
+    point = ("Point to resume training.\n0 - Starting from start (equal to zero mode).\n1 - Starting from loading QAIs.\n2 - Starting from making NER training dataset.\n3 - Starting from training NLP.\n4 - Starting from making classifier training dataset.\n5 - Starting from training the classifier.\n", "option", "p", int)
 )
 
-def main(mode='zero',point = None):
-
+def main(mode='zero',point = 0):
+	point = int(point)
+	print("Mode {}\nPoint {}".format(mode,point))
 
 	global satart_time_trainer
 
-	#TODO: Resume
 
-	if mode.lower() == 'zero':
-		satart_time_trainer = datetime.now()
-		make_indexes()
-	elif mode.lower() == 'resume':
-		print("resume")
-	elif mode.lower() == 'update':
+	satart_time_trainer = datetime.now()
+	if mode.lower() == 'update':
 		print("update")
+		#TODO: Update model
+	elif mode.lower() == 'resume' or point > 0:
+		print("Resuming training...\n\n\n")
+		if point <= 0:
+			make_indexes()
+
+		load_index()	
+
+		if point > 1:
+			load_QAIs()
+		else:
+			return process_QAIs()
+		if point > 2:
+			load_train_NER()
+		else:
+			return make_train_NER()
+		if point > 3:
+			load_NLP()
+		else:
+			return train_NLP()
+		if point > 4:
+			load_train_classifier()
+		else:
+			return make_train_classifier()
+		if point == 5:
+			train_classifier()
+		else:
+			return finish()
+	elif mode.lower() == 'zero':
+		make_indexes()
 	else:
 		print("unknow option for training mode")
 	return
 
 def make_indexes():
+	print("\n\nStarting stage",0)
 
 
 	global classes_index
@@ -99,7 +128,7 @@ def make_indexes():
 	process_QAIs()
 
 def process_QAIs():
-
+	print("\n\nStarting stage",1)
 
 	global properties_index
 	global QAI_Manager
@@ -116,24 +145,24 @@ def process_QAIs():
 	make_train_NER()
 
 def make_train_NER():
-
+	print("\n\nStarting stage",2)
 
 	global classes_index
 	global QAI_Manager
 	global ner_trainer
 	
 
-	print("Starting NLP stage. This could take several minutes...")
+	print("Starting NLP stage.")
 	ner_trainer = NER_Trainer(QAI_Manager.QAIs,classes_index,sparql_endpoint,graph_name,number_iterations=ner_number_iterations,number_samples_train=ner_number_samples_train,number_samples_examples=ner_number_samples_examples)
-	print("Creating NER training dataset. This could take several minutes...")
 	
+	print("Creating NER training dataset. This could take several minutes...")
 	ner_trainer.make_train_dataset(savePath=path_train_NER_temp)
 	print("NER training dataset saved to {}.\nNumber of examples {}.\n{} labels contained in examples:{}".format(path_train_NER_temp,len(ner_trainer.train_dataset),len(ner_trainer.get_labels()),ner_trainer.get_labels()))
 	
 	train_NLP()
 
 def train_NLP():
-
+	print("\n\nStarting stage",3)
 
 	global ner_trainer
 	global nlp_model
@@ -145,7 +174,7 @@ def train_NLP():
 	make_train_classifier()
 
 def make_train_classifier():
-
+	print("\n\nStarting stage",4)
 
 	global X
 	global y
@@ -178,7 +207,7 @@ def make_train_classifier():
 	train_classifier()
 
 def train_classifier():
-
+	print("\n\nStarting stage",5)
 
 	global X
 	global y
@@ -199,6 +228,90 @@ def finish():
 	finish_time = datetime.now()
 	print("\n\n\nFinished training chatbot process!!!\nElapsed time: {}".format(str(finish_time - satart_time_trainer)))
 
+def load_index():
+	print("Loading stage",0)
+	
+	global classes_index
+	global properties_index
+
+	
+	out_path = os.path.join("persistence/index","class.sav") 
+	with open(out_path ,"rb") as file:
+		classes_index = pickle.load(file)
+		print("Classes index loaded from {}".format(out_path))
+
+	out_path = os.path.join("persistence/index","property.sav") 
+	with open(out_path ,"rb") as file:
+		properties_index = pickle.load(file)
+		print("Properties index loaded from {}".format(out_path))
+	return
+
+def load_QAIs():
+	print("Loading stage",1)
+	
+	global properties_index
+	global QAI_Manager
+
+	out_path = os.path.join("persistence/qais","qai_manager.sav") 
+	with open(out_path ,"rb") as file:
+		QAI_Manager = pickle.load(file)
+		print("QAI Manager loaded from {}".format(out_path))
+	return
+
+def load_train_NER():
+	print("Loading stage",2)
+	
+	global classes_index
+	global QAI_Manager
+	global ner_trainer
+
+	ner_trainer = NER_Trainer(QAI_Manager.QAIs,classes_index,sparql_endpoint,graph_name,number_iterations=ner_number_iterations,number_samples_train=ner_number_samples_train,number_samples_examples=ner_number_samples_examples)
+	ner_trainer.load_train_dataset(path_train_NER_temp)
+
+	print("NER training dataset loaded from {}".format(path_train_NER_temp))
+	return
+
+def load_NLP():
+	print("Loading stage",3)
+	
+	global ner_trainer
+	global nlp_model
+	 
+	out_path = os.path.join(ner_nlp_model_path,"nlp_model")
+	nlp_model = spacy.load(out_path)
+	print("NLP model loaded from {}".format(out_path))
+
+	return
+
+def load_train_classifier():
+	print("Loading stage",4)
+	
+	global X
+	global y
+	global classifier
+
+
+	nlp_model_path = os.path.join(ner_nlp_model_path,"nlp_model")
+	labels_path = os.path.join(path_train_NER_temp,"labels.sav")
+
+	nlp_processor = NLP_Processor(nlp_model_path)
+	labels_NER = load_labels(labels_path)
+	
+
+	output_path = "persistence/temp/classifier/X.sav"
+	with open(output_path,"rb") as output:
+		X = pickle.load(output)
+		print("Features vector X loaded from",output_path)
+
+	output_path = "persistence/temp/classifier/y.sav"
+	with open(output_path,"rb") as output:
+		y = pickle.load(output)
+		print("Classes vector y loaded from",output_path)
+
+	print("Creating classifier.")
+	classifier = ML_Classifier(model_path="persistence/classifier",model_file="ml_classifier.sav")
+
+	return
 
 
 def load_labels(filePath):
