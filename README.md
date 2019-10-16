@@ -30,4 +30,9 @@ Chatbot ONtology QUESTion
 			<li>pip install -U scikit-learn</li>
 		</ul>
 	</li>
+	<li>dateparser:
+		<ul>
+			<li>pip install dateparser</li>
+		</ul>
+	</li>
 </ul>

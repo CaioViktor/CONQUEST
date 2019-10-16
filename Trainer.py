@@ -39,8 +39,8 @@ sparql_endpoint = "http://localhost:8890/sparql"
 graph_name = "http://localhost:8890/DAV/drugs"
 path_train_NER_temp = "persistence/temp/nlp"
 ner_nlp_model_path = "persistence/nlp/"
-ner_number_iterations = 10
-ner_number_samples_train = 1000
+ner_number_iterations = 100
+ner_number_samples_train = 10000
 ner_number_samples_examples = 0
 # End Parameters
 

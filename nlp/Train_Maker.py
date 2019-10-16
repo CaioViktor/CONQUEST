@@ -32,7 +32,6 @@ class Train_Maker():
 						if 'classes' in cv_owner and len(cv_owner['classes']) > 0:
 							#If was possible define class e property owners from CV
 							for classs in cv_owner['classes']:
-								#TODO: construct examples with instances
 								instances = self.instance_retriever.retriver(classs,cv_owner['uri'])
 								examples = []
 								for instance in instances:
