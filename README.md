@@ -46,10 +46,10 @@ Chatbot ONtology QUESTion
 <h3>Before running CONQUEST Trainer:</h3>
 <p>Download the file "sorl.tar.xz" from <a href="https://drive.google.com/open?id=115uyd5Hqtoq_wirX-7Xtwon3QdVsnaga">https://drive.google.com/open?id=115uyd5Hqtoq_wirX-7Xtwon3QdVsnaga</a></p>
 <p>Extract the "sorl.tar.xz" file in "persistence/nlp" keeping the name "sorl"</p>
-<p>To run the training script:
-	python Trainer
+<h3>To run the training script:</h3>
+	<p>python Trainer</p>
 	<br/>
-	usage: Trainer.py [-h] [-m zero] [-p 0]
+	usage: python Trainer.py [-h] [-m zero] [-p 0]
 
 	optional arguments:
 	  -h, --help            show this help message and exit
@@ -62,4 +62,3 @@ Chatbot ONtology QUESTion
 	                        Starting from training NER. 4 - Starting from making
 	                        classifier training dataset. 5 - Starting from
 	                        training the classifier.
-</p>
