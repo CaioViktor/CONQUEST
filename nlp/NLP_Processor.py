@@ -21,11 +21,12 @@ class NLP_Processor():
 		
 		entities = []
 		#Search possibles values to strings CVs
-		doc = self.model(sentence)
-		for entity in doc.ents:
-			entityStr = str(entity)
-			sentenceAux = sentenceAux.replace(entityStr,"")
-			entities.append((entityStr,entity.label_))
+		#ODO: Codificar janela deslizante
+		# doc = self.model(sentence)
+		# for entity in doc.ents:
+		# 	entityStr = str(entity)
+		# 	sentenceAux = sentenceAux.replace(entityStr,"")
+		# 	entities.append((entityStr,entity.label_))
 			
 		#Search possibles values to date CVs
 		dates = search_dates(sentenceAux)

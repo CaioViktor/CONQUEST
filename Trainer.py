@@ -10,10 +10,11 @@ import pickle
 import os
 from nlp.NLP_Processor import NLP_Processor
 from classifier.ML_Classifier import ML_Classifier
-from nlp.pt.NER_Trainer_PT import NER_Trainer #Change package to change language
+from nlp.NER_Trainer import NER_Trainer 
 from datetime import datetime
 import pprint
 import spacy
+import nlp.Solr_Connection as solr_connection
 
 pp = pprint.PrettyPrinter(indent=4)
 
@@ -25,7 +26,6 @@ classes_index = None
 properties_index = None
 QAI_Manager = None
 ner_trainer = None
-nlp_model = None
 X = None
 y = None
 classifier = None
@@ -42,11 +42,16 @@ ner_nlp_model_path = "persistence/nlp/"
 ner_number_iterations = 100
 ner_number_samples_train = 10000
 ner_number_samples_examples = 0
+solr_host="http://localhost"
+solr_port="8983"
+solr_core="conquest"
+solr_memory = "1g"
+nlp_model_load = "pt_core_news_sm"
 # End Parameters
 
 @plac.annotations(
     mode =("Training mode:\nzero - Training the chatbot from starting point (default).\nresume - Resume the training from a saved point.\nupdate - Update models", "option", "m", str),
-    point = ("Point to resume training.\n0 - Starting from start (equal to zero mode).\n1 - Starting from loading QAIs.\n2 - Starting from making NER training dataset.\n3 - Starting from training NLP.\n4 - Starting from making classifier training dataset.\n5 - Starting from training the classifier.\n", "option", "p", int)
+    point = ("Point to resume training.\n0 - Starting from start (equal to zero mode).\n1 - Starting from loading QAIs.\n2 - Starting from making NER training dataset.\n3 - Starting from training NER.\n4 - Starting from making classifier training dataset.\n5 - Starting from training the classifier.\n", "option", "p", int)
 )
 
 def main(mode='zero',point = 0):
@@ -76,9 +81,9 @@ def main(mode='zero',point = 0):
 		else:
 			return make_train_NER()
 		if point > 3:
-			load_NLP()
+			load_NER()
 		else:
-			return train_NLP()
+			return train_NER()
 		if point > 4:
 			load_train_classifier()
 		else:
@@ -153,23 +158,23 @@ def make_train_NER():
 	
 
 	print("Starting NLP stage.")
-	ner_trainer = NER_Trainer(QAI_Manager.QAIs,classes_index,sparql_endpoint,graph_name,number_iterations=ner_number_iterations,number_samples_train=ner_number_samples_train,number_samples_examples=ner_number_samples_examples)
+	ner_trainer = NER_Trainer(QAI_Manager.QAIs,classes_index,sparql_endpoint,graph_name,solr_host,solr_port,solr_core)
 	
 	print("Creating NER training dataset. This could take several minutes...")
 	ner_trainer.make_train_dataset(savePath=path_train_NER_temp)
-	print("NER training dataset saved to {}.\nNumber of examples {}.\n{} labels contained in examples:{}".format(path_train_NER_temp,len(ner_trainer.train_dataset),len(ner_trainer.get_labels()),ner_trainer.get_labels()))
+	print("NER training dataset saved to {}. Labels contained in examples:{}".format(path_train_NER_temp,ner_trainer.get_labels()))
 	
-	train_NLP()
+	train_NER()
 
-def train_NLP():
+def train_NER():
 	print("\n\nStarting stage",3)
 
 	global ner_trainer
-	global nlp_model
+	
 
 
-	print("Training NLP model. This could take several minutes...")
-	nlp_model = ner_trainer.train_NER(outputPath=ner_nlp_model_path)
+	print("Training NER model. This could take several minutes...")
+	ner_trainer.train_NER(outputPath=ner_nlp_model_path,solr_memory=solr_memory)
 	print("NLP model saved to", ner_nlp_model_path)
 	make_train_classifier()
 
@@ -179,17 +184,19 @@ def make_train_classifier():
 	global X
 	global y
 	global classifier
+	global nlp_model_load
 
 
 	print("Starting Classifier stage. This could take several minutes...")
-	nlp_model_path = os.path.join(ner_nlp_model_path,"nlp_model")
-	labels_path = os.path.join(path_train_NER_temp,"labels.sav")
+	
 
-	nlp_processor = NLP_Processor(nlp_model_path)
+	nlp_processor = NLP_Processor(nlp_model_load)
+
+	labels_path = os.path.join(path_train_NER_temp,"labels.sav")
 	labels_NER = load_labels(labels_path)
+
 	print("Creating classifier training dataset. This could take several minutes...")
 	X,y = ML_Classifier.pre_process_data(QAI_Manager.QAIs,labels_NER,nlp_processor)
-	
 
 	output_path = "persistence/temp/classifier/X.sav"
 	with open(output_path,"wb") as output:
@@ -265,21 +272,20 @@ def load_train_NER():
 	global QAI_Manager
 	global ner_trainer
 
-	ner_trainer = NER_Trainer(QAI_Manager.QAIs,classes_index,sparql_endpoint,graph_name,number_iterations=ner_number_iterations,number_samples_train=ner_number_samples_train,number_samples_examples=ner_number_samples_examples)
+	ner_trainer = NER_Trainer(QAI_Manager.QAIs,classes_index,sparql_endpoint,graph_name,solr_host,solr_port,solr_cores)
 	ner_trainer.load_train_dataset(path_train_NER_temp)
 
 	print("NER training dataset loaded from {}".format(path_train_NER_temp))
 	return
 
-def load_NLP():
+def load_NER():
 	print("Loading stage",3)
 	
 	global ner_trainer
-	global nlp_model
-	 
-	out_path = os.path.join(ner_nlp_model_path,"nlp_model")
-	nlp_model = spacy.load(out_path)
-	print("NLP model loaded from {}".format(out_path))
+
+	
+	
+	print(" Skipped NER model from {}".format(solr_connection.solr_path))
 
 	return
 
@@ -291,7 +297,6 @@ def load_train_classifier():
 	global classifier
 
 
-	nlp_model_path = os.path.join(ner_nlp_model_path,"nlp_model")
 	labels_path = os.path.join(path_train_NER_temp,"labels.sav")
 
 	nlp_processor = NLP_Processor(nlp_model_path)

@@ -4,10 +4,9 @@ import ontology.Schema as sc
 #Class to Retrive property's values used in NER from SPARQL endpoint
 LIMIT = 10000
 class Instances_Retriever():
-	def __init__(self,url_endpoint,graph_name="",number_samples=0):
+	def __init__(self,url_endpoint,graph_name=""):
 		self.url_endpoint = url_endpoint
 		self.graph_name = graph_name
-		self.number_samples = number_samples #Maximum number of samples retrieved from RDF graph
 		if self.graph_name != "":
 			self.graph_name = " FROM <{}> ".format(self.graph_name)
 		self.instances = {} #Save values of instances. Used to prevent query a same property multiple times
@@ -28,8 +27,6 @@ class Instances_Retriever():
 				self.instances[instance_id]
 			offset = 0
 
-			if self.number_samples > 0 and self.number_samples < number_instances:
-				number_instances = self.number_samples
 			while offset <= number_instances:
 				self.instances[instance_id]+= self.query_examples(classs,propertyy,offset)
 				offset+= LIMIT
@@ -71,8 +68,6 @@ class Instances_Retriever():
 		propertyy = propertyy.strip()
 
 		limit = LIMIT
-		if self.number_samples > 0 and self.number_samples < limit:
-			limit = self.number_samples
 
 		query = """
 			PREFIX rdf:<http://www.w3.org/1999/02/22-rdf-syntax-ns#>
