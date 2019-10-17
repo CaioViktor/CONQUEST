@@ -43,7 +43,9 @@ Chatbot ONtology QUESTion
 </ul>
 
 <h2>Trainer</h2>
-<p>Extract the sorl.tar.gz file in "persistence/nlp" before run CONQUEST Trainer keeping the name "sorl"</p>
+<h3>Before running CONQUEST Trainer:</h3>
+<p>Download the file "sorl.tar.xz" from <a href="https://drive.google.com/open?id=115uyd5Hqtoq_wirX-7Xtwon3QdVsnaga">https://drive.google.com/open?id=115uyd5Hqtoq_wirX-7Xtwon3QdVsnaga</a></p>
+<p>Extract the "sorl.tar.xz" file in "persistence/nlp" keeping the name "sorl"</p>
 <p>To run the training script:
 	python Trainer
 	<br/>
