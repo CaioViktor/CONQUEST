@@ -10,7 +10,7 @@ from datetime import datetime
 
 
 class NER_Trainer():
-	def __init__(self,QAIs,class_index,url_endpoint,graph_name="",solr_host="http://localhost",solr_port="8983",solr_core="conquest"):
+	def __init__(self,QAIs,class_index,url_endpoint,graph_name="",solr_host="http://localhost",solr_port="8983",solr_core="conquest_exact_match"):
 		self.class_index = class_index
 		self.train_maker = Train_Maker(QAIs,class_index,url_endpoint,graph_name)
 		#self.model NLP: Model instantiated in children class

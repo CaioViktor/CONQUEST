@@ -4,11 +4,13 @@ from dateparser.search import search_dates
 from rdflib import XSD
 import re
 from ontology.Schema import normalize_datatype
+from nlp.NER import NER
 
 class NLP_Processor():
-	def __init__(self,loadPath):
+	def __init__(self,loadPath="pt_core_news_sm"):
 		self.model = spacy.load(loadPath)
 		self.vector_size = len(self.model("test").vector)
+		self.ner = NER()
 
 	def vector(self,sentence):
 		return self.model(sentence).vector
@@ -16,17 +18,12 @@ class NLP_Processor():
 	def sentence_vector(self,sentence):
 		return list(self.vector(sentence))
 
-	def parse_sentece(self,sentence):
-		sentenceAux = sentence
+	def parser(self,sentence):
+		sentenceAux = sentence.lower()
 		
 		entities = []
 		#Search possibles values to strings CVs
-		#ODO: Codificar janela deslizante
-		# doc = self.model(sentence)
-		# for entity in doc.ents:
-		# 	entityStr = str(entity)
-		# 	sentenceAux = sentenceAux.replace(entityStr,"")
-		# 	entities.append((entityStr,entity.label_))
+		entities, sentenceAux = self.ner.parser(sentence)
 			
 		#Search possibles values to date CVs
 		dates = search_dates(sentenceAux)
@@ -50,3 +47,6 @@ class NLP_Processor():
 					#Number is a real
 					entities.append((number,normalize_datatype(XSD.float)))
 		return entities,sentenceAux
+
+	def close(self):
+		self.ner.close()

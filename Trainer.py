@@ -44,7 +44,7 @@ ner_number_samples_train = 10000
 ner_number_samples_examples = 0
 solr_host="http://localhost"
 solr_port="8983"
-solr_core="conquest"
+solr_core="conquest_exact_match"
 solr_memory = "1g"
 nlp_model_load = "pt_core_news_sm"
 # End Parameters

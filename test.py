@@ -1,35 +1,34 @@
-import pprint
-import qai.QAI_Manager as q
-import ontology.Schema as sc
-import rdflib.plugins.sparql.processor as processor
-from rdflib.plugins.sparql.parser import parseQuery
-import spacy
-from spacy.lang.pt.examples import sentences 
-from nlp.NLP_Processor import NLP_Processor
-import pickle
-from classifier.ML_Classifier import ML_Classifier
-
-from nlp.pt.NER_Trainer_PT import NER_Trainer #Change package to change language
+# import pprint
+# import qai.QAI_Manager as q
+# import ontology.Schema as sc
+# import rdflib.plugins.sparql.processor as processor
+# from rdflib.plugins.sparql.parser import parseQuery
+# import spacy
+# from spacy.lang.pt.examples import sentences 
+# from nlp.NLP_Processor import NLP_Processor
+# import pickle
+# from classifier.ML_Classifier import ML_Classifier
 
 
 
-def load_labels(filePath):
-	with open(filePath,"rb") as file:
-		return pickle.load(file)
 
-pp = pprint.PrettyPrinter(indent=4)
+# def load_labels(filePath):
+# 	with open(filePath,"rb") as file:
+# 		return pickle.load(file)
 
-schema = sc.getGraph("ontology.ttl")
+# pp = pprint.PrettyPrinter(indent=4)
+
+# schema = sc.getGraph("ontology.ttl")
 # pp.pprint(sc.load_properties_index(schema))
-classIndex = sc.load_classes_index(schema)
+# classIndex = sc.load_classes_index(schema)
 # pp.pprint(classIndex)
 #pp.pprint(sc.load_classes_index(schema))
 
 
 
-sp = sc.load_properties_index(schema)
-scl = sc.load_classes_index(schema)
-QAIM = q.QAI_Manager("MediBot.json",sp)
+# sp = sc.load_properties_index(schema)
+# scl = sc.load_classes_index(schema)
+# QAIM = q.QAI_Manager("MediBot.json",sp)
 # QAIM = q.QAI_Manager("example_QAIs.js",sp)
 # f = fCV.Factory_ContextVariables(scl)
 
@@ -112,18 +111,29 @@ QAIM = q.QAI_Manager("MediBot.json",sp)
 
 
 
-nlp_processor = NLP_Processor("temp/NER/NER_PT_2019-09-12_14-31-39")
-labels_NER = load_labels("temp/dataset_full/labels.pickle")
-dataset,labels = ML_Classifier.pre_process_data(QAIM.QAIs,labels_NER,nlp_processor)
-print(dataset)
-print(labels)
-with open("temp/X.sav","wb") as output:
-	pickle.dump(dataset,output)
-	print("X daved to temp/X.sav")
+# nlp_processor = NLP_Processor("temp/NER/NER_PT_2019-09-12_14-31-39")
+# labels_NER = load_labels("temp/dataset_full/labels.pickle")
+# dataset,labels = ML_Classifier.pre_process_data(QAIM.QAIs,labels_NER,nlp_processor)
+# print(dataset)
+# print(labels)
+# with open("temp/X.sav","wb") as output:
+# 	pickle.dump(dataset,output)
+# 	print("X daved to temp/X.sav")
 
 
-with open("temp/y.sav","wb") as output:
-	pickle.dump(labels,output)
-	print("y daved to temp/y.sav")
+# with open("temp/y.sav","wb") as output:
+# 	pickle.dump(labels,output)
+# 	print("y daved to temp/y.sav")
 
 
+from nlp.NLP_Processor import NLP_Processor
+from datetime import datetime
+
+nlp = NLP_Processor()
+texto = "Um teste com o medicamento buscopan e a substância abacavir. Além disso vamos tentar o buscopan composto e outro errado bscopan. Tendo um número 12 e outro 15.45 além da data 16/10/2019. Na localidade de são paulo e sp e também no ceará e ce."
+print(texto)
+satart_time = datetime.now()
+print(nlp.parser(texto))
+finish_time = datetime.now()
+print("Processamento levou: {}".format(str(finish_time - satart_time)))
+nlp.close()

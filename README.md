@@ -40,6 +40,12 @@ Chatbot ONtology QUESTion
 			<li>pip install pysolr</li>
 		</ul>
 	</li>
+	<li>NLTK:
+		<ul>
+			<li>pip install nltk</li>
+			<li>Run: import nltk nltk.download('punkt')</li>
+		</ul>
+	</li>
 </ul>
 
 <h2>Trainer</h2>
