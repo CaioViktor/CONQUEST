@@ -44,7 +44,7 @@ class NLP_Processor():
 		entities, sentenceAux = self.ner.parser(sentenceAux)
 			
 		#Search possibles values to date CVs
-		dates = search_dates(sentenceAux)
+		dates = search_dates(sentenceAux,languages=['pt'])
 		if dates:
 			for date in dates:
 				entities.append((date[1],XSD.datetime))
