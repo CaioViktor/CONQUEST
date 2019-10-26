@@ -5,15 +5,33 @@ from rdflib import XSD
 import re
 from ontology.Schema import normalize_datatype
 from nlp.NER import NER
+# from nltk.stem import RSLPStemmer
+
 
 class NLP_Processor():
-	def __init__(self,loadPath="pt_core_news_sm"):
+	def __init__(self,loadPath="persistence/nlp/model/pt_br"):
 		self.model = spacy.load(loadPath)
+		# self.stop_words = spacy.lang.pt.stop_words.STOP_WORDS
 		self.vector_size = len(self.model("test").vector)
 		self.ner = NER()
+		# self.stemmer = RSLPStemmer()
+		
 
 	def vector(self,sentence):
-		return self.model(sentence).vector
+		#Stemming and stopwords removal degraded the classification performance
+
+		# print(sentence)
+		# sentenceAux = ""
+		# tokens = NER.tokenize_sentence(sentence.lower())
+
+		# # for token in tokens:
+		# # 	# if token not in self.stop_words:
+		# # 	sentenceAux+=(self.stemmer.stem(token))+" "
+
+		# print(sentenceAux)
+		# print("-----------------------")
+
+		return self.model(sentence.lower()).vector
 
 	def sentence_vector(self,sentence):
 		return list(self.vector(sentence))
@@ -23,7 +41,7 @@ class NLP_Processor():
 		
 		entities = []
 		#Search possibles values to strings CVs
-		entities, sentenceAux = self.ner.parser(sentence)
+		entities, sentenceAux = self.ner.parser(sentenceAux)
 			
 		#Search possibles values to date CVs
 		dates = search_dates(sentenceAux)

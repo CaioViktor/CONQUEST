@@ -5,7 +5,7 @@
 	"created_date": "",
 	"QAIs": [
 		{
-			"description": "Busca rémédios que possuam um mesmo princípio ativo de um dado medicamento alvo",
+			"description": "Busca remédios que possuam um mesmo princípio ativo de um dado medicamento alvo",
 			"QPs": ["Quais são os medicamentos com o mesmo princípio ativo do $principioAtivo?",
 				"Diga os medicamentos com o princípio ativo $principioAtivo",
 				"quero saber quais são os medicamentos que possuem princípio ativo $principioAtivo",

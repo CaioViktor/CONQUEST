@@ -1,4 +1,4 @@
-# import pprint
+import pprint
 # import qai.QAI_Manager as q
 # import ontology.Schema as sc
 # import rdflib.plugins.sparql.processor as processor
@@ -16,7 +16,7 @@
 # 	with open(filePath,"rb") as file:
 # 		return pickle.load(file)
 
-# pp = pprint.PrettyPrinter(indent=4)
+pp = pprint.PrettyPrinter(indent=4)
 
 # schema = sc.getGraph("ontology.ttl")
 # pp.pprint(sc.load_properties_index(schema))
@@ -130,10 +130,10 @@ from nlp.NLP_Processor import NLP_Processor
 from datetime import datetime
 
 nlp = NLP_Processor()
-texto = "Um teste com o medicamento buscopan e a substância abacavir. Além disso vamos tentar o buscopan composto e outro errado bscopan. Tendo um número 12 e outro 15.45 além da data 16/10/2019. Na localidade de são paulo e sp e também no ceará e ce."
+texto = "Um teste com o medicamento buscopan e a substância abacavir. Além disso vamos tentar o buscopan composto e outro errado bscopan. Tendo um número 12 e outro 15.45 além da data 16/10/2019. Na localidade de São Paulo e SP e também no Ceará e CE."
 print(texto)
 satart_time = datetime.now()
-print(nlp.parser(texto))
+pp.pprint(nlp.parser(texto))
 finish_time = datetime.now()
 print("Processamento levou: {}".format(str(finish_time - satart_time)))
 nlp.close()

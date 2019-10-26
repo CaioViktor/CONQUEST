@@ -139,9 +139,10 @@ class ML_Classifier():
 		X = scaler.fit_transform(X.astype(np.float64))
 		#X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2)
 		
+		self.eval_model(X,y)
+		
 		self.model.fit(X,y)
 
-		self.eval_model(X,y)
 
 		finish_time = datetime.now()
 		print("Training classifier done! Elapsed time: {}".format(str(finish_time - satart_time)))

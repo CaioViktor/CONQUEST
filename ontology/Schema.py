@@ -138,6 +138,14 @@ def get_info_class(classe,schema):
 			identifiers.add(identifier)
 		info['identifiers'] =list(identifiers)
 
+
+	#get comments and definitions
+	comments = []
+	for comment in schema.objects(classe,RDFS.comment):
+		comments.append(comment)
+	info['comments']  = comments
+
+
 	return info
 
 def load_classes_index(schema):

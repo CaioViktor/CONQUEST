@@ -46,7 +46,7 @@ solr_host="http://localhost"
 solr_port="8983"
 solr_core="conquest_exact_match"
 solr_memory = "1g"
-nlp_model_load = "pt_core_news_sm"
+nlp_model_load = "persistence/nlp/model/pt_br"
 # End Parameters
 
 @plac.annotations(

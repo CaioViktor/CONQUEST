@@ -2,6 +2,7 @@ import os
 
 solr_path = "persistence/nlp/solr/bin/"
 def startup(port=8983,memory="1g"):
+	stop()
 	print("Starting Sorl from {} in port {} with {} of memory...".format(solr_path,port,memory))
 	if os.name == "nt":
 		#Running on Windows
