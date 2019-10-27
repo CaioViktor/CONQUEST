@@ -47,23 +47,31 @@ class NLP_Processor():
 		dates = search_dates(sentenceAux,languages=['pt'])
 		if dates:
 			for date in dates:
-				entities.append((date[1],XSD.datetime))
-				sentenceAux = sentenceAux.replace(date[0],"")
+				entities.append([(date[1],XSD.datetime),sentenceAux.index(date[0])])
+				sentenceAux = sentenceAux.replace(date[0]," "*len(date[0]))
 			
 			
 		#Search possibles values to numeric CVs
 		numbers = re.findall("[-+]?\d+[\.]?\d*[eE]?[-+]?\d*", sentenceAux)
 		if numbers:
 			for number_str in numbers:
-				sentenceAux = sentenceAux.replace(number_str,"")
+				number_index = sentenceAux.index(number_str)
+				sentenceAux = sentenceAux.replace(number_str," "*len(number_str))
 				number = float(number_str)
 				if number.is_integer():
 					#Number is a integer
 					normalize_datatype
-					entities.append((number,normalize_datatype(XSD.integer)))
+					entities.append([(number,normalize_datatype(XSD.integer)),number_index])
 				else:
 					#Number is a real
-					entities.append((number,normalize_datatype(XSD.float)))
+					entities.append([(number,normalize_datatype(XSD.float)),number_index])
+
+		#sort variables in apperition order
+		unorded_matchs = entities.copy()
+		entities = []
+		unorded_matchs.sort(key = lambda x:x[1])
+		for match in unorded_matchs:
+			entities.append(match[0])
 		return entities,sentenceAux
 
 	def close(self):

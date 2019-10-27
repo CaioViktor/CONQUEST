@@ -22,16 +22,17 @@ class NER():
 		sentences = sent_tokenize(text)
 		text_final = ""
 		for sentence in sentences:
-			text_final += self.parser_sentence(sentence,matchs)
+			text_final += self.parser_sentence(sentence,matchs,text)
 
 		return matchs,text_final
 
-	def parser_sentence(self,sentence,matchs):
+	def parser_sentence(self,sentence,matchs,text):
 		#Search named entities in the sentence.
 		sentence_splitted = self.tokenize_sentence(sentence)
+		sentence_final = sentence
 		
-		sentence_marked = sentence
-		unorded_matchs = []
+		sentence_marked = text
+		# unorded_matchs = []
 
 		window_size = len(sentence_splitted)
 
@@ -49,11 +50,14 @@ class NER():
 					
 					#Get term's order in sentence
 					term_index_order = sentence_marked.index(term_search)
-					sentence_marked = sentence_marked.replace(term_search," ")
-					unorded_matchs.append( [(term_search,label),term_index_order] )
+					sentence_marked = sentence_marked.replace(term_search,(" " * len(term_search)))
+					# unorded_matchs.append( [(term_search,label),term_index_order] )
+					matchs.append( [(term_search,label),term_index_order] )
+
 					# print("achou",term_search," em ",sentence_splitted[window_start:window_end],len(unorded_matchs),"\n\n\n")
 
 					#Remove term in searched sentence
+					sentence_final = sentence_final.replace(term_search,(" " * len(term_search)))
 					remove_elements.append(term_search)
 				window_start+=1
 				window_end = window_start + window_size
@@ -61,13 +65,14 @@ class NER():
 			sentence_splitted = self.tokenize_sentence(sentence)
 			window_size-=1
 
-		sentence_final = reduce(lambda x,y:"{} {}".format(x,y),sentence_splitted)
+		# sentence_final = reduce(lambda x,y:"{} {}".format(x,y),sentence_splitted)
 		#sort variables in apperition order
-		unorded_matchs.sort(key = lambda x:x[1])
-		for match in unorded_matchs:
-			matchs.append(match[0])
+		# unorded_matchs.sort(key = lambda x:x[1])
+		# for match in unorded_matchs:
+			# matchs.append(match[0])
 
 		return sentence_final
+		# return sentence_marked
 
 		
 
