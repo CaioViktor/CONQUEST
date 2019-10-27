@@ -16,7 +16,8 @@ class NER():
 
 	def parser(self,text):
 		#Search named entities in the whole text.
-		#TODO: Manter a ordem dos matchs encontrados no texto? Ignorar acentos?  otimizar
+		#TODO: otimizar
+		#This method can be optimizaded searching if individual words are containd in the index (partial match). if not, replace them with "."
 		matchs = []
 		sentences = sent_tokenize(text)
 		text_final = ""
@@ -28,6 +29,9 @@ class NER():
 	def parser_sentence(self,sentence,matchs):
 		#Search named entities in the sentence.
 		sentence_splitted = self.tokenize_sentence(sentence)
+		
+		sentence_marked = sentence
+		unorded_matchs = []
 
 		window_size = len(sentence_splitted)
 
@@ -40,16 +44,29 @@ class NER():
 				term_search = reduce(lambda x,y:"{} {}".format(x,y),sentence_splitted[window_start:window_end])
 				label = self.search(term_search)
 				if label != None:
-					# print("achou",term_search," em ",sentence_splitted[window_start:window_end])
 					#Term is present in index
-					matchs.append((term_search,label))
+					# matchs.append((term_search,label))
+					
+					#Get term's order in sentence
+					term_index_order = sentence_marked.index(term_search)
+					sentence_marked = sentence_marked.replace(term_search," ")
+					unorded_matchs.append( [(term_search,label),term_index_order] )
+					# print("achou",term_search," em ",sentence_splitted[window_start:window_end],len(unorded_matchs),"\n\n\n")
+
+					#Remove term in searched sentence
 					remove_elements.append(term_search)
 				window_start+=1
 				window_end = window_start + window_size
 			sentence = self.remove_matchs(sentence,remove_elements)
 			sentence_splitted = self.tokenize_sentence(sentence)
 			window_size-=1
-			sentence_final = reduce(lambda x,y:"{} {}".format(x,y),sentence_splitted)
+
+		sentence_final = reduce(lambda x,y:"{} {}".format(x,y),sentence_splitted)
+		#sort variables in apperition order
+		unorded_matchs.sort(key = lambda x:x[1])
+		for match in unorded_matchs:
+			matchs.append(match[0])
+
 		return sentence_final
 
 		
