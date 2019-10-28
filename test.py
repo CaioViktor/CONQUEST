@@ -146,7 +146,9 @@ from datetime import datetime
 
 nlp = NLP_Processor(labels_NER)
 clf = load_pickle("persistence/classifier/ml_classifier.sav")
-texto = "quero saber quais são os medicamentos que possuem princípio ativo abacavir?"
+# texto = "quero saber quais são os medicamentos que possuem princípio ativo abacavir?"
+texto = "liste medicamentos que possuam o princípio ativo abacavir?"
+# texto = "quanto custa um buscopan?"
 # texto = "Quais são as apresentações do medicamento buscopan"
 # texto = "O que significa tarja"
 print(texto)

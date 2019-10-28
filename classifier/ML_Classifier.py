@@ -6,6 +6,7 @@ from pathlib import Path
 import pickle as pic
 from rdflib import XSD
 
+
 from nlp.Train_Maker import Train_Maker
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
@@ -14,6 +15,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import  VotingClassifier
 from sklearn.model_selection import cross_val_score
 from datetime import datetime
+from copy import deepcopy
 
 
 MODEL_FILE = "ml_classifier.sav"
@@ -30,6 +32,8 @@ class ML_Classifier():
 		linear = LogisticRegression(random_state=0, solver='lbfgs',multi_class='multinomial',n_jobs=-1)
 
 		self.model = VotingClassifier(estimators=[('gaus', gaussian), ('line', linear)],voting='soft',n_jobs=-1)
+
+		self.original_model = deepcopy(self.model)
 		
 
 
@@ -52,7 +56,7 @@ class ML_Classifier():
 			for qp in qai.QPs:
 				#Getting QV = SV+CVec.  
 
-				labels_dataset.append(qai.id)
+				# labels_dataset.append(qai.id)
 
 				sentence = qp
 				CVec = [0] * len(columns)
@@ -82,15 +86,20 @@ class ML_Classifier():
 								CVec[cvec_idx] += 1
 				#End CVec computing
 				SV = nlp_processor.sentence_vector(sentence)
-				QV = SV + CVec
+				QV = SV + CVec + [qai.id]
 				# QV =  CVec
 				# print("Classe:",qai.id,"QP:",sentence,"\n","CVec",CVec,"\nSV:",SV,"\n\n")
 				dataset.append(QV)
-		columns_header = list(range(0,nlp_processor.vector_size))+columns
+		columns_header = list(range(0,nlp_processor.vector_size))+columns+['label']
 		# columns_header = columns
 
-		features_dataframe = pd.DataFrame(dataset,columns=columns_header)
-		label_dataframe = pd.DataFrame(labels_dataset,columns=['label'])
+
+
+		# features_dataframe = pd.DataFrame(dataset,columns=columns_header)
+		# label_dataframe = pd.DataFrame(labels_dataset,columns=['label'])
+		dataframe = pd.DataFrame(dataset,columns=columns_header).sample(frac=1)
+		label_dataframe = dataframe['label']
+		features_dataframe = dataframe.drop('label',axis=1)
 
 		ML_Classifier.save_XY(features_dataframe,label_dataframe)
 
@@ -141,13 +150,13 @@ class ML_Classifier():
 		X = scaler.fit_transform(X.astype(np.float64))
 		#X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2)
 		
-		self.eval_model(X,y)
 		
 		self.model.fit(X,y)
 
 
 		finish_time = datetime.now()
 		print("Training classifier done! Elapsed time: {}".format(str(finish_time - satart_time)))
+		self.eval_model(X,y)
 
 		# self.save_model()
 
@@ -158,14 +167,19 @@ class ML_Classifier():
 
 
 	def eval_model(self,X,y):
+
+		modelP = deepcopy(self.original_model)
+		modelR = deepcopy(self.original_model)
+		modelF = deepcopy(self.original_model)
+
 		cv = 7
-		precision = cross_val_score(self.model, X, y.values.ravel(), cv=cv,scoring='precision_weighted')
+		precision = cross_val_score(modelP, X, y.values.ravel(), cv=cv,scoring='precision_weighted')
 		p = precision.mean()
 
-		recall = cross_val_score(self.model, X, y.values.ravel(), cv=cv,scoring='recall_weighted')
+		recall = cross_val_score(modelR, X, y.values.ravel(), cv=cv,scoring='recall_weighted')
 		r = recall.mean()
 
-		f1 = cross_val_score(self.model, X, y.values.ravel(), cv=cv,scoring='f1_weighted')
+		f1 = cross_val_score(modelF, X, y.values.ravel(), cv=cv,scoring='f1_weighted')
 		f = f1.mean()
 
 		print("\n\nScore evaluations using cross validation with cv = {}:\nPrecision = {}\nRecall = {}\nF-1 Score = {}".format(cv,p,r,f))
