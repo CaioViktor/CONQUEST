@@ -190,13 +190,13 @@ def make_train_classifier():
 	print("Starting Classifier stage. This could take several minutes...")
 	
 
-	nlp_processor = NLP_Processor(nlp_model_load)
-
 	labels_path = os.path.join(path_train_NER_temp,"labels.sav")
 	labels_NER = load_labels(labels_path)
 
+	nlp_processor = NLP_Processor(labels_NER,nlp_model_load)
+
 	print("Creating classifier training dataset. This could take several minutes...")
-	X,y = ML_Classifier.pre_process_data(QAI_Manager.QAIs,labels_NER,nlp_processor)
+	X,y = ML_Classifier.pre_process_data(QAI_Manager.QAIs,nlp_processor)
 
 	output_path = "persistence/temp/classifier/X.sav"
 	with open(output_path,"wb") as output:
@@ -272,7 +272,7 @@ def load_train_NER():
 	global QAI_Manager
 	global ner_trainer
 
-	ner_trainer = NER_Trainer(QAI_Manager.QAIs,classes_index,sparql_endpoint,graph_name,solr_host,solr_port,solr_cores)
+	ner_trainer = NER_Trainer(QAI_Manager.QAIs,classes_index,sparql_endpoint,graph_name,solr_host,solr_port,solr_core)
 	ner_trainer.load_train_dataset(path_train_NER_temp)
 
 	print("NER training dataset loaded from {}".format(path_train_NER_temp))
@@ -298,9 +298,9 @@ def load_train_classifier():
 
 
 	labels_path = os.path.join(path_train_NER_temp,"labels.sav")
-
-	nlp_processor = NLP_Processor(nlp_model_path)
 	labels_NER = load_labels(labels_path)
+
+	nlp_processor = NLP_Processor(labels_NER,nlp_model_path)
 	
 
 	output_path = "persistence/temp/classifier/X.sav"

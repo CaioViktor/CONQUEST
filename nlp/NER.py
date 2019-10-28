@@ -50,14 +50,14 @@ class NER():
 					
 					#Get term's order in sentence
 					term_index_order = sentence_marked.index(term_search)
-					sentence_marked = sentence_marked.replace(term_search,(" " * len(term_search)))
+					sentence_marked = sentence_marked.replace(term_search,(" " * len(term_search)),1)
 					# unorded_matchs.append( [(term_search,label),term_index_order] )
 					matchs.append( [(term_search,label),term_index_order] )
 
 					# print("achou",term_search," em ",sentence_splitted[window_start:window_end],len(unorded_matchs),"\n\n\n")
 
 					#Remove term in searched sentence
-					sentence_final = sentence_final.replace(term_search,(" " * len(term_search)))
+					sentence_final = sentence_final.replace(term_search,(" " * len(term_search)),1)
 					remove_elements.append(term_search)
 				window_start+=1
 				window_end = window_start + window_size
@@ -95,7 +95,7 @@ class NER():
 	def remove_matchs(sentence,remove_elements):
 		for term in remove_elements:
 			# print("removendo '{}' da sentença '{}'".format(term,sentence))
-			sentence = sentence.replace(term,"")
+			sentence = sentence.replace(term,"",1)
 		return sentence
 
 	@staticmethod

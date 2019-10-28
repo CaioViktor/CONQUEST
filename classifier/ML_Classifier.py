@@ -5,7 +5,7 @@ import os
 from pathlib import Path
 import pickle as pic
 from rdflib import XSD
-import hashlib
+
 from nlp.Train_Maker import Train_Maker
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
@@ -25,25 +25,25 @@ class ML_Classifier():
 	def __init__(self,model_path=MODEL_PATH,model_file=MODEL_FILE):
 		self.model_path = model_path
 		self.model_file = model_file
+		#Classifier is always wrong
 		gaussian = GaussianNB()
 		linear = LogisticRegression(random_state=0, solver='lbfgs',multi_class='multinomial',n_jobs=-1)
 
-		self.model = VotingClassifier(estimators=[('gaus', gaussian), ('line', linear)],voting='hard',n_jobs=-1)
+		self.model = VotingClassifier(estimators=[('gaus', gaussian), ('line', linear)],voting='soft',n_jobs=-1)
+		
+
+
 
 	@staticmethod
-	def pre_process_data(QAIs,labels_NER,nlp_processor):
+	def pre_process_data(QAIs,nlp_processor):
 		#Transform QAIs in train dataset to train the classifier
 		#QV: Question Vector; SV: Sentence Vector; CVec: Context Vector
 		dataset = []
 		labels_dataset = []
 
-		#Getting CVec structure
-		columns = [XSD.integer.n3(),XSD.decimal.n3(),XSD.dateTime.n3()] + labels_NER
-		columns.sort()
-		type_CV_to_CVec_idx = {}
-		for column in columns:
-			type_CV_to_CVec_idx[ML_Classifier.hash(column)] = columns.index(column)
-
+		
+		type_CV_to_CVec_idx = nlp_processor.type_CV_to_CVec_idx
+		columns = nlp_processor.columns_CVec
 		# print(type_CV_to_CVec_idx)
 
 
@@ -67,7 +67,7 @@ class ML_Classifier():
 						#CV is from a primitive type (integer,decimal or datetime)
 						classs = list(cv['class'])
 						# print(classs[0])
-						cvec_idx = type_CV_to_CVec_idx[ML_Classifier.hash(classs)]
+						cvec_idx = type_CV_to_CVec_idx[nlp_processor.hash(str(classs))]
 						CVec[cvec_idx]+=1
 					else:
 						#CV is Property@Class
@@ -78,14 +78,16 @@ class ML_Classifier():
 							for classs in cv['owners'][owner_id]['classes']:
 								typee = Train_Maker.create_label(classs,propertyy)
 								# print(typee)
-								cvec_idx = type_CV_to_CVec_idx[ML_Classifier.hash(typee)]
+								cvec_idx = type_CV_to_CVec_idx[nlp_processor.hash(str(typee))]
 								CVec[cvec_idx] += 1
 				#End CVec computing
 				SV = nlp_processor.sentence_vector(sentence)
 				QV = SV + CVec
+				# QV =  CVec
+				# print("Classe:",qai.id,"QP:",sentence,"\n","CVec",CVec,"\nSV:",SV,"\n\n")
 				dataset.append(QV)
 		columns_header = list(range(0,nlp_processor.vector_size))+columns
-
+		# columns_header = columns
 
 		features_dataframe = pd.DataFrame(dataset,columns=columns_header)
 		label_dataframe = pd.DataFrame(labels_dataset,columns=['label'])
@@ -170,19 +172,18 @@ class ML_Classifier():
 		return
 
 	def predict(self,X):
-		return self.model.predict(X)
+		print("Classes: ",self.model.classes_)
+		print("Melhor",self.model.predict(X))
+		return self.model.predict_proba(X)
 
 	def save_model(self,savePath=MODEL_PATH,model_file=MODEL_FILE):
 		savePath = Path(savePath)
 		
 		if not savePath.exists():
 			savePath.mkdir(parents=True)
-
-
 		saveFile = os.path.join(savePath,model_file)
 		with open(saveFile,"wb") as pickle_file:
-			pic.dump(self.model,pickle_file)
+			pic.dump(self,pickle_file)
 			print("Saved classifier model to", saveFile)
 
-	def hash(term):
-		return hashlib.md5(str(term).encode('utf-8')).hexdigest()
+	
