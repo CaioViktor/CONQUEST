@@ -7,7 +7,7 @@ import pprint
 # from spacy.lang.pt.examples import sentences 
 # from nlp.NLP_Processor import NLP_Processor
 import pickle
-# from classifier.ML_Classifier import ML_Classifier
+from classifier.ML_Classifier import ML_Classifier
 
 
 
@@ -113,6 +113,7 @@ pp = pprint.PrettyPrinter(indent=4)
 
 # nlp_processor = NLP_Processor("temp/NER/NER_PT_2019-09-12_14-31-39")
 labels_NER = load_pickle("persistence/temp/nlp/labels.sav")
+
 # dataset,labels = ML_Classifier.pre_process_data(QAIM.QAIs,labels_NER,nlp_processor)
 # print(dataset)
 # print(labels)
@@ -145,19 +146,27 @@ from datetime import datetime
 
 
 nlp = NLP_Processor(labels_NER)
-clf = load_pickle("persistence/classifier/ml_classifier.sav")
+clf = ML_Classifier.load_model()
 # texto = "quero saber quais são os medicamentos que possuem princípio ativo abacavir?"
-texto = "liste medicamentos que possuam o princípio ativo abacavir?"
+texto = "quero saber o medicamento que possuei o princípio ativo abacavir?"
+# texto = "liste medicamentos que possuam o princípio ativo abacavir?"
 # texto = "quanto custa um buscopan?"
 # texto = "Quais são as apresentações do medicamento buscopan"
 # texto = "O que significa tarja"
 print(texto)
 satart_time = datetime.now()
 entities,sentence = nlp.parser(texto)
-print(nlp.transform_CVec(entities))
+# print(nlp.transform_CVec(entities))
 QV = nlp.transform_QV(sentence,entities)
+# print(sentence,"\n",list(QV.iloc[0]))
 y = clf.predict(QV)
 print("Classe:",y)
 finish_time = datetime.now()
 print("Processamento levou: {}".format(str(finish_time - satart_time)))
 nlp.close()
+
+# X,y = clf.load_XY()
+# Y = clf.predict(X)
+# y_c = list(y)
+# for el,el_c in zip(Y,y_c):
+# 	print(el,"\t-\t",el_c,"\t-\t",el==el_c)

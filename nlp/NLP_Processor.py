@@ -8,16 +8,16 @@ from nlp.NER import NER
 import hashlib
 import numpy as np
 import pandas as pd
-# from nltk.stem import RSLPStemmer
+from nltk.stem import RSLPStemmer
 
 
 class NLP_Processor():
 	def __init__(self,labels_NER,loadPath="persistence/nlp/model/pt_br"):
 		self.model = spacy.load(loadPath)
-		# self.stop_words = spacy.lang.pt.stop_words.STOP_WORDS
+		self.stop_words = spacy.lang.pt.stop_words.STOP_WORDS
 		self.vector_size = len(self.model("test").vector)
 		self.ner = NER()
-		# self.stemmer = RSLPStemmer()
+		self.stemmer = RSLPStemmer()
 
 		self.labels_NER = labels_NER
 
@@ -37,13 +37,13 @@ class NLP_Processor():
 		# sentenceAux = ""
 		# tokens = NER.tokenize_sentence(sentence.lower())
 
-		# # for token in tokens:
-		# # 	# if token not in self.stop_words:
-		# # 	sentenceAux+=(self.stemmer.stem(token))+" "
+		# for token in tokens:
+			# if token not in self.stop_words:
+				# sentenceAux+=(self.stemmer.stem(token))+" "
 
 		# print(sentenceAux)
 		# print("-----------------------")
-
+		# return self.model(sentenceAux).vector
 		return self.model(sentence.lower()).vector
 
 	def sentence_vector(self,sentence):
@@ -55,7 +55,7 @@ class NLP_Processor():
 		
 		entities = []
 		#Search possibles values to strings CVs
-		entities, sentenceAux = self.ner.parser(sentenceAux)
+		entities, sentenceAux,sentence_oov = self.ner.parser(sentenceAux)
 			
 		#Search possibles values to date CVs
 		dates = search_dates(sentenceAux,languages=['pt'])
@@ -63,6 +63,7 @@ class NLP_Processor():
 			for date in dates:
 				entities.append([(date[1],str(XSD.dateTime)),sentenceAux.index(date[0])])
 				sentenceAux = sentenceAux.replace(date[0]," "*len(date[0]),1)
+				sentence_oov = sentence_oov.replace(date[0],"oovmarker",1)
 			
 			
 		#Search possibles values to numeric CVs
@@ -71,6 +72,7 @@ class NLP_Processor():
 			for number_str in numbers:			
 				number_index = sentenceAux.index(number_str)
 				sentenceAux = sentenceAux.replace(number_str," "*len(number_str),1)
+				sentence_oov = sentence_oov.replace(number_str,"oovmarker",1)
 				number = float(number_str)
 				if number.is_integer():
 					#Number is a integer
@@ -85,7 +87,7 @@ class NLP_Processor():
 		unorded_matchs.sort(key = lambda x:x[1])
 		for match in unorded_matchs:
 			entities.append(match[0])
-		return entities,sentenceAux
+		return entities,sentence_oov
 
 	def transform_CVec(self,CVs):
 		#Transform CVs list in Contex Vector(CVec)

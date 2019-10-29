@@ -31,7 +31,7 @@ class QAI_Manager():
 
 			self.QAIs = []
 
-			count_id = 1
+			count_id = 0
 			for qaiD in qais['QAIs']:
 				try:
 					qai = QAI.QAI(qaiD,count_id,propertyIndex)

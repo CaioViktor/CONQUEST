@@ -34,6 +34,7 @@ class ML_Classifier():
 		self.model = VotingClassifier(estimators=[('gaus', gaussian), ('line', linear)],voting='soft',n_jobs=-1)
 
 		self.original_model = deepcopy(self.model)
+		self.scaler = StandardScaler()
 		
 
 
@@ -65,7 +66,7 @@ class ML_Classifier():
 					cv = qai.CVs[cv_id]
 
 					#remove CV from QP
-					sentence = sentence.replace(cv['name'],"")
+					sentence = sentence.replace(cv['name'],"oovmarker")
 
 					if XSD.string not in cv['class']:
 						#CV is from a primitive type (integer,decimal or datetime)
@@ -85,8 +86,10 @@ class ML_Classifier():
 								cvec_idx = type_CV_to_CVec_idx[nlp_processor.hash(str(typee))]
 								CVec[cvec_idx] += 1
 				#End CVec computing
+				sentence = sentence.lower()
 				SV = nlp_processor.sentence_vector(sentence)
 				QV = SV + CVec + [qai.id]
+				# print("sentença que vai ser usada:",sentence,"\n",QV,"\n\n")
 				# QV =  CVec
 				# print("Classe:",qai.id,"QP:",sentence,"\n","CVec",CVec,"\nSV:",SV,"\n\n")
 				dataset.append(QV)
@@ -97,7 +100,7 @@ class ML_Classifier():
 
 		# features_dataframe = pd.DataFrame(dataset,columns=columns_header)
 		# label_dataframe = pd.DataFrame(labels_dataset,columns=['label'])
-		dataframe = pd.DataFrame(dataset,columns=columns_header).sample(frac=1)
+		dataframe = pd.DataFrame(dataset,columns=columns_header).sample(frac=1,random_state=42)
 		label_dataframe = dataframe['label']
 		features_dataframe = dataframe.drop('label',axis=1)
 
@@ -107,12 +110,10 @@ class ML_Classifier():
 		return features_dataframe,label_dataframe
 
 	@staticmethod
-	def load_model(loadPath=MODEL_PATH,modelFile=MODEL_FILE):
-		file_path = os.path.join(loadPath,modelFile)
-		with open(file_path,"rb") as pickle_file:
-			ml_classifier = ML_Classifier()
-			ml_classifier.model = pic.load(pickle_file)
-			print("Loaded classifier model from", file_path)
+	def load_model(modelPath= (MODEL_PATH+MODEL_FILE)):
+		with open(modelPath,"rb") as pickle_file:
+			ml_classifier = pic.load(pickle_file)
+			print("Loaded classifier model from", modelPath)
 			return ml_classifier
 
 	@staticmethod
@@ -147,7 +148,8 @@ class ML_Classifier():
 		satart_time = datetime.now()
 		#Normalizer
 		scaler = StandardScaler()
-		X = scaler.fit_transform(X.astype(np.float64))
+		self.scaler.fit(X.astype(np.float64))
+		X = self.scaler.transform(X.astype(np.float64))
 		#X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2)
 		
 		
@@ -186,8 +188,21 @@ class ML_Classifier():
 		return
 
 	def predict(self,X):
-		print("Classes: ",self.model.classes_)
-		print("Melhor",self.model.predict(X))
+		#Normalizer
+		X = self.scaler.transform(X.astype(np.float64))
+
+		# print("Classes: ",self.model.classes_)
+		print("Probs:",self.model.predict_proba(X))
+		# return self.model.predict_proba(X)
+		return self.model.predict(X)
+
+	def predict_proba(self,X):
+		#Normalizer
+		X = self.scaler.transform(X.astype(np.float64))
+
+		# print("Classes: ",self.model.classes_)
+		# print("Probs:",self.model.predict_proba(X))
+		# return self.model.predict_proba(X)
 		return self.model.predict_proba(X)
 
 	def save_model(self,savePath=MODEL_PATH,model_file=MODEL_FILE):

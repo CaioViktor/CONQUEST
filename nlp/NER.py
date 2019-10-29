@@ -21,17 +21,23 @@ class NER():
 		matchs = []
 		sentences = sent_tokenize(text)
 		text_final = ""
+		sentence_oov= ""
 		for sentence in sentences:
-			text_final += self.parser_sentence(sentence,matchs,text)
+			sentence_parsed,sentence_oov_parsed = self.parser_sentence(sentence,matchs,text)
+			text_final += sentence_parsed + " "
+			sentence_oov+=sentence_oov_parsed+" "
 
-		return matchs,text_final
+
+		return matchs,text_final,sentence_oov
 
 	def parser_sentence(self,sentence,matchs,text):
 		#Search named entities in the sentence.
 		sentence_splitted = self.tokenize_sentence(sentence)
 		sentence_final = sentence
 		
-		sentence_marked = text
+		text_marked = text
+
+		sentence_oov = sentence
 		# unorded_matchs = []
 
 		window_size = len(sentence_splitted)
@@ -49,8 +55,10 @@ class NER():
 					# matchs.append((term_search,label))
 					
 					#Get term's order in sentence
-					term_index_order = sentence_marked.index(term_search)
-					sentence_marked = sentence_marked.replace(term_search,(" " * len(term_search)),1)
+					term_index_order = text_marked.index(term_search)
+					text_marked = text_marked.replace(term_search,(" " * len(term_search)),1)
+					sentence_oov =sentence_oov.replace(term_search,"oovmarker",1)
+
 					# unorded_matchs.append( [(term_search,label),term_index_order] )
 					matchs.append( [(term_search,label),term_index_order] )
 
@@ -71,8 +79,8 @@ class NER():
 		# for match in unorded_matchs:
 			# matchs.append(match[0])
 
-		return sentence_final
-		# return sentence_marked
+		return sentence_final,sentence_oov
+		# return text_marked
 
 		
 
