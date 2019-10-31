@@ -31,8 +31,6 @@ class QAI:
 		except:
 			print("Error on loading QAI {}".format(self.id))
 			raise 
-
-		
 		vars_set = schema_processor.parser_sparql(self.SP,propertyIndex)
 
 
@@ -56,28 +54,21 @@ class QAI:
 						other = vars_set[id_o]
 					if other != None:
 						for (class_owner,property_owner,aux) in other['context']:
-		
 							self.get_Property_Owner(vars_set,class_owner,property_owner,id_var)
-
 				elif id_s in vars_set :
 					#CV is used inside (not as a comparator in filter) triples query
 					if id_var == id_o:
 						#current var is triple's object
 						self.get_Property_Owner(vars_set,s,p,id_var)
-
 		for var in rvs_Set:
 			id_var = schema_processor.name_to_id_var(var)
 			if id_var in vars_set:
 				self.RVs[id_var] = vars_set[id_var]
 			else:
 				self.RVs[id_var] = schema_processor.new_var(var,schema_processor.LITERAL)
-
 		for id_var in vars_set:
 			if id_var not in self.CVs and id_var not in self.RVs:
 				self.IVs[id_var] = vars_set[id_var]
-
-		#TODO: Armazenar no DB? Melhor treinar modelo logo
-		# print(str(self))
 
 	@staticmethod
 	def is_Binary_Comparator(op):

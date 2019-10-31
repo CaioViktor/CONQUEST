@@ -43,7 +43,12 @@ Chatbot ONtology QUESTion
 	<li>NLTK:
 		<ul>
 			<li>pip install nltk</li>
-			<li>Run: import nltk nltk.download('punkt')</li>
+			<li>Run: import nltk <br/> nltk.download('punkt')</li>
+		</ul>
+	</li>
+	<li> Flask:
+		<ul>
+			<li>pip install Flask</li>
 		</ul>
 	</li>
 </ul>
