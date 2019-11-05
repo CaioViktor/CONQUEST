@@ -26,10 +26,12 @@ def create_new_user(user_id):
 		'context': {
 			'state': WAITING_TO_START,
 			'question': "",#Question in natural language
+			'entities_found': [],
 			'qai_id':-1, #QAI id classified
 			'cvs_to_fill':[] ,#Names of recognized CVs yet to fill
 			'cvs_filled':[{'name':""	,	'value:':""}] ,#Names of recognized CVs yet to fill
-			'original_cvec':[], #Original CVec passed from the question
+			'original_cvec':[], #Original CVec parsed from the question
+			'original_sv':[], #Original SV parsed from the question
 			'options': [{'text':""	,	'value':""}] #options asked to user
 		}
 	}

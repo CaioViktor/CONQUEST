@@ -10,9 +10,11 @@ from datetime import datetime
 import pprint
 import spacy
 import nlp.Solr_Connection as solr_connection
-
+from scipy.spatial.distance import cosine
+import re
 #States constants
 from dialog.constants import *
+import json
 
 #Configuration parameters
 from config import *
@@ -74,8 +76,13 @@ class Dialog_Manager():
 			return
 
 	def waiting_to_start(self,user,text):
+
+		user['context']['question'] = text
+
 		entities, sentence = self.nlp_processor.parser(text)
-		QV = self.nlp_processor.transform_QV(sentence,entities)
+		user['context']['entities_found'] = entities
+
+		QV,SV_CVec = self.nlp_processor.transform_QV(sentence,entities)
 		y = self.classifier.predict_proba(QV)[0]
 		max_option = min(len(y),3)
 
@@ -94,7 +101,11 @@ class Dialog_Manager():
 					return "estou em dúvida com {} em {}-{} e {}-{}".format(diference_confidance,ordered_qais_index[0],y[ordered_qais_index[0]],ordered_qais_index[1],y[ordered_qais_index[1]])
 				else:
 					#Classification has a high confidance only in a one class
-					return "Tenho {}% de certeza que essa pergunta é do tipo {}".format((y[ordered_qais_index[0]]*100),ordered_qais_index[0])
+					user['context']['qai_id'] = ordered_qais_index[0]
+					user['context']['original_sv'] = SV_CVec[0]
+					user['context']['original_cvec'] = SV_CVec[1]
+					# return "Tenho {}% de certeza que essa pergunta é do tipo {}".format((y[ordered_qais_index[0]]*100),ordered_qais_index[0])
+					return self.fetch_QAI(user)
 			else:
 				#There are only one option
 				return "Só tenho uma opção"
@@ -102,3 +113,32 @@ class Dialog_Manager():
 			#Classification has a low confidance
 			return "não tenho certeza"
 		return list(y)
+
+	def fetch_QAI(self,user):
+		qai = self.qai_Manager.QAIs[user['context']['qai_id']] 
+		nearest_qp_index = -1
+		nearest_qp_value = 1
+		idx = 0
+
+		for sv in qai.SVs:
+			distance = cosine(user['context']['original_sv'] , sv)
+			if distance < nearest_qp_value:
+				nearest_qp_value = distance
+				nearest_qp_index = idx
+			idx+=1
+		if nearest_qp_index > -1:
+			nearest_qp = qai.QPs[nearest_qp_index]
+			cvs = re.findall("\$\w+",nearest_qp)
+
+			for cv in cvs:
+				#TODO:Fill CVs
+				pass
+
+			user['context']['cvs_to_fill'] = cvs
+			print(user)
+			return "QP mais próxima é '{}' com distância de {}".format(qai.QPs[nearest_qp_index],nearest_qp_value)
+			# return json.dumps(user)
+		return "Error in classify QP"
+
+
+

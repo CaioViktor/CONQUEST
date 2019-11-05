@@ -103,12 +103,14 @@ class NLP_Processor():
 		columns_header = list(range(0,self.vector_size))+self.columns_CVec
 		# columns_header = self.columns_CVec
 
-		QV_list = self.sentence_vector(sentence) + CVec
+		SV = self.sentence_vector(sentence) 
+
+		QV_list = SV + CVec
 		# QV_list = CVec
 		dataset = [QV_list]
 
 		QV = pd.DataFrame(dataset,columns=columns_header)
-		return QV
+		return QV,(SV,CVec)
 
 	def close(self):
 		self.ner.close()
