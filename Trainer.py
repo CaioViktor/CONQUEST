@@ -146,14 +146,13 @@ def make_train_NER():
 	print("Creating NER training dataset. This could take several minutes...")
 	ner_trainer.make_train_dataset(savePath=path_train_NER_temp)
 	print("NER training dataset saved to {}. Labels contained in examples:{}".format(path_train_NER_temp,ner_trainer.get_labels()))
-	
+
 	train_NER()
 
 def train_NER():
 	print("\n\nStarting stage",3)
 
 	global ner_trainer
-	
 
 
 	print("Training NER model. This could take several minutes...")
@@ -168,6 +167,7 @@ def make_train_classifier():
 	global y
 	global classifier
 	global nlp_model_load
+	global QAI_Manager
 
 
 	print("Starting Classifier stage. This could take several minutes...")
@@ -177,6 +177,13 @@ def make_train_classifier():
 	labels_NER = load_labels(labels_path)
 
 	nlp_processor = NLP_Processor(labels_NER,nlp_model_load)
+
+	print("Computing Sentece Vectors of Questions Patterns in QA itens...")
+	QAI_Manager.compute_SVs(nlp_processor)
+	out_path = os.path.join("persistence/qais","qai_manager.sav") 
+	with open(out_path ,"wb") as file:
+		pickle.dump(QAI_Manager,file)
+		print("QAI Manager saved to {}\n\n".format(out_path))
 
 	print("Creating classifier training dataset. This could take several minutes...")
 	X,y = ML_Classifier.pre_process_data(QAI_Manager.QAIs,nlp_processor)

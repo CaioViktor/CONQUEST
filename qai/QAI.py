@@ -21,6 +21,7 @@ class QAI:
 		self.CVs = {}
 		self.RVs = {}
 		self.IVs = {} #Inner Variables. Vars used only inside the query
+		self.SVs = []
 
 		cvs_Set,rvs_Set = self.get_variables_SP(self.SP);
 
@@ -168,3 +169,13 @@ class QAI:
 		if not vars_Set_RP_F.issubset(vars_Set):
 			print('Error in RP footer: "{}". Variables: {} not in SP set: {}'.format(RP['footer'],str(vars_Set_RP_F.difference(vars_Set)),str(vars_Set)))
 			raise
+	def compute_SVs(self,nlp_processor):
+		self.SVs = []
+		for qp in self.QPs:	
+			sentence = qp
+			for cv_id in self.CVs:
+				cv = self.CVs[cv_id]
+				sentence = sentence.replace(cv['name'],"oovmarker")
+			sentence = sentence.lower()
+			SV = nlp_processor.sentence_vector(sentence)
+			self.SVs.append(SV)	

@@ -51,22 +51,22 @@ class ML_Classifier():
 		columns = nlp_processor.columns_CVec
 		# print(type_CV_to_CVec_idx)
 
-
 		#Getting train dataset
 		for qai in QAIs:
+			qp_index = 0
 			for qp in qai.QPs:
 				#Getting QV = SV+CVec.  
 
 				# labels_dataset.append(qai.id)
 
-				sentence = qp
+				# sentence = qp
 				CVec = [0] * len(columns)
 				for cv_id in qai.CVs:
 					#Getting CVec: Context Vector
 					cv = qai.CVs[cv_id]
 
 					#remove CV from QP
-					sentence = sentence.replace(cv['name'],"oovmarker")
+					# sentence = sentence.replace(cv['name'],"oovmarker")
 
 					if XSD.string not in cv['class']:
 						#CV is from a primitive type (integer,decimal or datetime)
@@ -86,13 +86,15 @@ class ML_Classifier():
 								cvec_idx = type_CV_to_CVec_idx[nlp_processor.hash(str(typee))]
 								CVec[cvec_idx] += 1
 				#End CVec computing
-				sentence = sentence.lower()
-				SV = nlp_processor.sentence_vector(sentence)
+				# sentence = sentence.lower()
+				# SV = nlp_processor.sentence_vector(sentence)
+				SV = qai.SVs[qp_index]
 				QV = SV + CVec + [qai.id]
 				# print("sentença que vai ser usada:",sentence,"\n",QV,"\n\n")
 				# QV =  CVec
 				# print("Classe:",qai.id,"QP:",sentence,"\n","CVec",CVec,"\nSV:",SV,"\n\n")
 				dataset.append(QV)
+				qp_index+=1
 		columns_header = list(range(0,nlp_processor.vector_size))+columns+['label']
 		# columns_header = columns
 
@@ -104,7 +106,7 @@ class ML_Classifier():
 		label_dataframe = dataframe['label']
 		features_dataframe = dataframe.drop('label',axis=1)
 
-		ML_Classifier.save_XY(features_dataframe,label_dataframe)
+		# ML_Classifier.save_XY(features_dataframe,label_dataframe)
 
 
 		return features_dataframe,label_dataframe

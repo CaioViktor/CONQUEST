@@ -43,6 +43,9 @@ class QAI_Manager():
 
 			# print(str(self))
 
+	def compute_SVs(self,nlp_processor):
+		for qai in self.QAIs:
+			qai.compute_SVs(nlp_processor)
 
 	def __str__(self):
 		return str(self.to_Json())
