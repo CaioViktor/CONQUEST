@@ -3,6 +3,8 @@ import re
 import rdflib.plugins.sparql.processor as processor
 import ontology.Schema as schema_processor
 from rdflib import URIRef
+from rdflib import XSD
+from nlp.Train_Maker import Train_Maker
 
 class QAI:
 	def __init__(self):
@@ -41,6 +43,7 @@ class QAI:
 			self.CVs[id_var] = vars_set[id_var]
 			self.CVs[id_var]['name'] = var
 			self.CVs[id_var]['owners'] = {}
+			self.CVs[id_var]['owners_types'] = set()
 			for s,p,o in self.CVs[id_var]['context']:
 				id_s = schema_processor.name_to_id_var(s)
 				id_o = schema_processor.name_to_id_var(o)
@@ -61,6 +64,20 @@ class QAI:
 					if id_var == id_o:
 						#current var is triple's object
 						self.get_Property_Owner(vars_set,s,p,id_var)
+			#Record owners_types
+			if XSD.string not in self.CVs[id_var]['class']:
+				#CV is from a primitive type (integer,decimal or datetime)
+				self.CVs[id_var]['owners_types'] = self.CVs[id_var]['owners_types'].union(set(self.CVs[id_var]['owners_types']))
+			else:
+				#CV is Property@Class
+				for owner_id in self.CVs[id_var]['owners']:
+					owner = self.CVs[id_var]['owners'][owner_id]
+					propertyy = self.CVs[id_var]['owners'][owner_id]['uri']
+					for classs in self.CVs[id_var]['owners'][owner_id]['classes']:
+						typee = Train_Maker.create_label(classs,propertyy)
+						self.CVs[id_var]['owners_types'].add(typee)
+			self.CVs[id_var]['owners_types'] = list(self.CVs[id_var]['owners_types'])
+			# print("Var {} types:\n{}".format(var,self.CVs[id_var]['owners_types']))
 		for var in rvs_Set:
 			id_var = schema_processor.name_to_id_var(var)
 			if id_var in vars_set:

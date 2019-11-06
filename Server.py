@@ -28,7 +28,7 @@ def create_new_user(user_id):
 			'question': "",#Question in natural language
 			'entities_found': [],
 			'qai_id':-1, #QAI id classified
-			'cvs_to_fill':[] ,#Names of recognized CVs yet to fill
+			'cvs_to_fill':[{'name':"",	'type':""}] ,#Names of recognized CVs yet to fill
 			'cvs_filled':[{'name':""	,	'value:':""}] ,#Names of recognized CVs yet to fill
 			'original_cvec':[], #Original CVec parsed from the question
 			'original_sv':[], #Original SV parsed from the question

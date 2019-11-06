@@ -12,6 +12,7 @@ import spacy
 import nlp.Solr_Connection as solr_connection
 from scipy.spatial.distance import cosine
 import re
+from rdflib import XSD
 #States constants
 from dialog.constants import *
 import json
@@ -130,15 +131,55 @@ class Dialog_Manager():
 			nearest_qp = qai.QPs[nearest_qp_index]
 			cvs = re.findall("\$\w+",nearest_qp)
 
-			for cv in cvs:
-				#TODO:Fill CVs
-				pass
 
-			user['context']['cvs_to_fill'] = cvs
-			print(user)
-			return "QP mais próxima é '{}' com distância de {}".format(qai.QPs[nearest_qp_index],nearest_qp_value)
+			entities = {}
+			for entity in user['context']['entities_found']:
+				#Make lists for CVs divided by types
+				entity_type = self.nlp_processor.hash(entity[1])
+				if entity_type in entities:
+					entities[entity_type].apped(entity[0])
+				else:
+					entities[entity_type] = [entity[0]]
+
+			user['context']['cvs_to_fill'] = []
+			user['context']['cvs_filled'] = []
+			for cv in cvs:
+				#Filling CVs
+				id_var = sc.name_to_id_var(cv)
+				if len(qai.CVs[id_var]['owners_types']) > 0:
+					#Get only the first type of a CV
+					typee = qai.CVs[id_var]['owners_types'][0]
+					typee_id = self.nlp_processor.hash(typee)
+					if typee_id not in entities:
+						#CV candidate not found
+						user['context']['cvs_to_fill'].append({'name':cv,'type':typee})
+					elif len(entities[typee_id]) > 0:
+						#Found CV candidate
+						cv_value = entities[typee_id][0]
+						user['context']['cvs_filled'].append({'name':cv,'value':cv_value})
+						entities[typee_id].remove(cv_value)
+			# print(user)
+			if len(user['context']['cvs_to_fill']) == 0:
+				#All CVs filled
+				return self.make_query(user)
+			else:
+				#Nedd to fill CV
+				return "Faltou as CVs:\n{}".format(user['context']['cvs_filled'])
+
+			# return "QP mais próxima é '{}' com distância de {}".format(qai.QPs[nearest_qp_index],nearest_qp_value)
 			# return json.dumps(user)
 		return "Error in classify QP"
 
-
+	def make_query(self,user):
+		#Build SPARQL query
+		qai = self.qai_Manager.QAIs[user['context']['qai_id']]
+		query = qai.SP 
+		for cv in user['context']['cvs_filled']:
+			id_var = sc.name_to_id_var(cv['name'])
+			cv_value = cv['value']
+			if XSD.string in qai.CVs[id_var]['class']:
+				cv_value = "'"+cv_value+"'"
+			query = query.replace(cv['name'],cv_value)
+		return query
+		#TODO: Query Processor
 
