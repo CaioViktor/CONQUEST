@@ -20,10 +20,10 @@ class QAI:
 		self.QPs = QAIj['QPs']
 		self.SP = QAIj['SP']
 		self.RP = QAIj['RP']
-		self.CVs = {}
-		self.RVs = {}
+		self.CVs = {} #Context Variables, input variables
+		self.RVs = {} #Result Variables
 		self.IVs = {} #Inner Variables. Vars used only inside the query
-		self.SVs = []
+		self.SVs = [] #Sentence Vector of QPs
 
 		cvs_Set,rvs_Set = self.get_variables_SP(self.SP);
 
@@ -82,8 +82,12 @@ class QAI:
 			id_var = schema_processor.name_to_id_var(var)
 			if id_var in vars_set:
 				self.RVs[id_var] = vars_set[id_var]
+				if self.RVs[id_var]['name'][0] != "?":
+					self.RVs[id_var]['name'] = "?"+self.RVs[id_var]['name']
 			else:
 				self.RVs[id_var] = schema_processor.new_var(var,schema_processor.LITERAL)
+				if self.RVs[id_var]['name'][0] != "?":
+					self.RVs[id_var]['name'] = "?"+self.RVs[id_var]['name']
 		for id_var in vars_set:
 			if id_var not in self.CVs and id_var not in self.RVs:
 				self.IVs[id_var] = vars_set[id_var]
@@ -94,7 +98,6 @@ class QAI:
 
 
 	def get_Property_Owner(self,vars_set,class_owner,property_owner,id_var):
-
 		if isinstance(property_owner,URIRef):
 			id_class_owner = schema_processor.name_to_id_var(class_owner)
 			classes = set()

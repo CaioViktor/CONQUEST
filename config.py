@@ -25,3 +25,8 @@ port = 5000
 
 min_confidance_classification = 0.8
 min_diference_confidance = 0.05
+
+messages = {
+	'welcome': "Olá,\n Eu sou o {} e estou aqui para lhe tirar dúvidas sobre medicamentos.",
+	'empty_rensponse': "Desculpe, não encontrei nada sobre sua pergunta"
+}

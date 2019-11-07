@@ -5,6 +5,7 @@
 	"created_date": "",
 	"QAIs": [
 		{
+			"id":0,
 			"description": "Busca remédios que possuam um mesmo princípio ativo de um dado medicamento alvo",
 			"QPs": ["Quais são os medicamentos com o mesmo princípio ativo do $principioAtivo?",
 				"Diga os medicamentos com o princípio ativo $principioAtivo",
@@ -24,6 +25,7 @@
 			}
 		},
 		{
+			"id":1,
 			"description": "Retorna definição contida na ontologia sobre um dado termo",
 			"QPs": ["quero saber a definção de $termo_in",
 				"O que significa $termo_in",
@@ -43,6 +45,7 @@
 			}
 		},
 		{
+			"id":2,
 			"description": "Retorna informações sobre um dado medicamento medicamento",
 			"QPs": ["Fale sobre o medicamento $medicamento_in",
 				"Traga informações sobre o medicamento $medicamento_in",
@@ -62,6 +65,7 @@
 			}
 		},
 		{
+			"id":3,
 			"description": "Retorna os riscos de um dado medicamento. Os reiscos retornados são: efeitos colaterais, riscos na gravidez e no aleitamento",
 			"QPs": ["Quais são os riscos do medicamento $medicamento_in?",
 				"Quais são os riscos do remédio $medicamento_in?",
@@ -81,6 +85,7 @@
 			}
 		},
 		{
+			"id":4,
 			"description": "Busca as apresentações de um dado medicamento",
 			"QPs": ["Quais são as apresentações do medicamento $medicamento_in?",
 				"Quais são as apresentações do remédio $medicamento_in?",
@@ -100,6 +105,7 @@
 			}
 		},
 		{
+			"id":5,
 			"description": "Retorna informações sobre uma dada apresentação de um medicamento",
 			"QPs": ["Retorne as informações sobre o medicamento de código de barras $ean_in",
 				"Fale sobre a apresentação com o código de barras $ean_in",
@@ -119,6 +125,7 @@
 			}
 		},
 		{
+			"id":6,
 			"description": "Retorna o preço para uma dada apresentação em um dado estado da federação, levando em conta a carga tributária",
 			"QPs": ["Retorne as informações sobre o medicamento de código de barras $ean_in no estado",
 				"Fale sobre a apresentação com o código de barras $ean_in em $localidade_in",
@@ -138,6 +145,7 @@
 			}
 		},
 		{
+			"id":7,
 			"description": "Retorna os preços para todas as apresentações de um dado medicamento",
 			"QPs": ["quanto custa um $medicamento_in?",
 				"Qual o preço do $medicamento_in?",

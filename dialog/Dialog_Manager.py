@@ -7,12 +7,12 @@ from nlp.NLP_Processor import NLP_Processor
 from classifier.ML_Classifier import ML_Classifier
 from nlp.NER_Trainer import NER_Trainer 
 from datetime import datetime
+from ontology.Query_Processor import Query_Processor
 import pprint
 import spacy
 import nlp.Solr_Connection as solr_connection
 from scipy.spatial.distance import cosine
 import re
-from rdflib import XSD
 #States constants
 from dialog.constants import *
 import json
@@ -32,6 +32,7 @@ class Dialog_Manager():
 		self.nlp_processor = self.load_NLP_Processor()
 		self.classifier = ML_Classifier.load_model()
 		self.users_collection = users_collection
+		self.query_processor = Query_Processor(sparql_endpoint,graph_name)
 
 
 
@@ -89,8 +90,8 @@ class Dialog_Manager():
 
 		ordered_qais_index = list(y.argsort())
 		ordered_qais_index.reverse()
+		print(entities,ordered_qais_index,y[ordered_qais_index[0]],y[ordered_qais_index[1]])
 		ordered_qais_index = ordered_qais_index[:max_option]
-
 
 
 		if y[ordered_qais_index[0]] >= min_confidance_classification:
@@ -161,7 +162,7 @@ class Dialog_Manager():
 			# print(user)
 			if len(user['context']['cvs_to_fill']) == 0:
 				#All CVs filled
-				return self.make_query(user)
+				return self.run_query(user)
 			else:
 				#Nedd to fill CV
 				return "Faltou as CVs:\n{}".format(user['context']['cvs_filled'])
@@ -170,16 +171,10 @@ class Dialog_Manager():
 			# return json.dumps(user)
 		return "Error in classify QP"
 
-	def make_query(self,user):
+	def run_query(self,user):
 		#Build SPARQL query
 		qai = self.qai_Manager.QAIs[user['context']['qai_id']]
-		query = qai.SP 
-		for cv in user['context']['cvs_filled']:
-			id_var = sc.name_to_id_var(cv['name'])
-			cv_value = cv['value']
-			if XSD.string in qai.CVs[id_var]['class']:
-				cv_value = "'"+cv_value+"'"
-			query = query.replace(cv['name'],cv_value)
-		return query
-		#TODO: Query Processor
+		return self.query_processor.run(qai,user['context']['cvs_filled'])
+		
+		
 
