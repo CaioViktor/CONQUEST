@@ -13,9 +13,10 @@ import spacy
 import nlp.Solr_Connection as solr_connection
 from scipy.spatial.distance import cosine
 import re
+
 #States constants
 from dialog.constants import *
-import json
+
 
 #Configuration parameters
 from config import *
@@ -35,6 +36,12 @@ class Dialog_Manager():
 		self.query_processor = Query_Processor(sparql_endpoint,graph_name)
 
 
+	def save_user_context(self,user):
+		self.users_collection.update_one({'id':user['id']},{'$set':{'context':user['context']}})
+
+	def clear_user_context(self,user):
+		user['context'] = new_user_context()
+		return user
 
 	def close(self):
 		self.nlp_processor.close()
@@ -74,8 +81,8 @@ class Dialog_Manager():
 		user = self.users_collection.find_one({'id':user_id})
 		if user['context']['state'] == WAITING_TO_START:
 			return self.waiting_to_start(user,text)
-		elif ser['context']['state'] == WAITING_TO_START:
-			return
+		elif user['context']['state'] == WAITING_DESAMBIGUATION:
+			return self.waiting_desambiguation(user,text)
 
 	def waiting_to_start(self,user,text):
 
@@ -86,11 +93,11 @@ class Dialog_Manager():
 
 		QV,SV_CVec = self.nlp_processor.transform_QV(sentence,entities)
 		y = self.classifier.predict_proba(QV)[0]
-		max_option = min(len(y),3)
+		max_option = min(len(y),number_desambiguation_options)
 
 		ordered_qais_index = list(y.argsort())
 		ordered_qais_index.reverse()
-		print(entities,ordered_qais_index,y[ordered_qais_index[0]],y[ordered_qais_index[1]])
+		# print(entities,ordered_qais_index,y[ordered_qais_index[0]],y[ordered_qais_index[1]])
 		ordered_qais_index = ordered_qais_index[:max_option]
 
 
@@ -100,7 +107,8 @@ class Dialog_Manager():
 				diference_confidance = y[ordered_qais_index[0]] - y[ordered_qais_index[1]]
 				if diference_confidance < min_diference_confidance:
 					#Classification has a high confidance, but in two classes
-					return "estou em dúvida com {} em {}-{} e {}-{}".format(diference_confidance,ordered_qais_index[0],y[ordered_qais_index[0]],ordered_qais_index[1],y[ordered_qais_index[1]])
+					# return "estou em dúvida com {} em {}-{} e {}-{}".format(diference_confidance,ordered_qais_index[0],y[ordered_qais_index[0]],ordered_qais_index[1],y[ordered_qais_index[1]])
+					return self.make_desambiguation_questions(user,y,ordered_qais_index,SV_CVec)
 				else:
 					#Classification has a high confidance only in a one class
 					user['context']['qai_id'] = ordered_qais_index[0]
@@ -110,28 +118,71 @@ class Dialog_Manager():
 					return self.fetch_QAI(user)
 			else:
 				#There are only one option
-				return "Só tenho uma opção"
+				return {'status':1,'message':"Só tenho uma opção"}
 		else: 
 			#Classification has a low confidance
-			return "não tenho certeza"
-		return list(y)
+			return self.make_desambiguation_questions(user,y,ordered_qais_index,SV_CVec)
 
-	def fetch_QAI(self,user):
-		qai = self.qai_Manager.QAIs[user['context']['qai_id']] 
+	def waiting_desambiguation(self,user,text):
+		text = text.strip()
+		if text.isdigit() and int(text) >= 0 and int(text) < len(user['context']['options']):
+			option = int(text)
+			#TODO: Aprender questão e continuar o fluxo
+			return {'status':0,'message':"Você selecionou a opção {}".format(user['context']['options'][option]['text'])}
+		elif text == "-1":
+			#None sugestion is the correct question
+			#TODO: guardar questão?
+			return {'status':0,'message':messages['unkwon_question']}
+		else:
+			return {'status':INVALID_OPTION,'message':messages['invalid_option']}
+
+
+	def get_nearest_QP_index(self,original_sv,qai):
 		nearest_qp_index = -1
 		nearest_qp_value = 1
 		idx = 0
 
 		for sv in qai.SVs:
-			distance = cosine(user['context']['original_sv'] , sv)
+			distance = cosine(original_sv , sv)
 			if distance < nearest_qp_value:
 				nearest_qp_value = distance
 				nearest_qp_index = idx
 			idx+=1
+		return nearest_qp_index
+
+	def fill_QP(self,user,qai,qp):
+		cvs = re.findall("\$\w+",qp)
+
+		entities = {}
+		for entity in user['context']['entities_found']:
+			#Make lists for CVs divided by types
+			entity_type = self.nlp_processor.hash(entity[1])
+			if entity_type in entities:
+				entities[entity_type].apped(entity[0])
+			else:
+				entities[entity_type] = [entity[0]]
+		for cv in cvs:
+			#Filling CVs
+			id_var = sc.name_to_id_var(cv)
+			if len(qai.CVs[id_var]['owners_types']) > 0:
+				#Get only the first type of a CV
+				typee = qai.CVs[id_var]['owners_types'][0]
+				typee_id = self.nlp_processor.hash(typee)
+				if len(entities[typee_id]) > 0:
+					#Found CV candidate
+					cv_value = entities[typee_id][0]
+					entities[typee_id].remove(cv_value)
+					qp = qp.replace(cv,cv_value,1)
+			return qp
+
+	def fetch_QAI(self,user):
+		qai = self.qai_Manager.QAIs[user['context']['qai_id']] 
+		
+		nearest_qp_index = self.get_nearest_QP_index(user['context']['original_sv'],qai)
+
 		if nearest_qp_index > -1:
 			nearest_qp = qai.QPs[nearest_qp_index]
 			cvs = re.findall("\$\w+",nearest_qp)
-
 
 			entities = {}
 			for entity in user['context']['entities_found']:
@@ -164,17 +215,31 @@ class Dialog_Manager():
 				#All CVs filled
 				return self.run_query(user)
 			else:
-				#Nedd to fill CV
-				return "Faltou as CVs:\n{}".format(user['context']['cvs_filled'])
+				#Need to fill CV
+				return {'status':1,'message':"Faltou as CVs:\n{}".format(user['context']['cvs_filled'])}
 
 			# return "QP mais próxima é '{}' com distância de {}".format(qai.QPs[nearest_qp_index],nearest_qp_value)
 			# return json.dumps(user)
-		return "Error in classify QP"
+		return {'status':1,'message':"Error in classify QP"}
 
 	def run_query(self,user):
 		#Build SPARQL query
 		qai = self.qai_Manager.QAIs[user['context']['qai_id']]
-		return self.query_processor.run(qai,user['context']['cvs_filled'])
+		return {'status':0,'message':self.query_processor.run(qai,user['context']['cvs_filled'])}
 		
-		
+	def make_desambiguation_questions(self,user,y,ordered_qais_index,SV_CVec):
+		user['context']['options'] = []
+		for qai_id in ordered_qais_index:
+			option = {}
+			qai = self.qai_Manager.QAIs[qai_id] 
+			option['confidance'] = float(y[qai_id])
+			option['value'] = int(qai_id)
+			qp = qai.QPs[self.get_nearest_QP_index(SV_CVec[0],qai)]
+			option['text'] = self.fill_QP(user,qai,qp)
+			user['context']['options'].append(option)
+		# print(user)
+		user['context']['state'] = WAITING_DESAMBIGUATION
+		self.save_user_context(user)
+		# return json.dumps(user['context']['options'], ensure_ascii=False)
+		return {'status':WAITING_DESAMBIGUATION,'message':user['context']['options']}
 
