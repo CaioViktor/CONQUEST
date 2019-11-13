@@ -54,7 +54,9 @@ class QAI_Manager():
 	def to_Json(self):
 		return json.dumps({"description": self.description,"update_data": self.update_data,"author": self.author,"created_date": self.created_date,"QAIs": [QAI.__dict__ for QAI in self.QAIs]},indent=4,ensure_ascii=False)
 
-
-	@classmethod
-	def load_from_persistence(cls,name):
-		return cls()
+	def update_QAI(self,qai_index,new_QP,new_SV):
+		# print("QPs:\n",self.QAIs[qai_index].QPs,"SVs:\n",self.QAIs[qai_index].SVs)
+		if qai_index >=0 and qai_index < len(self.QAIs):
+			self.QAIs[qai_index].QPs.append(new_QP)
+			self.QAIs[qai_index].SVs.append(new_SV)
+			# print("QPs:\n",self.QAIs[qai_index].QPs,"SVs:\n",self.QAIs[qai_index].SVs)

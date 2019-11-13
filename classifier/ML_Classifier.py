@@ -165,10 +165,6 @@ class ML_Classifier():
 		# self.save_model()
 
 
-	def update(self,x,y):
-		# TODO: Update model
-		return
-
 
 	def eval_model(self,X,y):
 

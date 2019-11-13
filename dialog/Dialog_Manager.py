@@ -37,7 +37,11 @@ class Dialog_Manager():
 
 
 	def save_user_context(self,user):
-		self.users_collection.update_one({'id':user['id']},{'$set':{'context':user['context']}})
+		#Clear filds tha mongo don't suport
+		context = user['context'].copy()
+		context['original_cvec'] = []
+		context['original_sv'] = []
+		self.users_collection.update_one({'id':user['id']},{'$set':{'context':context}})
 
 	def clear_user_context(self,user):
 		user['context'] = new_user_context()
@@ -126,15 +130,35 @@ class Dialog_Manager():
 	def waiting_desambiguation(self,user,text):
 		text = text.strip()
 		if text.isdigit() and int(text) >= 0 and int(text) < len(user['context']['options']):
+			#Set correct QAI
 			option = int(text)
-			#TODO: Aprender questão e continuar o fluxo
-			return {'status':0,'message':"Você selecionou a opção {}".format(user['context']['options'][option]['text'])}
+			user['context']['qai_id'] = user['context']['options'][option]['value']
+			qai = self.qai_Manager.QAIs[user['context']['qai_id']] 
+
+			#Process new QP
+			QV,SV_CVec = self.nlp_processor.transform_QV(user['context']['question'],user['context']['entities_found'])
+			user['context']['original_sv'] = SV_CVec[0]
+			user['context']['original_cvec'] = SV_CVec[1]
+			nearest_qp_index = self.get_nearest_QP_index(user['context']['original_sv'],qai)
+			user = self.fill_CVs(user,qai,nearest_qp_index)
+			new_qp = user['context']['question']
+			for cv in user['context']['cvs_filled']:
+				#replace CVs values with CVs marker in QP
+				new_qp = new_qp.replace(cv['value'],cv['name'])
+			#Update QAI
+			self.update_QAI(user['context']['qai_id'],new_qp,user['context']['original_sv'])
+
+			# print(user)
+			# self.save_user_context(user)
+			return self.fetch_QAI(user)
 		elif text == "-1":
 			#None sugestion is the correct question
 			#TODO: guardar questão?
+			user = self.clear_user_context(user)
+			self.save_user_context(user)
 			return {'status':0,'message':messages['unkwon_question']}
 		else:
-			return {'status':INVALID_OPTION,'message':messages['invalid_option']}
+			return {'status':INVALID_OPTION,'message':[messages['invalid_option'],user['context']['question'],user['context']['options']]}
 
 
 	def get_nearest_QP_index(self,original_sv,qai):
@@ -168,7 +192,7 @@ class Dialog_Manager():
 				#Get only the first type of a CV
 				typee = qai.CVs[id_var]['owners_types'][0]
 				typee_id = self.nlp_processor.hash(typee)
-				if len(entities[typee_id]) > 0:
+				if typee_id in entities and len(entities[typee_id]) > 0:
 					#Found CV candidate
 					cv_value = entities[typee_id][0]
 					entities[typee_id].remove(cv_value)
@@ -181,36 +205,7 @@ class Dialog_Manager():
 		nearest_qp_index = self.get_nearest_QP_index(user['context']['original_sv'],qai)
 
 		if nearest_qp_index > -1:
-			nearest_qp = qai.QPs[nearest_qp_index]
-			cvs = re.findall("\$\w+",nearest_qp)
-
-			entities = {}
-			for entity in user['context']['entities_found']:
-				#Make lists for CVs divided by types
-				entity_type = self.nlp_processor.hash(entity[1])
-				if entity_type in entities:
-					entities[entity_type].apped(entity[0])
-				else:
-					entities[entity_type] = [entity[0]]
-
-			user['context']['cvs_to_fill'] = []
-			user['context']['cvs_filled'] = []
-			for cv in cvs:
-				#Filling CVs
-				id_var = sc.name_to_id_var(cv)
-				if len(qai.CVs[id_var]['owners_types']) > 0:
-					#Get only the first type of a CV
-					typee = qai.CVs[id_var]['owners_types'][0]
-					typee_id = self.nlp_processor.hash(typee)
-					if typee_id not in entities:
-						#CV candidate not found
-						user['context']['cvs_to_fill'].append({'name':cv,'type':typee})
-					elif len(entities[typee_id]) > 0:
-						#Found CV candidate
-						cv_value = entities[typee_id][0]
-						user['context']['cvs_filled'].append({'name':cv,'value':cv_value})
-						entities[typee_id].remove(cv_value)
-			# print(user)
+			user = self.fill_CVs(user,qai,nearest_qp_index)
 			if len(user['context']['cvs_to_fill']) == 0:
 				#All CVs filled
 				return self.run_query(user)
@@ -222,10 +217,46 @@ class Dialog_Manager():
 			# return json.dumps(user)
 		return {'status':1,'message':"Error in classify QP"}
 
+
+	def fill_CVs(self,user,qai,nearest_qp_index):
+		nearest_qp = qai.QPs[nearest_qp_index]
+		cvs = re.findall("\$\w+",nearest_qp)
+
+		entities = {}
+		for entity in user['context']['entities_found']:
+			#Make lists for CVs divided by types
+			entity_type = self.nlp_processor.hash(entity[1])
+			if entity_type in entities:
+				entities[entity_type].apped(entity[0])
+			else:
+				entities[entity_type] = [entity[0]]
+
+		user['context']['cvs_to_fill'] = []
+		user['context']['cvs_filled'] = []
+		for cv in cvs:
+			#Filling CVs
+			id_var = sc.name_to_id_var(cv)
+			if len(qai.CVs[id_var]['owners_types']) > 0:
+				#Get only the first type of a CV
+				typee = qai.CVs[id_var]['owners_types'][0]
+				typee_id = self.nlp_processor.hash(typee)
+				if typee_id not in entities:
+					#CV candidate not found
+					user['context']['cvs_to_fill'].append({'name':cv,'type':typee})
+				elif len(entities[typee_id]) > 0:
+					#Found CV candidate
+					cv_value = entities[typee_id][0]
+					user['context']['cvs_filled'].append({'name':cv,'value':cv_value})
+					entities[typee_id].remove(cv_value)
+		return user
+
 	def run_query(self,user):
 		#Build SPARQL query
 		qai = self.qai_Manager.QAIs[user['context']['qai_id']]
-		return {'status':0,'message':self.query_processor.run(qai,user['context']['cvs_filled'])}
+		answer = {'status':0,'message':self.query_processor.run(qai,user['context']['cvs_filled'])}
+		user = self.clear_user_context(user)
+		self.save_user_context(user)
+		return answer
 		
 	def make_desambiguation_questions(self,user,y,ordered_qais_index,SV_CVec):
 		user['context']['options'] = []
@@ -243,3 +274,9 @@ class Dialog_Manager():
 		# return json.dumps(user['context']['options'], ensure_ascii=False)
 		return {'status':WAITING_DESAMBIGUATION,'message':user['context']['options']}
 
+	def update_QAI(self,qai_index,new_QP,new_SV):
+		self.qai_Manager.update_QAI(qai_index,new_QP,new_SV)
+		out_path = os.path.join("persistence/qais","qai_manager.sav") 
+		with open(out_path ,"wb") as file:
+			pickle.dump(self.qai_Manager,file)
+			print("QAI Manager updated to {}".format(out_path))

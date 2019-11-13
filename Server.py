@@ -2,6 +2,7 @@ from flask import Flask,render_template,request, redirect, url_for, jsonify
 from dialog.Dialog_Manager import Dialog_Manager
 import atexit
 import pymongo
+import re
 
 #States constants
 from dialog.constants import *
@@ -39,6 +40,11 @@ def query():
 	if 'user_id' in request.args and 'text' in request.args:
 		user_id = request.args['user_id']
 		text = request.args['text']
+		if text is None or text.strip() == "":
+			return {'status':1,'message':"Missing args!"}
+		text = text.strip()
+		text = re.sub(r'^\"','',text)
+		text = re.sub(r'\"$','',text)
 		if user_id == '-1':
 			return {'status':0,'message':"Invalid User ID!"}
 		if users_collection.find_one({'id':user_id}) is None:

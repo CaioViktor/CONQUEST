@@ -11,7 +11,7 @@ def new_user_context():
 		'entities_found': [],
 		'qai_id':-1, #QAI id classified
 		'cvs_to_fill':[{'name':"",	'type':""}] ,#Names of recognized CVs yet to fill
-		'cvs_filled':[{'name':""	,	'value:':""}] ,#Names of recognized CVs yet to fill
+		'cvs_filled':[{'name':""	,	'value:':""}] ,#Names of recognized CVs
 		'original_cvec':[], #Original CVec parsed from the question
 		'original_sv':[], #Original SV parsed from the question
 		'options': [{'text':""	,	'value':""	,	'confidance':""}] #options asked to user

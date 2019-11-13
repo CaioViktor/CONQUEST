@@ -16,6 +16,7 @@ import pprint
 import spacy
 import nlp.Solr_Connection as solr_connection
 
+
 pp = pprint.PrettyPrinter(indent=4)
 
 
@@ -46,8 +47,7 @@ def main(mode='zero',point = 0):
 
 	satart_time_trainer = datetime.now()
 	if mode.lower() == 'update':
-		print("update")
-		#TODO: Update model
+		update()
 	elif mode.lower() == 'resume' or point > 0:
 		print("Resuming training...\n\n\n")
 		if point <= 0:
@@ -312,6 +312,43 @@ def load_train_classifier():
 def load_labels(filePath):
 	with open(filePath,"rb") as file:
 		return pickle.load(file)
+
+def update():
+	print("\n\nUpdating Model",4)
+	load_QAIs()
+
+	global X
+	global y
+	global classifier
+	global nlp_model_load
+	global QAI_Manager
+
+
+	print("Starting Classifier stage. This could take several minutes...")
+	
+
+	labels_path = os.path.join(path_train_NER_temp,"labels.sav")
+	labels_NER = load_labels(labels_path)
+
+	nlp_processor = NLP_Processor(labels_NER,nlp_model_load)
+
+	print("Creating classifier training dataset. This could take several minutes...")
+	X,y = ML_Classifier.pre_process_data(QAI_Manager.QAIs,nlp_processor)
+
+	output_path = "persistence/temp/classifier/X.sav"
+	with open(output_path,"wb") as output:
+		pickle.dump(X,output)
+		print("Features vector X saved to",output_path)
+
+	output_path = "persistence/temp/classifier/y.sav"
+	with open(output_path,"wb") as output:
+		pickle.dump(y,output)
+		print("Classes vector y saved to",output_path)
+
+	print("Creating classifier.")
+	classifier = ML_Classifier(model_path="persistence/classifier",model_file="ml_classifier.sav")
+
+	train_classifier()
 
 if __name__ == "__main__":
     plac.call(main)
