@@ -28,7 +28,7 @@ def load_pickle(filePath):
 
 class Dialog_Manager():
 	def __init__(self,users_collection):
-		self.index_classes,index_properties = self.load_index()
+		self.index_classes,self.index_properties = self.load_index() #self.index_properties = (rdf:Property,owl:ObjectProperty,owl:DatatypeProperty)
 		self.qai_Manager = self.load_QAIs()
 		self.nlp_processor = self.load_NLP_Processor()
 		self.classifier = ML_Classifier.load_model()
@@ -41,6 +41,8 @@ class Dialog_Manager():
 		context = user['context'].copy()
 		context['original_cvec'] = []
 		context['original_sv'] = []
+		context['qai_id'] = int(context['qai_id'])
+		
 		self.users_collection.update_one({'id':user['id']},{'$set':{'context':context}})
 
 	def clear_user_context(self,user):
@@ -87,9 +89,10 @@ class Dialog_Manager():
 			return self.waiting_to_start(user,text)
 		elif user['context']['state'] == WAITING_DESAMBIGUATION:
 			return self.waiting_desambiguation(user,text)
+		elif user['context']['state'] == WAITING_CV_VALUE:
+			return self.waiting_CV_value(user,text)
 
 	def waiting_to_start(self,user,text):
-
 		user['context']['question'] = text
 
 		entities, sentence = self.nlp_processor.parser(text)
@@ -160,6 +163,21 @@ class Dialog_Manager():
 		else:
 			return {'status':INVALID_OPTION,'message':[messages['invalid_option'],user['context']['question'],user['context']['options']]}
 
+	def waiting_CV_value(self,user,text):
+		waiting_cv = user['context']['cvs_to_fill'][0]
+		user['context']['cvs_to_fill'].remove(waiting_cv)
+		user['context']['cvs_filled'].append({'name':waiting_cv['name'],'value':text})
+
+		if len(user['context']['cvs_to_fill']) == 0:
+			#All CVs filled
+			
+			answer = self.run_query(user)
+			user = self.clear_user_context(user)
+			self.save_user_context(user)
+			return answer
+		else:
+			#Still has CVs unfilled
+			return self.ask_CV(user)
 
 	def get_nearest_QP_index(self,original_sv,qai):
 		nearest_qp_index = -1
@@ -211,12 +229,61 @@ class Dialog_Manager():
 				return self.run_query(user)
 			else:
 				#Need to fill CV
-				return {'status':1,'message':"Faltou as CVs:\n{}".format(user['context']['cvs_filled'])}
+				return self.ask_CV(user)
 
 			# return "QP mais próxima é '{}' com distância de {}".format(qai.QPs[nearest_qp_index],nearest_qp_value)
 			# return json.dumps(user)
 		return {'status':1,'message':"Error in classify QP"}
 
+	def ask_CV(self,user):
+		cv_to_ask = user['context']['cvs_to_fill'][0]
+		user['context']['state'] = WAITING_CV_VALUE
+		self.save_user_context(user)
+		if "@" in cv_to_ask['type']:
+			type_splitted = cv_to_ask['type'].split("@")
+			if len(type_splitted) == 2:
+				#CV is a value to a know property
+				cv_property_uri = type_splitted[0]
+				cv_class_uri = type_splitted[1]
+				
+				property_index = sc.uri_to_hash(cv_property_uri)
+				cv_property = None
+				if property_index in self.index_properties[0]:
+					#It is a rdf:Property
+					cv_property = self.index_properties[0][sc.uri_to_hash(cv_property_uri)]
+				elif property_index in self.index_properties[1]:
+					#It is a owl:ObjectProperty
+					cv_property = self.index_properties[1][sc.uri_to_hash(cv_property_uri)]
+				elif property_index in self.index_properties[2]:
+					#It is a owl:DatatypeProperty
+					cv_property = self.index_properties[2][sc.uri_to_hash(cv_property_uri)]
+				cv_class = self.index_classes[sc.uri_to_hash(cv_class_uri)]
+
+				
+
+				ask_question = messages['ask_cv_question'] 
+				ask_question = ask_question.replace("$property_comment",self.get_comment(cv_property))
+				ask_question = ask_question.replace("$class_comment",self.get_comment(cv_class))
+				ask_question = ask_question.replace("$property",self.get_label(cv_property))
+				ask_question = ask_question.replace("$class",self.get_label(cv_class))
+				return {'status':WAITING_CV_VALUE,'message':[ask_question]}
+
+			else:
+				return {'status':1,'message':"CV \n{}\nDon't have 2 args"}
+		else:
+			return {'status':1,'message':"CV \n{}\nDon't have @"}
+
+	def get_label(self,term):
+		if 'labels' in term and len(term['labels']) > 0:
+			return str(term['labels'][0].value)
+		else:
+			return ""
+
+	def get_comment(self,term):
+		if 'comments' in term and len(term['comments']) > 0:
+			return str(term['comments'][0].value)
+		else:
+			return ""
 
 	def fill_CVs(self,user,qai,nearest_qp_index):
 		nearest_qp = qai.QPs[nearest_qp_index]

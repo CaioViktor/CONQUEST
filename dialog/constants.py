@@ -1,6 +1,7 @@
 WAITING_TO_START = "waiting to start"
 WAITING_DESAMBIGUATION = "waiting desambiguation"
 INVALID_OPTION = "invalid_option"
+WAITING_CV_VALUE = "waiting CV value"
 
 
 
