@@ -51,6 +51,7 @@ class Query_Processor():
 		return query
 
 	def run_sparql(self,query):
+		print(query)
 		sparql = SPARQLWrapper(self.url_endpoint)
 		sparql.setQuery(query)
 		sparql.setReturnFormat(JSON)

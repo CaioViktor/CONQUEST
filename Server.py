@@ -41,12 +41,12 @@ def query():
 		user_id = request.args['user_id']
 		text = request.args['text']
 		if text is None or text.strip() == "":
-			return {'status':1,'message':"Missing args!"}
+			return {'status':1,'message':["Missing args!"]}
 		text = text.strip()
 		text = re.sub(r'^\"','',text)
 		text = re.sub(r'\"$','',text)
 		if user_id == '-1':
-			return {'status':0,'message':"Invalid User ID!"}
+			return {'status':0,'message':["Invalid User ID!"]}
 		if users_collection.find_one({'id':user_id}) is None:
 			#New user
 			user = create_new_user(user_id)
@@ -55,7 +55,7 @@ def query():
 
 		# return jsonify({'status':1,'message':response})
 		return jsonify(response)
-	return {'status':1,'message':"Missing args!"}
+	return {'status':1,'message':["Missing args!"]}
 
 @app.route("/")
 def index():

@@ -125,7 +125,8 @@ class Dialog_Manager():
 					return self.fetch_QAI(user)
 			else:
 				#There are only one option
-				return {'status':1,'message':"Só tenho uma opção"}
+				#TODO
+				return {'status':1,'message':["Só tenho uma opção"]}
 		else: 
 			#Classification has a low confidance
 			return self.make_desambiguation_questions(user,y,ordered_qais_index,SV_CVec)
@@ -184,17 +185,22 @@ class Dialog_Manager():
 		nearest_qp_value = 1
 		idx = 0
 
+		# print("QPs:\n",qai.QPs,"SVs:\n", len(qai.SVs))
+
 		for sv in qai.SVs:
+			if idx >= qai.canonicals_QPs:
+				#From here on the QPs are given by the users
+				break
 			distance = cosine(original_sv , sv)
 			if distance < nearest_qp_value:
 				nearest_qp_value = distance
 				nearest_qp_index = idx
 			idx+=1
+		# print("near",nearest_qp_index)
 		return nearest_qp_index
 
 	def fill_QP(self,user,qai,qp):
 		cvs = re.findall("\$\w+",qp)
-
 		entities = {}
 		for entity in user['context']['entities_found']:
 			#Make lists for CVs divided by types
@@ -215,7 +221,7 @@ class Dialog_Manager():
 					cv_value = entities[typee_id][0]
 					entities[typee_id].remove(cv_value)
 					qp = qp.replace(cv,cv_value,1)
-			return qp
+		return qp
 
 	def fetch_QAI(self,user):
 		qai = self.qai_Manager.QAIs[user['context']['qai_id']] 
@@ -233,6 +239,7 @@ class Dialog_Manager():
 
 			# return "QP mais próxima é '{}' com distância de {}".format(qai.QPs[nearest_qp_index],nearest_qp_value)
 			# return json.dumps(user)
+		#TODO
 		return {'status':1,'message':"Error in classify QP"}
 
 	def ask_CV(self,user):
@@ -245,9 +252,11 @@ class Dialog_Manager():
 				#CV is a value to a know property
 				cv_property_uri = type_splitted[0]
 				cv_class_uri = type_splitted[1]
-				
 				property_index = sc.uri_to_hash(cv_property_uri)
+				print("\nProp:",cv_property_uri,"\nclass:",cv_class_uri,"hash: ",property_index)
+				print("\n\n",self.index_properties,"\n\n")
 				cv_property = None
+				cv_class = None
 				if property_index in self.index_properties[0]:
 					#It is a rdf:Property
 					cv_property = self.index_properties[0][sc.uri_to_hash(cv_property_uri)]
@@ -257,21 +266,29 @@ class Dialog_Manager():
 				elif property_index in self.index_properties[2]:
 					#It is a owl:DatatypeProperty
 					cv_property = self.index_properties[2][sc.uri_to_hash(cv_property_uri)]
-				cv_class = self.index_classes[sc.uri_to_hash(cv_class_uri)]
-
-				
-
+				if sc.uri_to_hash(cv_class_uri) in self.index_classes:
+					cv_class = self.index_classes[sc.uri_to_hash(cv_class_uri)]
 				ask_question = messages['ask_cv_question'] 
-				ask_question = ask_question.replace("$property_comment",self.get_comment(cv_property))
-				ask_question = ask_question.replace("$class_comment",self.get_comment(cv_class))
-				ask_question = ask_question.replace("$property",self.get_label(cv_property))
-				ask_question = ask_question.replace("$class",self.get_label(cv_class))
+				if cv_class is not None:
+					ask_question = ask_question.replace("$class_comment",self.get_comment(cv_class))
+					ask_question = ask_question.replace("$class",self.get_label(cv_class))
+				else:
+					ask_question = ask_question.replace("$class_comment","")
+					ask_question = ask_question.replace("$class",cv_class_uri)
+				if cv_property is not None:
+					ask_question = ask_question.replace("$property_comment",self.get_comment(cv_property))
+					ask_question = ask_question.replace("$property",self.get_label(cv_property))
+				else:
+					ask_question = ask_question.replace("$property_comment","")
+					ask_question = ask_question.replace("$property",cv_property_uri)
 				return {'status':WAITING_CV_VALUE,'message':[ask_question]}
 
 			else:
-				return {'status':1,'message':"CV \n{}\nDon't have 2 args"}
+				#TODO
+				return {'status':1,'message':["CV \n{}\nDon't have 2 args"]}
 		else:
-			return {'status':1,'message':"CV \n{}\nDon't have @"}
+			#TODO
+			return {'status':1,'message':["CV \n{}\nDon't have @"]}
 
 	def get_label(self,term):
 		if 'labels' in term and len(term['labels']) > 0:
@@ -339,7 +356,7 @@ class Dialog_Manager():
 		user['context']['state'] = WAITING_DESAMBIGUATION
 		self.save_user_context(user)
 		# return json.dumps(user['context']['options'], ensure_ascii=False)
-		return {'status':WAITING_DESAMBIGUATION,'message':user['context']['options']}
+		return {'status':WAITING_DESAMBIGUATION,'message':[user['context']['options']]}
 
 	def update_QAI(self,qai_index,new_QP,new_SV):
 		self.qai_Manager.update_QAI(qai_index,new_QP,new_SV)

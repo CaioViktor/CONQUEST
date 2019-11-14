@@ -12,6 +12,7 @@ class QAI:
 		self.description = ""
 		self.QPs = []
 		self.SP = ""
+		self.canonicals_QPs = 0
 		self.RP = {'header':"",'body':"",'footer':""}
 
 	def __init__(self,QAIj,QAI_id,propertyIndex):
@@ -20,6 +21,7 @@ class QAI:
 		self.QPs = QAIj['QPs']
 		self.SP = QAIj['SP']
 		self.RP = QAIj['RP']
+		self.canonicals_QPs = len(self.QPs) #Number of QP given by the developer (canonicals)
 		self.CVs = {} #Context Variables, input variables
 		self.RVs = {} #Result Variables
 		self.IVs = {} #Inner Variables. Vars used only inside the query
