@@ -7,17 +7,17 @@
 		{
 			"id":0,
 			"description": "Busca remédios que possuam um mesmo princípio ativo de um dado medicamento alvo",
-			"QPs": ["Quais são os medicamentos com o mesmo princípio ativo do $principioAtivo?",
-				"Diga os medicamentos com o princípio ativo $principioAtivo",
-				"quero saber quais são os medicamentos que possuem princípio ativo $principioAtivo",
-				"Quais tem o princípio ativo $principioAtivo?", 
-				"quais medicamento possuem as substâncias $principioAtivo?",
-				"Quais medicamentos possuem a substância $principioAtivo?",
-				"retorne os medicamentos com princípios ativos $principioAtivo",
-				"Busque os mdedicamentos com o $principioAtivo",
-				"Quais medicamentos possuem a substancia $principioAtivo",
-				"Rertorne medicamentos que contenham a substancia $principioAtivo"],
-			"SP": "PREFIX drugs: <http://www.linkedmed.com.br/ontology/drugs/>\n PREFIX dc: <http://purl.org/dc/elements/1.1/>\nSELECT distinct ?nomeMedicamento\n      WHERE {\n        ?s ?p ?o .\n        ?s dc:title ?nomeMedicamento .\n        ?s drugs:substancia ?substancia .\n        ?substancia dc:title ?tituloSubstanciaPt .\n        FILTER(regex(str(?tituloSubstanciaPt), $principioAtivo, 'i'))\n        FILTER (lang(?tituloSubstanciaPt) = 'pt')\n      }",
+			"QPs": ["Quais são os medicamentos com o mesmo princípio ativo do $principioAtivo1?",
+				"Diga os medicamentos com o princípio ativo $principioAtivo1",
+				"quero saber quais são os medicamentos que possuem princípio ativo $principioAtivo1",
+				"Quais tem o princípio ativo $principioAtivo1?", 
+				"quais medicamento possuem as substâncias $principioAtivo1?",
+				"Quais medicamentos possuem a substância $principioAtivo1?",
+				"retorne os medicamentos com princípios ativos $principioAtivo1",
+				"Busque os mdedicamentos com o $principioAtivo1",
+				"Quais medicamentos possuem a substancia $principioAtivo1",
+				"Rertorne medicamentos que contenham a substancia $principioAtivo1"],
+			"SP": "PREFIX drugs: <http://www.linkedmed.com.br/ontology/drugs/>\n PREFIX dc: <http://purl.org/dc/elements/1.1/>\nSELECT distinct ?nomeMedicamento\n      WHERE {\n        ?s ?p ?o .\n        ?s dc:title ?nomeMedicamento .\n        ?s drugs:substancia ?substancia .\n        ?substancia dc:title ?tituloSubstanciaPt .\n        FILTER(regex(str(?tituloSubstanciaPt), $principioAtivo1, 'i'))\n        FILTER (lang(?tituloSubstanciaPt) = 'pt')\n      }",
 			"RP": {
 				"header": "Aqui estão:",
 				"body": "?nomeMedicamento",
@@ -27,19 +27,19 @@
 		{
 			"id":1,
 			"description": "Retorna definição contida na ontologia sobre um dado termo",
-			"QPs": ["quero saber a definção de $termo_in",
-				"O que significa $termo_in",
-				"defina $termo_in",
-				"fale sobre $termo_in",
-				"me diga o que é um $termo_in",
-				"explique o que é $termo_in",
-				"o que é um $termo_in",
-				"qual é a definição de $termo_in",
-				"você poderia me falar sobre $termo_in",
-				"busque a definição de $termo_in"],
-			"SP": "PREFIX drugs: <http://www.linkedmed.com.br/ontology/drugs/>\n PREFIX dc: <http://purl.org/dc/elements/1.1/>\nSELECT  DISTINCT (GROUP_CONCAT(DISTINCT LCASE(?auxLabel);separator='\\nOU\\n') AS ?titles) (GROUP_CONCAT( DISTINCT LCASE(?auxTipo);separator=' ; ') as ?types) (GROUP_CONCAT(DISTINCT LCASE(?auxComment);separator=' . ') as ?comments) WHERE{\n        {?termo rdfs:label ?auxLabel}UNION\n        {?termo dc:title ?auxLabel}\n        OPTIONAL{\n          ?termo rdfs:comment ?auxComment\n       }\n        OPTIONAL{\n         ?termo a _:tipo.\n         _:tipo rdfs:label ?auxTipo.\n        }\n        FILTER(REGEX(str(?auxLabel),$termo_in , 'i'))\n      }GROUP BY ?termo",
+			"QPs": ["quero saber a definção de $termo_in2",
+				"O que significa $termo_in2",
+				"defina $termo_in2",
+				"fale sobre $termo_in2",
+				"me diga o que é um $termo_in2",
+				"explique o que é $termo_in2",
+				"o que é um $termo_in2",
+				"qual é a definição de $termo_in2",
+				"você poderia me falar sobre $termo_in2",
+				"busque a definição de $termo_in2"],
+			"SP": "PREFIX drugs: <http://www.linkedmed.com.br/ontology/drugs/>\n PREFIX dc: <http://purl.org/dc/elements/1.1/>\nSELECT  DISTINCT (GROUP_CONCAT(DISTINCT LCASE(?auxLabel);separator='\\nOU\\n') AS ?titles) (GROUP_CONCAT( DISTINCT LCASE(?auxTipo);separator=' ; ') as ?types) (GROUP_CONCAT(DISTINCT LCASE(?auxComment);separator=' . ') as ?comments) WHERE{\n        {?termo rdfs:label ?auxLabel}UNION\n        {?termo dc:title ?auxLabel}\n        OPTIONAL{\n          ?termo rdfs:comment ?auxComment\n       }\n        OPTIONAL{\n         ?termo a _:tipo.\n         _:tipo rdfs:label ?auxTipo.\n        }\n        FILTER(REGEX(str(?auxLabel),$termo_in2 , 'i'))\n      }GROUP BY ?termo",
 			"RP": {
-				"header": "Conheço ${result.bindings.length} termos parecedios com $termo_in:",
+				"header": "Conheço  termos parecedios com $termo_in2:",
 				"body": "Nomes conhechidos:\n\t?titles\n\nSignificando:\n\t?comments\n\nNa ontologia tem o(s) tipo(s):\n\t?types",
 				"footer":""
 			}
@@ -59,7 +59,7 @@
 				"você poderia me falar sobre o medicameno $medicamento_in?"],
 			"SP": "PREFIX drugs: <http://www.linkedmed.com.br/ontology/drugs/>\nPREFIX dc: <http://purl.org/dc/elements/1.1/>\nPREFIX owl: <http://www.w3.org/2002/07/owl#>\nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>  \nSELECT DISTINCT ?title ?laboratorio ?quantidade_apresentacoes ?tipos ?classeTerapeutica ?nomes_principio_Ativo ?indicacoes WHERE{\n  ?medicamento a drugs:Medicamento;\n    dc:title ?title.\n  OPTIONAL{\n    {\n      SELECT DISTINCT ?medicamento (GROUP_CONCAT( DISTINCT LCASE(?principioAtivo);separator=' OU ') as ?nomes_principio_Ativo ) WHERE{\n        ?medicamento drugs:substancia ?substancia.\n        ?substancia dc:title ?principioAtivo.\n      \n      }GROUP BY ?medicamento\n    }\n    \n  }\n  OPTIONAL {\n    {\n      SELECT DISTINCT ?medicamento (GROUP_CONCAT( DISTINCT LCASE(?indicacao);separator=' , ') AS ?indicacoes)  WHERE{\n        ?medicamento drugs:substancia ?substancia.\n        ?substancia drugs:indicacao ?indic.\n        ?indic dc:title ?indicacao\n      \n      }GROUP BY ?medicamento\n    }\n  }\n  OPTIONAL{\n    ?medicamento drugs:temClasseTerapeutica ?classe.\n    ?classe dc:title ?classeTerapeutica.\n  }\n  OPTIONAL{\n    ?medicamento drugs:produtor ?produtor.\n    ?produtor dc:title ?laboratorio\n  }\n  OPTIONAL{\n    {\n      SELECT DISTINCT ?medicamento (GROUP_CONCAT( DISTINCT LCASE(?auxTipo);separator=' , ') as ?tipos ) WHERE{\n        ?medicamento a _:tipo.\n        _:tipo rdfs:label ?auxTipo.\n      }GROUP BY ?medicamento\n    }\n    \n  }\n  {\n    SELECT DISTINCT ?medicamento ( count(?apresentacao) as ?quantidade_apresentacoes) WHERE{\n      ?medicamento drugs:temApresentacao ?apresentacao\n    } GROUP BY ?medicamento\n  }\n  \n  FILTER(REGEX(str(?title),$medicamento_in,'i'))\n}GROUP BY ?medicamento",
 			"RP": {
-				"header": "Conheço ${result.bindings.length} medicamentos com nomes parecedios com $medicamento_in:",
+				"header": "Conheço  medicamentos com nomes parecedios com $medicamento_in:",
 				"body": "O ?title\nÉ um ?tipos.\nDa classe terapêutica ?classeTerapeutica\nSeu produtor é o laboratório ?laboratorio\nEle tem ?quantidade_apresentacoes apresentaçoes diferentes.\nTem o princípio ativo ?nomes_principio_Ativo\nCom indicações para: ?indicacoes.\n",
 				"footer":""
 			}
@@ -79,7 +79,7 @@
 				"Em que casos o medicamento $medicamento_in é contraindicado"],
 			"SP": "PREFIX drugs: <http://www.linkedmed.com.br/ontology/drugs/>\nPREFIX dc: <http://purl.org/dc/elements/1.1/>\nPREFIX owl: <http://www.w3.org/2002/07/owl#>\nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>  \nSELECT DISTINCT ?title ?efeitos_colaterais_en ?efeitos_colaterais_pt ?risco_gravidez ?uso_aleitamento ?aplicacao WHERE{\n  ?medicamento a drugs:Medicamento;\n    dc:title ?title.\n  OPTIONAL {\n    {\n      SELECT ?medicamento (GROUP_CONCAT( DISTINCT LCASE(?efeitoColateral);separator=' , ') as ?efeitos_colaterais_en ) WHERE{\n        ?medicamento drugs:substancia ?substancia.\n        ?substancia drugs:efeitoColateral ?efeito.\n        ?efeito dc:title ?efeitoColateral\n        FILTER(lang(?efeitoColateral) = 'en')\n      }GROUP BY ?medicamento\n    }\n  }\n  OPTIONAL {\n    {\n      SELECT DISTINCT ?medicamento ( GROUP_CONCAT( DISTINCT LCASE(?efeitoColateral);separator=' , ') as ?efeitos_colaterais_pt ) WHERE{\n        ?medicamento drugs:substancia ?substancia.\n        ?substancia drugs:efeitoColateral ?efeito.\n        ?efeito dc:title ?efeitoColateral\n        FILTER(lang(?efeitoColateral) = 'pt')\n      }GROUP BY ?medicamento\n    }\n  }\n  OPTIONAL{\n    ?medicamento drugs:substancia ?substancia.\n    ?substancia drugs:risco ?risco.\n    OPTIONAL{\n      ?risco drugs:temCategoriaRiscoGravidez ?gravidez.\n      ?gravidez rdfs:label ?categoria;\n        rdfs:comment ?definicao.\n      OPTIONAL{\n        ?risco drugs:observacaoRisco ?observacao.\n      }\n      BIND(STR(CONCAT(str(?categoria),', o que significa que \\n',str(?definicao),'\\n\\tObservacao:\\n',str(?observacao))) as ?risco_gravidez)\n    }\n    OPTIONAL{\n      ?risco drugs:usoAleitamento ?aleitamento.\n      ?aleitamento rdfs:label ?categoriaA;\n        rdfs:comment ?definicaoA.\n      \n      BIND(STR(CONCAT(str(?categoriaA),', o que significa que \\n',str(?definicaoA),'\\n\\tObservacao:\\n')) as ?uso_aleitamento)\n    }\n    OPTIONAL{\n      ?risco drugs:observacaoAplicacao ?aplicacao.\n    }\n  }\n  \n  FILTER(REGEX(str(?title),$medicamento_in,'i'))\n}GROUP BY ?medicamento ",
 			"RP": {
-				"header": "Conheço ${result.bindings.length} medicamentos com nomes parecedios com $medicamento_in",
+				"header": "Conheço  medicamentos com nomes parecedios com $medicamento_in",
 				"body": "O medicamento ?title\nPode causar os efeitos colaterais ?efeitos_colaterais_pt.\n\nCuidado! esse remédio possui riscos na gravidez porque ele é ?risco_gravidez.\nEle também possui riscos na amamentação como ?uso_aleitamento.\nTem indicações na aplicação ?aplicacao.\n",
 				"footer":""
 			}
@@ -99,8 +99,8 @@
 				"O medicamento $medicamento_in pode ser encontrado em quais apresentações"],
 			"SP": "PREFIX drugs: <http://www.linkedmed.com.br/ontology/drugs/>\nPREFIX dc: <http://purl.org/dc/elements/1.1/>\nPREFIX owl: <http://www.w3.org/2002/07/owl#>\nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>  \nSELECT DISTINCT ?title ?laboratorio ?apresentacoes WHERE{\n?medicamento a drugs:Medicamento;\n  dc:title ?title.\nOPTIONAL{\n  ?medicamento drugs:produtor ?produtor.\n  ?produtor dc:title ?laboratorio\n}\nOPTIONAL{\n  {\n    SELECT ?medicamento (GROUP_CONCAT(DISTINCT LCASE(CONCAT('\\t(Código de Barras: ',?ean,' ) ',?titleApresentacao)); separator='.\\n\\n') as ?apresentacoes) WHERE{\n      ?medicamento drugs:temApresentacao ?apresentacao.\n      ?apresentacao dc:title ?titleApresentacao;\n        drugs:ean ?ean.\n    }GROUP BY ?medicamento\n  }\n}\nFILTER(REGEX(str(?title),$medicamento_in,'i'))\n}",
 			"RP": {
-				"header": "Conheço ${result.bindings.length} medicamentos com nomes parecedios com $medicamento_in",
-				"body": "O medicamento ?title\n${response}Do laboratório ?laboratorio.\n${response}Tem as apresentações:\n?apresentacoes\n",
+				"header": "Conheço  medicamentos com nomes parecedios com $medicamento_in",
+				"body": "O medicamento ?title\n Do laboratório ?laboratorio.\n Tem as apresentações:\n?apresentacoes\n",
 				"footer":""
 			}
 		},
@@ -119,7 +119,7 @@
 				"Busque uma apresentação pelo código de barras $ean_in"],
 			"SP": "PREFIX drugs: <http://www.linkedmed.com.br/ontology/drugs/>\nPREFIX dc: <http://purl.org/dc/elements/1.1/>\nPREFIX owl: <http://www.w3.org/2002/07/owl#>\nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>  \nSELECT DISTINCT ?titleApresentacao ?titleMedicamento ?ean ?tarja ?restricao ?valorFabricaSemImposto ?valorGovernoSemImposto ?valorConsumidorSemImposto WHERE{\n  ?apresentacao a drugs:Apresentacao;\n    dc:title ?titleApresentacao;\n    drugs:ean ?ean;\n    drugs:restricaoHospitalar ?restricao.\n  OPTIONAL{\n    ?medicamento drugs:temApresentacao ?apresentacao;\n      dc:title ?titleMedicamento.\n  }\n  {\n    SELECT ?apresentacao (GROUP_CONCAT(DISTINCT ?tarjaX ; separator='.\\n') as ?tarja){\n      ?apresentacao drugs:tarja ?tarjaAux.\n      ?tarjaAux rdfs:label ?titleTarja;\n        rdfs:comment ?comentTarja.\n      BIND(STR(CONCAT('(',str(?titleTarja),')',', logo \\n',str(?comentTarja))) as ?tarjaX)\n    }\n  }\n  OPTIONAL{\n    ?apresentacao drugs:preco ?preco1.\n    ?preco1 a drugs:PrecoFabricaSemImposto;\n      drugs:valorPreco ?valorFabricaSemImposto.\n  }\n  OPTIONAL{\n    ?apresentacao drugs:preco ?preco2.\n    ?preco2 a drugs:PrecoAoGovernoSemImposto;\n      drugs:valorPreco ?valorGovernoSemImposto.\n  }\n  OPTIONAL{\n    ?apresentacao drugs:preco ?preco3.\n    ?preco3 a drugs:PrecoAoConsumidorSemImposto;\n      drugs:valorPreco ?valorConsumidorSemImposto.\n  }\n  FILTER(REGEX(str(?ean),$ean_in,'i'))\n}",
 			"RP": {
-				"header": "Conheço ${result.bindings.length} medicamentos com nomes parecedios com $ean_in",
+				"header": "Conheço  medicamentos com nomes parecedios com $ean_in",
 				"body": "A apresentação ?titleApresentacao\nDo medicamento ?titleMedicamento.\nPossui a classificação de ?tarja.\nEsta apresentação possui restrições hospitalares: ?restricao\nEssa apresentação tem o preço máximo de fábrica sem impostos permitido de R$ ?valorFabricaSemImposto\nE tem o preço máximo ao consumidor sem impostos permitido de R$ ?valorConsumidorSemImposto\nE tem o preço máximo ao governo sem impostos permitido de R$ ?valorGovernoSemImposto\n",
 				"footer":""
 			}
@@ -161,6 +161,20 @@
 			"RP": {
 				"header": "",
 				"body": "\n-Apresentação:\n?title - ?titleApresentacao\n-Valor ao consumidor sem impostos:\nR$:\n ?precoVal",
+				"footer":""
+			}
+		},
+		{
+			"id":8,
+			"description": "Retorna preços com um dado valor",
+			"QPs": ["preços com valor $preco",
+				"quais preços tem o valor de $preco?",
+				"retorne os preços $preco",
+				"diga os preços $preco"],
+			"SP": "PREFIX drugs: <http://www.linkedmed.com.br/ontology/drugs/>\nPREFIX dc: <http://purl.org/dc/elements/1.1/>\nPREFIX owl: <http://www.w3.org/2002/07/owl#>\nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>  \nSELECT ?a FROM <http://localhost:8890/DAV/drugs> WHERE{\n?a <http://www.linkedmed.com.br/ontology/drugs/valorPreco> ?c\nFILTER(?c = $preco)\n}",
+			"RP": {
+				"header": "",
+				"body": "\n-?a",
 				"footer":""
 			}
 		}

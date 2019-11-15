@@ -18,9 +18,17 @@ class QAI:
 	def __init__(self,QAIj,QAI_id,propertyIndex):
 		self.id = QAI_id
 		self.description = QAIj['description']
-		self.QPs = QAIj['QPs']
 		self.SP = QAIj['SP']
 		self.RP = QAIj['RP']
+		self.QPs= QAIj['QPs']
+
+		#Add id of QAI to variables to ensure that it are not used in others qais
+		self.SP = self.mark_qaiId_Vars(self.SP)
+		self.QPs = [self.mark_qaiId_Vars(qp) for qp in self.QPs]
+		self.RP['header']= self.mark_qaiId_Vars(self.RP['header'])
+		self.RP['body'] = self.mark_qaiId_Vars(self.RP['body'])
+		self.RP['footer'] = self.mark_qaiId_Vars(self.RP['footer'])
+		
 		self.canonicals_QPs = len(self.QPs) #Number of QP given by the developer (canonicals)
 		self.CVs = {} #Context Variables, input variables
 		self.RVs = {} #Result Variables
@@ -28,6 +36,7 @@ class QAI:
 		self.SVs = [] #Sentence Vector of QPs
 
 		cvs_Set,rvs_Set = self.get_variables_SP(self.SP);
+
 
 		# print("QAI:{}\n\tin:{}\n\tout:{}".format(self.id,vars_Set,result_Set))
 
@@ -37,7 +46,7 @@ class QAI:
 			print("Error on loading QAI {}".format(self.id))
 			raise 
 		vars_set = schema_processor.parser_sparql(self.SP,propertyIndex)
-
+		# print(vars_set)
 
 		for var in cvs_Set:
 			#Getting CV's Owners (classes and properties)
@@ -67,17 +76,18 @@ class QAI:
 						#current var is triple's object
 						self.get_Property_Owner(vars_set,s,p,id_var)
 			#Record owners_types
-			if XSD.string not in self.CVs[id_var]['class']:
-				#CV is from a primitive type (integer,decimal or datetime)
-				self.CVs[id_var]['owners_types'] = self.CVs[id_var]['owners_types'].union(set(self.CVs[id_var]['owners_types']))
-			else:
-				#CV is Property@Class
-				for owner_id in self.CVs[id_var]['owners']:
-					owner = self.CVs[id_var]['owners'][owner_id]
-					propertyy = self.CVs[id_var]['owners'][owner_id]['uri']
-					for classs in self.CVs[id_var]['owners'][owner_id]['classes']:
-						typee = Train_Maker.create_label(classs,propertyy)
-						self.CVs[id_var]['owners_types'].add(typee)
+			# if XSD.string not in self.CVs[id_var]['class']:
+			# 	#CV is from a primitive type (integer,decimal or datetime)
+			# 	self.CVs[id_var]['owners_types'] = self.CVs[id_var]['owners_types'].union(set(self.CVs[id_var]['owners_types']))
+			# else:
+			#CV is Property@Class
+			for owner_id in self.CVs[id_var]['owners']:
+				#TODO: Check why in some cases owners_types has a path
+				owner = self.CVs[id_var]['owners'][owner_id]
+				propertyy = self.CVs[id_var]['owners'][owner_id]['uri']
+				for classs in self.CVs[id_var]['owners'][owner_id]['classes']:
+					typee = Train_Maker.create_label(classs,propertyy)
+					self.CVs[id_var]['owners_types'].add(typee)
 			self.CVs[id_var]['owners_types'] = list(self.CVs[id_var]['owners_types'])
 			# print("Var {} types:\n{}".format(var,self.CVs[id_var]['owners_types']))
 		for var in rvs_Set:
@@ -98,6 +108,17 @@ class QAI:
 	def is_Binary_Comparator(op):
 		return op in ['=','<','>','>=','<=','!=','Builtin_CONTAINS','Builtin_STRAFTER','Builtin_STRBEFORE','Builtin_STRENDS','Builtin_STRSTARTS','Builtin_REGEX','Builtin_sameTerm']
 
+	def mark_qaiId_Vars(self,text):
+		cvs = re.findall("\$\w+",text)
+		for cv in cvs:
+			cv_name = cv.replace("$","")
+			text = text.replace(cv,"$qai_"+str(self.id)+"_"+cv_name)
+		
+		varss = re.findall("\?\w+",text)
+		for var in varss:
+			var_name = var.replace("?","")
+			text = text.replace(var,"?qai_"+str(self.id)+"_"+var_name)
+		return text
 
 	def get_Property_Owner(self,vars_set,class_owner,property_owner,id_var):
 		if isinstance(property_owner,URIRef):

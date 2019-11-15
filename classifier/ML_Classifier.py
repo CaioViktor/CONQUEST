@@ -69,12 +69,14 @@ class ML_Classifier():
 					# sentence = sentence.replace(cv['name'],"oovmarker")
 
 					if XSD.string not in cv['class']:
-						#CV is from a primitive type (integer,decimal or datetime)
-						classs = list(cv['class'])
-						# print(classs[0])
-						#TODO: Check error on non strings CVs
-						cvec_idx = type_CV_to_CVec_idx[nlp_processor.hash(str(classs))]
-						CVec[cvec_idx]+=1
+						if len(cv['class']) > 0:
+							#CV is from a primitive type (integer,decimal or datetime)
+							classs = list(cv['class'])[0]
+							# print("class: ",classs,"\nvector\n",type_CV_to_CVec_idx)
+							# print(classs[0])
+							#TODO: Check error on non strings CVs
+							cvec_idx = type_CV_to_CVec_idx[nlp_processor.hash(str(classs))]
+							CVec[cvec_idx]+=1
 					else:
 						#CV is Property@Class
 						for owner_id in cv['owners']:

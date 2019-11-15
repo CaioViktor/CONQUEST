@@ -30,7 +30,10 @@ class Query_Processor():
 				query = query.replace(where_query,self.graph_name+"WHERE")
 		for cv in cvs:
 			id_var = sc.name_to_id_var(cv['name'])
-			cv_value = re.sub("[^a-zA-Z0-9]",".",cv['value'])
+			# print(cv)
+			cv_value = cv['value']
+			if isinstance(cv_value,str):
+				cv_value = re.sub("[^a-zA-Z0-9]",".",cv_value)
 			#TODO: Ver se vai dar erro por causa dos tipos das variáveis terem sido simplificados
 			if XSD.string in qai.CVs[id_var]['class']:
 				cv_value = '"'+str(cv_value)+'"^^xsd:string'

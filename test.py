@@ -1,11 +1,11 @@
 import pprint
-# import qai.QAI_Manager as q
-# import ontology.Schema as sc
-# import rdflib.plugins.sparql.processor as processor
-# from rdflib.plugins.sparql.parser import parseQuery
-# import spacy
-# from spacy.lang.pt.examples import sentences 
-# from nlp.NLP_Processor import NLP_Processor
+import qai.QAI_Manager as q
+import ontology.Schema as sc
+import rdflib.plugins.sparql.processor as processor
+from rdflib.plugins.sparql.parser import parseQuery
+import spacy
+from spacy.lang.pt.examples import sentences 
+from nlp.NLP_Processor import NLP_Processor
 import pickle
 from classifier.ML_Classifier import ML_Classifier
 
@@ -18,7 +18,7 @@ def load_pickle(filePath):
 
 pp = pprint.PrettyPrinter(indent=4)
 
-# schema = sc.getGraph("ontology.ttl")
+schema = sc.getGraph("input/medibot/ontology.ttl")
 # pp.pprint(sc.load_properties_index(schema))
 # classIndex = sc.load_classes_index(schema)
 # pp.pprint(classIndex)
@@ -26,9 +26,9 @@ pp = pprint.PrettyPrinter(indent=4)
 
 
 
-# sp = sc.load_properties_index(schema)
-# scl = sc.load_classes_index(schema)
-# QAIM = q.QAI_Manager("MediBot.json",sp)
+sp = sc.load_properties_index(schema)
+scl = sc.load_classes_index(schema)
+QAIM = q.QAI_Manager("input/medibot/MediBot.json",sp)
 # QAIM = q.QAI_Manager("example_QAIs.js",sp)
 # f = fCV.Factory_ContextVariables(scl)
 
@@ -44,16 +44,17 @@ pp = pprint.PrettyPrinter(indent=4)
 # print("labels:\n{}\n-------------------------\n".format(ner_trainer.get_labels()))
 # pp.pprint(dataset)
 
-# for qai in QAIM.QAIs:
+for qai in QAIM.QAIs:
 # 	print("QPs:")
 # 	for qp in qai.QPs:
 # 		print(qp)
-# 	print("-------------------------------------------------")
-# 	print("cvs")
-# 	for cv_id in qai.CVs:
-# 		cv = qai.CVs[cv_id]
-# 		pp.pprint(cv)
-# 	print("*************************************************")
+	print("-------------------------------------------------")
+	print("SPARQL:\n\n",qai.SP)
+	print("cvs")
+	for cv_id in qai.CVs:
+		cv = qai.CVs[cv_id]
+		pp.pprint(cv)
+		print("\n*************************************************\n\n")
 # 	print(qai.CVs)
 # 	print("QAI {}:\n".format(qai.id))
 # 	CV = f.build_ContextVariables_vector(qai.CVs)
@@ -112,7 +113,7 @@ pp = pprint.PrettyPrinter(indent=4)
 
 
 # nlp_processor = NLP_Processor("temp/NER/NER_PT_2019-09-12_14-31-39")
-labels_NER = load_pickle("persistence/temp/nlp/labels.sav")
+# labels_NER = load_pickle("persistence/temp/nlp/labels.sav")
 
 # dataset,labels = ML_Classifier.pre_process_data(QAIM.QAIs,labels_NER,nlp_processor)
 # print(dataset)
@@ -127,8 +128,8 @@ labels_NER = load_pickle("persistence/temp/nlp/labels.sav")
 # 	print("y daved to temp/y.sav")
 
 
-from nlp.NLP_Processor import NLP_Processor
-from datetime import datetime
+# from nlp.NLP_Processor import NLP_Processor
+# from datetime import datetime
 
 # nlp = NLP_Processor(labels_NER)
 # texto = "Um teste com o medicamento buscopan e a substância abacavir. Além disso vamos tentar o buscopan composto e outro errado bscopan. Tendo um número 12 e outro 15.45 além da data 16/10/2019. Na localidade de São Paulo e SP e também no Ceará e CE. Opa outro inteiro 12"
@@ -145,25 +146,25 @@ from datetime import datetime
 
 
 
-nlp = NLP_Processor(labels_NER)
-clf = ML_Classifier.load_model()
+# nlp = NLP_Processor(labels_NER)
+# clf = ML_Classifier.load_model()
 # texto = "quero saber quais são os medicamentos que possuem princípio ativo abacavir?"
-texto = "quero saber o medicamento que possuei o princípio ativo abacavir?"
+# texto = "quero saber o medicamento que possuei o princípio ativo abacavir?"
 # texto = "liste medicamentos que possuam o princípio ativo abacavir?"
 # texto = "quanto custa um buscopan?"
 # texto = "Quais são as apresentações do medicamento buscopan"
 # texto = "O que significa tarja"
-print(texto)
-satart_time = datetime.now()
-entities,sentence = nlp.parser(texto)
+# print(texto)
+# satart_time = datetime.now()
+# entities,sentence = nlp.parser(texto)
 # print(nlp.transform_CVec(entities))
-QV,SV_CVec = nlp.transform_QV(sentence,entities)
+# QV,SV_CVec = nlp.transform_QV(sentence,entities)
 # print(sentence,"\n",list(QV.iloc[0]))
-y = clf.predict(QV)
-print("Classe:",y)
-finish_time = datetime.now()
-print("Processamento levou: {}".format(str(finish_time - satart_time)))
-nlp.close()
+# y = clf.predict(QV)
+# print("Classe:",y)
+# finish_time = datetime.now()
+# print("Processamento levou: {}".format(str(finish_time - satart_time)))
+# nlp.close()
 
 # X,y = clf.load_XY()
 # Y = clf.predict(X)

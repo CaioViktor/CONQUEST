@@ -13,6 +13,7 @@ import spacy
 import nlp.Solr_Connection as solr_connection
 from scipy.spatial.distance import cosine
 import re
+from rdflib import XSD
 
 #States constants
 from dialog.constants import *
@@ -246,15 +247,19 @@ class Dialog_Manager():
 		cv_to_ask = user['context']['cvs_to_fill'][0]
 		user['context']['state'] = WAITING_CV_VALUE
 		self.save_user_context(user)
-		if "@" in cv_to_ask['type']:
-			type_splitted = cv_to_ask['type'].split("@")
+		if "@" in cv_to_ask['type'] or ('owner' in cv_to_ask and "@" in cv_to_ask['owner']):
+			type_splitted = None
+			if "@" in cv_to_ask['type']:
+				type_splitted = cv_to_ask['type'].split("@")
+			else:
+				type_splitted = cv_to_ask['owner'].split("@")
 			if len(type_splitted) == 2:
 				#CV is a value to a know property
 				cv_property_uri = type_splitted[0]
 				cv_class_uri = type_splitted[1]
 				property_index = sc.uri_to_hash(cv_property_uri)
-				print("\nProp:",cv_property_uri,"\nclass:",cv_class_uri,"hash: ",property_index)
-				print("\n\n",self.index_properties,"\n\n")
+				# print("\nProp:",cv_property_uri,"\nclass:",cv_class_uri,"hash: ",property_index)
+				# print("\n\n",self.index_properties,"\n\n")
 				cv_property = None
 				cv_class = None
 				if property_index in self.index_properties[0]:
@@ -307,6 +312,7 @@ class Dialog_Manager():
 		cvs = re.findall("\$\w+",nearest_qp)
 
 		entities = {}
+		# print(user['context']['entities_found'])
 		for entity in user['context']['entities_found']:
 			#Make lists for CVs divided by types
 			entity_type = self.nlp_processor.hash(entity[1])
@@ -323,10 +329,17 @@ class Dialog_Manager():
 			if len(qai.CVs[id_var]['owners_types']) > 0:
 				#Get only the first type of a CV
 				typee = qai.CVs[id_var]['owners_types'][0]
+				if XSD.string not in qai.CVs[id_var]['class']:
+					#CV use a primitive value
+					typee = list(qai.CVs[id_var]['class'])[0]
+				# print(typee)
 				typee_id = self.nlp_processor.hash(typee)
 				if typee_id not in entities:
 					#CV candidate not found
-					user['context']['cvs_to_fill'].append({'name':cv,'type':typee})
+					cv_to_fill = {'name':cv,'type':typee}
+					if XSD.string not in qai.CVs[id_var]['class']:
+						cv_to_fill['owner'] = qai.CVs[id_var]['owners_types'][0]
+					user['context']['cvs_to_fill'].append(cv_to_fill)
 				elif len(entities[typee_id]) > 0:
 					#Found CV candidate
 					cv_value = entities[typee_id][0]
