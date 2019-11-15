@@ -36,10 +36,10 @@ def get_Resource(graph,uri):
 	return Resource(graph,uri)
 
 def normalize_datatype(datatype_xsd):
-	if datatype_xsd == XSD.int:
+	if datatype_xsd == XSD.int or datatype_xsd == XSD.decimal:
 		return XSD.integer
 	if datatype_xsd == XSD.float or datatype_xsd == XSD.double or datatype_xsd == XSD.real:
-		return XSD.decimal
+		return XSD.double
 	if datatype_xsd == XSD.date:
 		return XSD.dateTime
 	return datatype_xsd
@@ -306,7 +306,7 @@ def parser_expr(expr,vars_query,vars_in_expr=list(),depth=0):
 
 				#infers types
 				if left != None and left in vars_query:
-					vars_query[left]['class'].update([XSD.decimal])
+					vars_query[left]['class'].update([XSD.double])
 					vars_query[left]['type'] = LITERAL
 					#update context
 					
@@ -314,7 +314,7 @@ def parser_expr(expr,vars_query,vars_in_expr=list(),depth=0):
 
 
 				if right != None and right in vars_query:
-					vars_query[right]['class'].update([XSD.decimal])
+					vars_query[right]['class'].update([XSD.double])
 					vars_query[right]['type'] = LITERAL
 					#update context
 					
@@ -538,7 +538,7 @@ def parser_expr(expr,vars_query,vars_in_expr=list(),depth=0):
 			if arg != None and arg in vars_query:
 				if expr.name in ['Builtin_ABS','Builtin_CEIL','Builtin_FLOOR','Builtin_ROUND']:
 					#Var is a decimal
-					vars_query[arg]['class'].update([XSD.decimal])
+					vars_query[arg]['class'].update([XSD.double])
 
 				elif expr.name in ['Builtin_DAY','Builtin_HOURS','Builtin_MINUTES','Builtin_MONTH','Builtin_SECONDS','Builtin_YEAR','Builtin_TIMEZONE']:
 					#Var is a #Var is a decimal

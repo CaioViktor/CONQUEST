@@ -22,7 +22,7 @@ class NLP_Processor():
 		self.labels_NER = labels_NER
 
 		#Getting CVec structure
-		self.columns_CVec = [str(XSD.integer),str(XSD.decimal),str(XSD.dateTime)] + labels_NER
+		self.columns_CVec = [str(XSD.integer),str(XSD.double),str(XSD.dateTime)] + labels_NER
 		self.columns_CVec.sort()
 		self.type_CV_to_CVec_idx = {}
 		for column in self.columns_CVec:
@@ -79,7 +79,7 @@ class NLP_Processor():
 					entities.append([(number,str(normalize_datatype(XSD.integer))),number_index])
 				else:
 					#Number is a real
-					entities.append([(number,str(normalize_datatype(XSD.float))),number_index])
+					entities.append([(number,str(normalize_datatype(XSD.double))),number_index])
 
 		#sort variables in apperition order
 		unorded_matchs = entities.copy()

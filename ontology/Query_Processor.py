@@ -2,6 +2,7 @@ from rdflib import XSD
 from SPARQLWrapper import SPARQLWrapper, JSON
 import ontology.Schema as sc
 from config import messages
+import re
 class Query_Processor():
 	def __init__(self,url_endpoint,graph_name=""):
 		self.url_endpoint = url_endpoint
@@ -29,7 +30,7 @@ class Query_Processor():
 				query = query.replace(where_query,self.graph_name+"WHERE")
 		for cv in cvs:
 			id_var = sc.name_to_id_var(cv['name'])
-			cv_value = cv['value']
+			cv_value = re.sub("[^a-zA-Z0-9]",".",cv['value'])
 			#TODO: Ver se vai dar erro por causa dos tipos das variáveis terem sido simplificados
 			if XSD.string in qai.CVs[id_var]['class']:
 				cv_value = '"'+str(cv_value)+'"^^xsd:string'
@@ -51,7 +52,6 @@ class Query_Processor():
 		return query
 
 	def run_sparql(self,query):
-		print(query)
 		sparql = SPARQLWrapper(self.url_endpoint)
 		sparql.setQuery(query)
 		sparql.setReturnFormat(JSON)

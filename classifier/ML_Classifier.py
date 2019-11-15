@@ -72,6 +72,7 @@ class ML_Classifier():
 						#CV is from a primitive type (integer,decimal or datetime)
 						classs = list(cv['class'])
 						# print(classs[0])
+						#TODO: Check error on non strings CVs
 						cvec_idx = type_CV_to_CVec_idx[nlp_processor.hash(str(classs))]
 						CVec[cvec_idx]+=1
 					else:

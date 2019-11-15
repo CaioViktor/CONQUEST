@@ -3,6 +3,7 @@ import nlp.Solr_Connection as solr_connection
 import pysolr
 from functools import reduce
 from nltk.tokenize import sent_tokenize, word_tokenize 
+import re
 
 class NER():
 	def __init__(self,solr_host="http://localhost",solr_port="8983",solr_core="conquest_exact_match",solr_memory = "1g"):
@@ -90,7 +91,8 @@ class NER():
 #Utility functions
 	def search(self,term):
 		# print("buscando",term)
-		results = self.solr.search('values:"{}"'.format(term))
+		term =  re.sub("[^a-zA-Z0-9]",".",term)
+		results = self.solr.search('values:/{}/'.format(term))
 		if results.hits > 0:
 			# print("achou")
 			#Term is in index
