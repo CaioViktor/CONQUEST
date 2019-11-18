@@ -126,13 +126,17 @@ class Dialog_Manager():
 					return self.fetch_QAI(user)
 			else:
 				#There are only one option
-				#TODO
-				return {'status':1,'message':["Só tenho uma opção"]}
+				user['context']['qai_id'] = ordered_qais_index[0]
+				user['context']['original_sv'] = SV_CVec[0]
+				user['context']['original_cvec'] = SV_CVec[1]
+				# return "Tenho {}% de certeza que essa pergunta é do tipo {}".format((y[ordered_qais_index[0]]*100),ordered_qais_index[0])
+				return self.fetch_QAI(user)
 		else: 
 			#Classification has a low confidance
 			return self.make_desambiguation_questions(user,y,ordered_qais_index,SV_CVec)
 
 	def waiting_desambiguation(self,user,text):
+		# print("\n\ndesambi: ",text,"\n",type(text),"\nlen:",len(user['context']['options']) ,"\n\n")
 		text = text.strip()
 		if text.isdigit() and int(text) >= 0 and int(text) < len(user['context']['options']):
 			#Set correct QAI
@@ -161,7 +165,7 @@ class Dialog_Manager():
 			#TODO: guardar questão?
 			user = self.clear_user_context(user)
 			self.save_user_context(user)
-			return {'status':0,'message':messages['unkwon_question']}
+			return {'status':1,'message':messages['unkwon_question']}
 		else:
 			return {'status':INVALID_OPTION,'message':[messages['invalid_option'],user['context']['question'],user['context']['options']]}
 
@@ -293,7 +297,7 @@ class Dialog_Manager():
 				return {'status':1,'message':["CV \n{}\nDon't have 2 args"]}
 		else:
 			#TODO
-			return {'status':1,'message':["CV \n{}\nDon't have @"]}
+			return {'status':WAITING_CV_VALUE,'message':[messages['ask_cv_question_without_information'].replace("$cv_name",cv_to_ask['type'])]}
 
 	def get_label(self,term):
 		if 'labels' in term and len(term['labels']) > 0:
@@ -345,12 +349,19 @@ class Dialog_Manager():
 					cv_value = entities[typee_id][0]
 					user['context']['cvs_filled'].append({'name':cv,'value':cv_value})
 					entities[typee_id].remove(cv_value)
+			else:
+				#Not was possible calculate property@class from CV
+				# print("falta preencer: ",qai.CVs[id_var]['name'])
+				cv_to_fill = {'name':cv,'type':qai.CVs[id_var]['name']}
+				user['context']['cvs_to_fill'].append(cv_to_fill)
+
+		#TODO: preencher CVs sobre as quais não se tinha certeza com os valores que sobraram?
 		return user
 
 	def run_query(self,user):
 		#Build SPARQL query
 		qai = self.qai_Manager.QAIs[user['context']['qai_id']]
-		answer = {'status':0,'message':self.query_processor.run(qai,user['context']['cvs_filled'])}
+		answer = {'status':0,'message':[self.query_processor.run(qai,user['context']['cvs_filled'])]}
 		user = self.clear_user_context(user)
 		self.save_user_context(user)
 		return answer

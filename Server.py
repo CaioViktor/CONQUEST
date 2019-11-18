@@ -52,7 +52,7 @@ def query():
 			user = create_new_user(user_id)
 			users_collection.insert_one(user)
 		response = dialog_manager.notify_message(text,user_id)
-
+		# print(response)
 		# return jsonify({'status':1,'message':response})
 		return jsonify(response)
 	return {'status':1,'message':["Missing args!"]}

@@ -1,7 +1,7 @@
 from rdflib import XSD
 from SPARQLWrapper import SPARQLWrapper, JSON
 import ontology.Schema as sc
-from config import messages
+from dialog.constants import messages
 import re
 class Query_Processor():
 	def __init__(self,url_endpoint,graph_name=""):
@@ -12,6 +12,8 @@ class Query_Processor():
 
 	def run(self,qai,cvs):
 		query = self.build_query(qai,cvs)
+		# print("QAI:",qai.CVs)
+		# print("QAI:",qai,"\nCVs:",cvs)
 		# print(query)
 		results = self.run_sparql(query)
 		# print(results)

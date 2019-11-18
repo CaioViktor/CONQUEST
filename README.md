@@ -51,6 +51,11 @@ Chatbot ONtology QUESTion
 			<li>pip install Flask</li>
 		</ul>
 	</li>
+	<li> Telegram Bot:
+		<ul>
+			<li>pip install python-telegram-bot</li>
+		</ul>
+	</li>
 </ul>
 
 <h2>Trainer</h2>

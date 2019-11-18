@@ -29,11 +29,6 @@ number_desambiguation_options = 3
 
 
 
-messages = {
-	'welcome': "Olá,\n Eu sou o {} e estou aqui para lhe tirar dúvidas sobre medicamentos.",
-	'empty_rensponse': "Desculpe, não encontrei nada sobre sua pergunta",
-	"low_confidance" : "Desculpe, não entendi sua pergunta.",
-	"invalid_option" : "A opção que você escolheu é inválida. Por favor, escolha uma opção válida",
-	"unkwon_question" : "Desculpe-me por não conseguir responder sua questão. Tentarei melhorar no futuro.",
-	"ask_cv_question" : "Qual é o valor para $property para $class.\n Só lembrando um $property significa $property_comment.\n E $class significa $class_comment."
-}
+
+#APIs Messenger
+TELEGRAM_TOKEN = "TOKEN"
