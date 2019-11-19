@@ -57,6 +57,27 @@ def query():
 		return jsonify(response)
 	return {'status':1,'message':["Missing args!"]}
 
+@app.route("/list_qais/")
+def list_qais():
+	response = dialog_manager.list_QAIs()
+	return jsonify(response)
+
+@app.route("/select_qai/")
+def select_qai():
+	if 'user_id' in request.args and 'qai_id' in request.args:
+		user_id = request.args['user_id']
+		qai_id = request.args['qai_id']
+		if user_id == '-1':
+			return {'status':0,'message':["Invalid User ID!"]}
+		if users_collection.find_one({'id':user_id}) is None:
+			#New user
+			user = create_new_user(user_id)
+			users_collection.insert_one(user)
+		user = users_collection.find_one({'id':user_id})
+		response = dialog_manager.select_QAI(user,qai_id)
+		return jsonify(response)
+	return {'status':1,'message':["Missing args!"]}
+
 @app.route("/")
 def index():
 	return "Server Running"

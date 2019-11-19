@@ -137,6 +137,7 @@ class Dialog_Manager():
 
 	def waiting_desambiguation(self,user,text):
 		# print("\n\ndesambi: ",text,"\n",type(text),"\nlen:",len(user['context']['options']) ,"\n\n")
+		# print(user)
 		text = text.strip()
 		if text.isdigit() and int(text) >= 0 and int(text) < len(user['context']['options']):
 			#Set correct QAI
@@ -153,7 +154,7 @@ class Dialog_Manager():
 			new_qp = user['context']['question']
 			for cv in user['context']['cvs_filled']:
 				#replace CVs values with CVs marker in QP
-				new_qp = new_qp.replace(cv['value'],cv['name'])
+				new_qp = new_qp.replace(str(cv['value']),str(cv['name']))
 			#Update QAI
 			self.update_QAI(user['context']['qai_id'],new_qp,user['context']['original_sv'])
 
@@ -338,19 +339,27 @@ class Dialog_Manager():
 					typee = list(qai.CVs[id_var]['class'])[0]
 				# print(typee)
 				typee_id = self.nlp_processor.hash(typee)
-				if typee_id not in entities:
+				hash_integer = self.nlp_processor.hash(XSD.integer)
+				if typee_id in entities and len(entities[typee_id]) > 0:
+					#Found CV candidate
+					print("Achou: ",entities[typee_id])
+					cv_value = entities[typee_id][0]
+					user['context']['cvs_filled'].append({'name':cv,'value':cv_value})
+					entities[typee_id].remove(cv_value)
+				elif typee == XSD.double and hash_integer in entities and len(entities[hash_integer]) > 0:
+						print("Aqui 2:",entities[hash_integer])
+						#CV xsd:double not foud, but found a xsd:integer
+						cv_value = entities[hash_integer][0]
+						user['context']['cvs_filled'].append({'name':cv,'value':cv_value})
+						entities[hash_integer].remove(cv_value)
+				else:
 					#CV candidate not found
 					cv_to_fill = {'name':cv,'type':typee}
 					if XSD.string not in qai.CVs[id_var]['class']:
 						cv_to_fill['owner'] = qai.CVs[id_var]['owners_types'][0]
 					user['context']['cvs_to_fill'].append(cv_to_fill)
-				elif len(entities[typee_id]) > 0:
-					#Found CV candidate
-					cv_value = entities[typee_id][0]
-					user['context']['cvs_filled'].append({'name':cv,'value':cv_value})
-					entities[typee_id].remove(cv_value)
 			else:
-				#Not was possible calculate property@class from CV
+				#Not was possible to calculate property@class from CV
 				# print("falta preencer: ",qai.CVs[id_var]['name'])
 				cv_to_fill = {'name':cv,'type':qai.CVs[id_var]['name']}
 				user['context']['cvs_to_fill'].append(cv_to_fill)
@@ -361,7 +370,7 @@ class Dialog_Manager():
 	def run_query(self,user):
 		#Build SPARQL query
 		qai = self.qai_Manager.QAIs[user['context']['qai_id']]
-		answer = {'status':0,'message':[self.query_processor.run(qai,user['context']['cvs_filled'])]}
+		answer = {'status':0,'message':self.query_processor.run(qai,user['context']['cvs_filled'])}
 		user = self.clear_user_context(user)
 		self.save_user_context(user)
 		return answer
@@ -388,3 +397,27 @@ class Dialog_Manager():
 		with open(out_path ,"wb") as file:
 			pickle.dump(self.qai_Manager,file)
 			print("QAI Manager updated to {}".format(out_path))
+
+	def list_QAIs(self):
+		qais = []
+		for qai in self.qai_Manager.QAIs:
+			qais.append((qai.id,qai.QPs[0],qai.description))
+		return {'status':0,'message':qais}
+
+	def select_QAI(self,user,qai_id):
+		#Set correct QAI
+		user['context']['qai_id'] = int(qai_id)
+		qai = self.qai_Manager.QAIs[user['context']['qai_id']] 
+		user['context']['question'] = qai.QPs[0]
+		user['context']['entities_found'] = []
+
+		#Process new QP
+		QV,SV_CVec = self.nlp_processor.transform_QV(user['context']['question'],user['context']['entities_found'])
+		user['context']['original_sv'] = SV_CVec[0]
+		user['context']['original_cvec'] = SV_CVec[1]
+		nearest_qp_index = 0
+		user = self.fill_CVs(user,qai,nearest_qp_index)
+
+		# print(user)
+		# self.save_user_context(user)
+		return self.fetch_QAI(user)

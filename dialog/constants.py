@@ -2,6 +2,7 @@ WAITING_TO_START = "waiting to start"
 WAITING_DESAMBIGUATION = "waiting desambiguation"
 INVALID_OPTION = "invalid_option"
 WAITING_CV_VALUE = "waiting CV value"
+SELECT_QAI = "select qai"
 
 
 
@@ -15,7 +16,8 @@ messages = {
 	"ask_cv_question_without_information" : "Informe o valor para a $cv_name:",
 	"Internal_error" : "Desculpe ocorreu um erro interno",
 	"desambiguation_header" : "O que exatamente você quer saber:",
-	"cancel_desambiugation" : "Nenhuma"
+	"cancel_desambiugation" : "Nenhuma",
+	"help" : "Consigo responder os seguintes tipos de questões:"
 }
 
 def new_user_context():

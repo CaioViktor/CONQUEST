@@ -72,7 +72,7 @@ class Query_Processor():
 	def build_answer(self,qai,results):
 		if len(results) == 0:
 			return messages['empty_rensponse']
-		answer = qai.RP['header']
+		answer = [qai.RP['header']]
 		# print("RV",qai.RVs)
 		for result in results:
 			body_line = "\n{}".format(qai.RP['body'])
@@ -82,6 +82,6 @@ class Query_Processor():
 				if rv in result:
 					rv_value = result[rv]
 				body_line = body_line.replace(rv,rv_value)
-			answer+=body_line
-		answer += "\n"+qai.RP['footer']
+			answer.append(body_line)
+		answer.append(qai.RP['footer'])
 		return answer
