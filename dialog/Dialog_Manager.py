@@ -166,7 +166,7 @@ class Dialog_Manager():
 			#TODO: guardar questão?
 			user = self.clear_user_context(user)
 			self.save_user_context(user)
-			return {'status':1,'message':messages['unkwon_question']}
+			return {'status':1,'message':[messages['unkwon_question']]}
 		else:
 			return {'status':INVALID_OPTION,'message':[messages['invalid_option'],user['context']['question'],user['context']['options']]}
 
@@ -246,7 +246,7 @@ class Dialog_Manager():
 			# return "QP mais próxima é '{}' com distância de {}".format(qai.QPs[nearest_qp_index],nearest_qp_value)
 			# return json.dumps(user)
 		#TODO
-		return {'status':1,'message':"Error in classify QP"}
+		return {'status':1,'message':["Error in classify QP"]}
 
 	def ask_CV(self,user):
 		cv_to_ask = user['context']['cvs_to_fill'][0]
@@ -342,7 +342,7 @@ class Dialog_Manager():
 				hash_integer = self.nlp_processor.hash(XSD.integer)
 				if typee_id in entities and len(entities[typee_id]) > 0:
 					#Found CV candidate
-					print("Achou: ",entities[typee_id])
+					# print("Achou: ",entities[typee_id])
 					cv_value = entities[typee_id][0]
 					user['context']['cvs_filled'].append({'name':cv,'value':cv_value})
 					entities[typee_id].remove(cv_value)

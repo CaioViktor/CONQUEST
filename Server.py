@@ -3,6 +3,8 @@ from dialog.Dialog_Manager import Dialog_Manager
 import atexit
 import pymongo
 import re
+import user_interface.Telegram as telegram
+import threading
 
 #States constants
 from dialog.constants import *
@@ -33,7 +35,11 @@ def create_new_user(user_id):
 
 
 app = Flask(__name__)
+print("Starting Dialog Manager...")
 dialog_manager = Dialog_Manager(users_collection)
+print("Starting Telegram Bot...")
+telegram_thread = threading.Thread(target=telegram.main()).start()
+
 
 @app.route("/query/")
 def query():
@@ -84,6 +90,9 @@ def index():
 
 
 def exit_handler():
+	global telegram_thread
+	print('Telegram bot is ending!')
+	telegram.shutdown()
 	print('Server is ending!')
 	dialog_manager.close()
 
