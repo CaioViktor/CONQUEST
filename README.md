@@ -66,7 +66,6 @@ Chatbot ONtology QUESTion
 	<p>python Trainer</p>
 	<br/>
 	usage: python Trainer.py [-h] [-m zero] [-p 0]
-
 	optional arguments:
 	  -h, --help            show this help message and exit
 	  -m zero, --mode zero  Training mode: zero - Training the chatbot from
