@@ -22,20 +22,22 @@ Just run the script "install.sh"<br>
 <h3>To run the training script:</h3>
 	<code>$python Trainer.py</code>
 	<br/>
-	usage: python Trainer.py [-h] [-m zero] [-p 0]
-	optional arguments:
-	  -h, --help            show this help message and exit <br>
-	  -m zero, --mode zero  Training mode: <br>
-	  						zero - Training the chatbot from starting point (default).<br>
-	  						update - Update models<br>
-	                        resume - Resume the training from a saved point.<br>
-	  -p 0, --point 0       Point to resume training:
-	  							0 - Starting from start (equal to zero mode).<br>
-	  							1 - Starting from loading QAIs.<br>
-	                        	2 - Starting from making NER training dataset.<br>
-	                        	3 - Starting from training NER. <br>
-	                        	4 - Starting from making classifier training dataset. <br>
-	                        	5 - Starting from training the classifier.<br>
+	<pre>
+		usage: python Trainer.py [-h] [-m zero] [-p 0]
+		optional arguments:
+		  -h, --help            show this help message and exit 
+		  -m zero, --mode zero  Training mode: 
+		  						zero - Training the chatbot from starting point (default).
+		  						update - Update models
+		                        resume - Resume the training from a saved point.
+		  -p 0, --point 0       Point to resume training:
+		  							0 - Starting from start (equal to zero mode).
+		  							1 - Starting from loading QAIs.
+		                        	2 - Starting from making NER training dataset.
+		                        	3 - Starting from training NER. 
+		                        	4 - Starting from making classifier training dataset. 
+		                        	5 - Starting from training the classifier.
+	</pre>
 <h2>Server</h2>
 <h3>To run the server script:</h3>
 	<code>$python Server.py</code>
