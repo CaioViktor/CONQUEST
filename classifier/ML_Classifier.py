@@ -40,7 +40,7 @@ class ML_Classifier():
 
 
 	@staticmethod
-	def pre_process_data(QAIs,nlp_processor):
+	def pre_process_data(QAIs,nlp_processor,use_semantic_features = True):
 		#Transform QAIs in train dataset to train the classifier
 		#QV: Question Vector; SV: Sentence Vector; CVec: Context Vector
 		dataset = []
@@ -92,7 +92,11 @@ class ML_Classifier():
 				# sentence = sentence.lower()
 				# SV = nlp_processor.sentence_vector(sentence)
 				SV = qai.SVs[qp_index]
-				QV = SV + CVec + [qai.id]
+				QV = []
+				if use_semantic_features:
+					QV = SV + CVec + [qai.id]
+				else:
+					QV = SV + [qai.id]
 				# print("sentença que vai ser usada:",sentence,"\n",QV,"\n\n")
 				# QV =  CVec
 				# print("Classe:",qai.id,"QP:",sentence,"\n","CVec",CVec,"\nSV:",SV,"\n\n")
@@ -169,13 +173,13 @@ class ML_Classifier():
 
 
 
-	def eval_model(self,X,y):
+	def eval_model(self,X,y,cv=5):
 
 		modelP = deepcopy(self.original_model)
 		modelR = deepcopy(self.original_model)
 		modelF = deepcopy(self.original_model)
 
-		cv = 7
+
 		precision = cross_val_score(modelP, X, y.values.ravel(), cv=cv,scoring='precision_weighted')
 		p = precision.mean()
 

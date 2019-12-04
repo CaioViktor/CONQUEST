@@ -97,7 +97,7 @@ class NLP_Processor():
 			CVec[cvec_idx]+=1
 		return CVec
 
-	def transform_QV(self,sentence,CVs):
+	def transform_QV(self,sentence,CVs,use_semantic_features = True):
 		CVec = self.transform_CVec(CVs)
 
 		columns_header = list(range(0,self.vector_size))+self.columns_CVec
@@ -105,7 +105,11 @@ class NLP_Processor():
 
 		SV = self.sentence_vector(sentence) 
 
-		QV_list = SV + CVec
+		QV_list = []
+		if use_semantic_features:
+			QV_list = SV + CVec
+		else:
+			QV_list = SV
 		# QV_list = CVec
 		dataset = [QV_list]
 
