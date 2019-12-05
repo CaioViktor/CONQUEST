@@ -6,13 +6,14 @@ from nltk.tokenize import sent_tokenize, word_tokenize
 import re
 
 class NER():
-	def __init__(self,solr_host="http://localhost",solr_port="8983",solr_core="conquest_exact_match",solr_memory = "1g"):
+	def __init__(self,solr_host="http://localhost",solr_port="8983",solr_core="conquest_exact_match",solr_memory = "1g",startup_solr=True):
 		self.solr_url = "{}:{}/solr/{}/".format(solr_host,solr_port,solr_core)
 		self.solr_port = solr_port
 		self.solr_core = solr_core
 		self.solr_host = solr_host
-		solr_connection.startup(self.solr_port,solr_memory)
-		self.solr = pysolr.Solr(self.solr_url, timeout=10)
+		if startup_solr:
+			solr_connection.startup(self.solr_port,solr_memory)
+			self.solr = pysolr.Solr(self.solr_url, timeout=10)
 
 
 	def parser(self,text):

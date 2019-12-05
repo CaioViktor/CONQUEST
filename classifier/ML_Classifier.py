@@ -24,14 +24,20 @@ MODEL_PATH_TEMP = "persistence/temp/classifier/"
 
 
 class ML_Classifier():
-	def __init__(self,model_path=MODEL_PATH,model_file=MODEL_FILE):
+	def __init__(self,model_path=MODEL_PATH,model_file=MODEL_FILE, model = None):
 		self.model_path = model_path
 		self.model_file = model_file
-		#Classifier is always wrong
-		gaussian = GaussianNB()
-		linear = LogisticRegression(random_state=0, solver='lbfgs',multi_class='multinomial',n_jobs=-1)
+		
+		if model == None:
+			#Set Default model
+			gaussian = GaussianNB()
+			linear = LogisticRegression(random_state=0, solver='lbfgs',multi_class='multinomial',n_jobs=-1)
 
-		self.model = VotingClassifier(estimators=[('gaus', gaussian), ('line', linear)],voting='soft',n_jobs=-1)
+			self.model = VotingClassifier(estimators=[('gaus', gaussian), ('line', linear)],voting='soft',n_jobs=-1)
+		else:
+			#Set customized model
+			print("Using customized model")
+			self.model = model
 
 		self.original_model = deepcopy(self.model)
 		self.scaler = StandardScaler()
@@ -40,9 +46,10 @@ class ML_Classifier():
 
 
 	@staticmethod
-	def pre_process_data(QAIs,nlp_processor,use_semantic_features = True):
+	def pre_process_data(QAIs,nlp_processor,use_semantic_features = True,number_qp_samples = 0):
 		#Transform QAIs in train dataset to train the classifier
 		#QV: Question Vector; SV: Sentence Vector; CVec: Context Vector
+		print("Using semantic features {}. QPs limited {}".format(use_semantic_features,number_qp_samples != 0))
 		dataset = []
 		labels_dataset = []
 
@@ -102,9 +109,15 @@ class ML_Classifier():
 				# print("Classe:",qai.id,"QP:",sentence,"\n","CVec",CVec,"\nSV:",SV,"\n\n")
 				dataset.append(QV)
 				qp_index+=1
-		columns_header = list(range(0,nlp_processor.vector_size))+columns+['label']
+				if number_qp_samples != 0 and qp_index >=  number_qp_samples:
+					#Reached of number of QPs limited
+					print("Reached QPs limited ",number_qp_samples)
+					break
+		if use_semantic_features:
+			columns_header = list(range(0,nlp_processor.vector_size))+columns+['label']
+		else:
+			columns_header = list(range(0,nlp_processor.vector_size))+['label']
 		# columns_header = columns
-
 
 
 		# features_dataframe = pd.DataFrame(dataset,columns=columns_header)
@@ -167,7 +180,7 @@ class ML_Classifier():
 
 		finish_time = datetime.now()
 		print("Training classifier done! Elapsed time: {}".format(str(finish_time - satart_time)))
-		self.eval_model(X,y)
+		# self.eval_model(X,y)
 
 		# self.save_model()
 

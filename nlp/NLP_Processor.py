@@ -12,11 +12,11 @@ from nltk.stem import RSLPStemmer
 
 
 class NLP_Processor():
-	def __init__(self,labels_NER,loadPath="persistence/nlp/model/pt_br"):
+	def __init__(self,labels_NER,loadPath="persistence/nlp/model/pt_br",startup_solr=True):
 		self.model = spacy.load(loadPath)
 		self.stop_words = spacy.lang.pt.stop_words.STOP_WORDS
 		self.vector_size = len(self.model("test").vector)
-		self.ner = NER()
+		self.ner = NER(startup_solr=startup_solr)
 		self.stemmer = RSLPStemmer()
 
 		self.labels_NER = labels_NER

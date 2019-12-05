@@ -176,7 +176,7 @@ def make_train_classifier():
 	labels_path = os.path.join(path_train_NER_temp,"labels.sav")
 	labels_NER = load_labels(labels_path)
 
-	nlp_processor = NLP_Processor(labels_NER,nlp_model_load)
+	nlp_processor = NLP_Processor(labels_NER,nlp_model_load,startup_solr=False)
 
 	print("Computing Sentece Vectors of Questions Patterns in QA itens...")
 	QAI_Manager.compute_SVs(nlp_processor)
@@ -214,6 +214,7 @@ def train_classifier():
 	print("Training classifier. This could take several minutes...")
 	classifier.fit(X,y)
 	classifier.save_model()
+	classifier.eval_model(X,y)
 	finish()
 
 def finish():
