@@ -30,10 +30,11 @@ class ML_Classifier():
 		
 		if model == None:
 			#Set Default model
-			gaussian = GaussianNB()
-			linear = LogisticRegression(random_state=0, solver='lbfgs',multi_class='multinomial',n_jobs=-1)
+			#gaussian = GaussianNB()
+			#linear = LogisticRegression(random_state=0, solver='lbfgs',multi_class='multinomial',n_jobs=-1)
 
-			self.model = VotingClassifier(estimators=[('gaus', gaussian), ('line', linear)],voting='soft',n_jobs=-1)
+			#self.model = VotingClassifier(estimators=[('gaus', gaussian), ('line', linear)],voting='soft',n_jobs=-1)
+			self.model = GaussianNB()
 		else:
 			#Set customized model
 			print("Using customized model")
@@ -180,6 +181,7 @@ class ML_Classifier():
 
 		finish_time = datetime.now()
 		print("Training classifier done! Elapsed time: {}".format(str(finish_time - satart_time)))
+		return finish_time - satart_time
 		# self.eval_model(X,y)
 
 		# self.save_model()
@@ -203,7 +205,7 @@ class ML_Classifier():
 		f = f1.mean()
 
 		print("\n\nScore evaluations using cross validation with cv = {}:\nPrecision = {}\nRecall = {}\nF-1 Score = {}".format(cv,p,r,f))
-		return
+		return p,r,f
 
 	def predict(self,X):
 		#Normalizer
