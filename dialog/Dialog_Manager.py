@@ -100,12 +100,14 @@ class Dialog_Manager():
 		user['context']['entities_found'] = entities
 
 		QV,SV_CVec = self.nlp_processor.transform_QV(sentence,entities)
+		# print("Old QV:","\n",QV)
 		y = self.classifier.predict_proba(QV)[0]
 		max_option = min(len(y),number_desambiguation_options)
 
 		ordered_qais_index = list(y.argsort())
 		ordered_qais_index.reverse()
 		# print(entities,ordered_qais_index,y[ordered_qais_index[0]],y[ordered_qais_index[1]])
+		# print(ordered_qais_index[0],":\t",y[ordered_qais_index[0]])
 		ordered_qais_index = ordered_qais_index[:max_option]
 
 
@@ -147,6 +149,7 @@ class Dialog_Manager():
 
 			#Process new QP
 			QV,SV_CVec = self.nlp_processor.transform_QV(user['context']['question'],user['context']['entities_found'])
+			# print("New QV:","\n",QV)
 			user['context']['original_sv'] = SV_CVec[0]
 			user['context']['original_cvec'] = SV_CVec[1]
 			nearest_qp_index = self.get_nearest_QP_index(user['context']['original_sv'],qai)
@@ -157,6 +160,7 @@ class Dialog_Manager():
 				new_qp = new_qp.replace(str(cv['value']),str(cv['name']))
 			#Update QAI
 			self.update_QAI(user['context']['qai_id'],new_qp,user['context']['original_sv'])
+			#self.classifier.update([QV],[user['context']['qai_id']])
 
 			# print(user)
 			# self.save_user_context(user)
@@ -347,7 +351,7 @@ class Dialog_Manager():
 					user['context']['cvs_filled'].append({'name':cv,'value':cv_value})
 					entities[typee_id].remove(cv_value)
 				elif typee == XSD.double and hash_integer in entities and len(entities[hash_integer]) > 0:
-						print("Aqui 2:",entities[hash_integer])
+						# print("Aqui 2:",entities[hash_integer])
 						#CV xsd:double not foud, but found a xsd:integer
 						cv_value = entities[hash_integer][0]
 						user['context']['cvs_filled'].append({'name':cv,'value':cv_value})

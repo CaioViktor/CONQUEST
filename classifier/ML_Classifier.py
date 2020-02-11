@@ -30,11 +30,11 @@ class ML_Classifier():
 		
 		if model == None:
 			#Set Default model
-			#gaussian = GaussianNB()
-			#linear = LogisticRegression(random_state=0, solver='lbfgs',multi_class='multinomial',n_jobs=-1)
+			gaussian = GaussianNB()
+			linear = LogisticRegression(random_state=0, solver='lbfgs',multi_class='multinomial',n_jobs=-1)
 
-			#self.model = VotingClassifier(estimators=[('gaus', gaussian), ('line', linear)],voting='soft',n_jobs=-1)
-			self.model = GaussianNB()
+			self.model = VotingClassifier(estimators=[('gaus', gaussian), ('line', linear)],voting='soft',n_jobs=-1)
+			# self.model = GaussianNB()
 		else:
 			#Set customized model
 			print("Using customized model")
@@ -128,7 +128,7 @@ class ML_Classifier():
 		features_dataframe = dataframe.drop('label',axis=1)
 
 		# ML_Classifier.save_XY(features_dataframe,label_dataframe)
-
+		print(features_dataframe.head(1))
 
 		return features_dataframe,label_dataframe
 
@@ -186,7 +186,10 @@ class ML_Classifier():
 
 		# self.save_model()
 
-
+	def update(self,X,y):
+		scaler = StandardScaler()
+		self.scaler.fit(X.astype(np.float64))
+		X = self.scaler.transform(X.astype(np.float64))
 
 	def eval_model(self,X,y,cv=5):
 
@@ -212,7 +215,7 @@ class ML_Classifier():
 		X = self.scaler.transform(X.astype(np.float64))
 
 		# print("Classes: ",self.model.classes_)
-		print("Probs:",self.model.predict_proba(X))
+		# print("Probs:",self.model.predict_proba(X))
 		# return self.model.predict_proba(X)
 		return self.model.predict(X)
 

@@ -86,7 +86,7 @@ def select_qai():
 
 @app.route("/")
 def index():
-	return "Server Running"
+	return "Server Running..."
 
 
 def exit_handler():

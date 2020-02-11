@@ -214,7 +214,7 @@ def train_classifier():
 	print("Training classifier. This could take several minutes...")
 	classifier.fit(X,y)
 	classifier.save_model()
-	classifier.eval_model(X,y)
+	# classifier.eval_model(X,y)
 	finish()
 
 def finish():
