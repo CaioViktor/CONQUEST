@@ -31,4 +31,4 @@ number_desambiguation_options = 3
 
 
 #APIs Messenger
-TELEGRAM_TOKEN = "651002368:AAGbk_d0sMIO92rpU_GSVgKAodukcMNDjUI"
+TELEGRAM_TOKEN = ""

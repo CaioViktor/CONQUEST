@@ -159,7 +159,7 @@ class Dialog_Manager():
 				#replace CVs values with CVs marker in QP
 				new_qp = new_qp.replace(str(cv['value']),str(cv['name']))
 			#Update QAI
-			self.update_QAI(user['context']['qai_id'],new_qp,user['context']['original_sv'])
+			self.update_QAI(user['context']['qai_id'],new_qp,user['context']['original_sv'],QV)
 			#self.classifier.update([QV],[user['context']['qai_id']])
 
 			# print(user)
@@ -395,12 +395,15 @@ class Dialog_Manager():
 		# return json.dumps(user['context']['options'], ensure_ascii=False)
 		return {'status':WAITING_DESAMBIGUATION,'message':[user['context']['options']]}
 
-	def update_QAI(self,qai_index,new_QP,new_SV):
+	def update_QAI(self,qai_index,new_QP,new_SV,new_QV):
 		self.qai_Manager.update_QAI(qai_index,new_QP,new_SV)
 		out_path = os.path.join("persistence/qais","qai_manager.sav") 
 		with open(out_path ,"wb") as file:
 			pickle.dump(self.qai_Manager,file)
 			print("QAI Manager updated to {}".format(out_path))
+		self.classifier.update_XY(new_QV,qai_index)
+		#TODO: Atualizar apenas em alguns casos
+		self.classifier.update()
 
 	def list_QAIs(self):
 		qais = []

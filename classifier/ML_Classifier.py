@@ -22,6 +22,11 @@ MODEL_FILE = "ml_classifier.sav"
 MODEL_PATH = "persistence/classifier/"
 MODEL_PATH_TEMP = "persistence/temp/classifier/"
 
+def new_model():
+	gaussian = GaussianNB()
+	linear = LogisticRegression(random_state=0, solver='lbfgs',multi_class='multinomial',n_jobs=-1)
+	return VotingClassifier(estimators=[('gaus', gaussian), ('line', linear)],voting='soft',n_jobs=-1)
+	# return GaussianNB()
 
 class ML_Classifier():
 	def __init__(self,model_path=MODEL_PATH,model_file=MODEL_FILE, model = None):
@@ -30,10 +35,8 @@ class ML_Classifier():
 		
 		if model == None:
 			#Set Default model
-			gaussian = GaussianNB()
-			linear = LogisticRegression(random_state=0, solver='lbfgs',multi_class='multinomial',n_jobs=-1)
 
-			self.model = VotingClassifier(estimators=[('gaus', gaussian), ('line', linear)],voting='soft',n_jobs=-1)
+			self.model = new_model()
 			# self.model = GaussianNB()
 		else:
 			#Set customized model
@@ -42,6 +45,8 @@ class ML_Classifier():
 
 		self.original_model = deepcopy(self.model)
 		self.scaler = StandardScaler()
+		self.X = None
+		self.y = None
 		
 
 
@@ -128,8 +133,8 @@ class ML_Classifier():
 		features_dataframe = dataframe.drop('label',axis=1)
 
 		# ML_Classifier.save_XY(features_dataframe,label_dataframe)
-		print(features_dataframe.head(1))
-
+		# print(features_dataframe.head(1))
+		
 		return features_dataframe,label_dataframe
 
 	@staticmethod
@@ -152,6 +157,22 @@ class ML_Classifier():
 			pic.dump(y,file)
 			print("Saved Y")
 
+
+	def update_XY(self,new_QV,new_label):
+		self.X = self.X.append(new_QV)
+		self.y = self.y.append(pd.Series([new_label]))
+
+		path_X = os.path.join(MODEL_PATH_TEMP,"X.sav")
+		path_Y = os.path.join(MODEL_PATH_TEMP,"y.sav")
+
+		with open(path_X,"wb") as file:
+			pic.dump(self.X,file)
+			# print("Saved X")
+
+		with open(path_Y,"wb") as file:
+			pic.dump(self.y,file)
+			# print("Saved Y")
+
 	# 	print("Features vector saved to {}\nClasses vector saved to {}",path_X,path_Y)
 
 
@@ -165,12 +186,14 @@ class ML_Classifier():
 
 
 		print("Load X and y from Persistence:\nX from {}\nY from {}".format(path_X,path_Y))
+		self.X,self.y = X,y
 		return X,y
 
 	def fit(self,X,y):
+		self.X,self.y = X,y
 		satart_time = datetime.now()
 		#Normalizer
-		scaler = StandardScaler()
+		# scaler = StandardScaler()
 		self.scaler.fit(X.astype(np.float64))
 		X = self.scaler.transform(X.astype(np.float64))
 		#X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2)
@@ -186,10 +209,14 @@ class ML_Classifier():
 
 		# self.save_model()
 
-	def update(self,X,y):
-		scaler = StandardScaler()
+	def update(self):
+		X,y = self.X,self.y
+		# scaler = StandardScaler()
 		self.scaler.fit(X.astype(np.float64))
 		X = self.scaler.transform(X.astype(np.float64))
+		self.model = new_model()
+		self.model.fit(X,y)
+		self.save_model()
 
 	def eval_model(self,X,y,cv=5):
 
