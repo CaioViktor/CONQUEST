@@ -26,6 +26,7 @@ port = 5000
 min_confidance_classification = 0.8
 min_diference_confidance = 0.05
 number_desambiguation_options = 3
+steps_to_update = 1
 
 
 

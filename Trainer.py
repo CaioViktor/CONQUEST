@@ -291,7 +291,7 @@ def load_train_classifier():
 	labels_path = os.path.join(path_train_NER_temp,"labels.sav")
 	labels_NER = load_labels(labels_path)
 
-	nlp_processor = NLP_Processor(labels_NER,nlp_model_path)
+	nlp_processor = NLP_Processor(labels_NER,nlp_model_load)
 	
 
 	output_path = "persistence/temp/classifier/X.sav"

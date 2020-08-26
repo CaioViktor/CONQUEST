@@ -14,6 +14,7 @@ import nlp.Solr_Connection as solr_connection
 from scipy.spatial.distance import cosine
 import re
 from rdflib import XSD
+from config import steps_to_update
 
 #States constants
 from dialog.constants import *
@@ -34,7 +35,9 @@ class Dialog_Manager():
 		self.nlp_processor = self.load_NLP_Processor()
 		self.classifier = ML_Classifier.load_model()
 		self.users_collection = users_collection
+		self.steps_to_update = steps_to_update
 		self.query_processor = Query_Processor(sparql_endpoint,graph_name)
+
 
 
 	def save_user_context(self,user):
@@ -249,7 +252,6 @@ class Dialog_Manager():
 
 			# return "QP mais próxima é '{}' com distância de {}".format(qai.QPs[nearest_qp_index],nearest_qp_value)
 			# return json.dumps(user)
-		#TODO
 		return {'status':1,'message':["Error in classify QP"]}
 
 	def ask_CV(self,user):
@@ -297,11 +299,9 @@ class Dialog_Manager():
 					ask_question = ask_question.replace("$property",cv_property_uri)
 				return {'status':WAITING_CV_VALUE,'message':[ask_question]}
 
-			else:
-				#TODO
+			else:	
 				return {'status':1,'message':["CV \n{}\nDon't have 2 args"]}
 		else:
-			#TODO
 			return {'status':WAITING_CV_VALUE,'message':[messages['ask_cv_question_without_information'].replace("$cv_name",cv_to_ask['type'])]}
 
 	def get_label(self,term):
@@ -402,8 +402,11 @@ class Dialog_Manager():
 			pickle.dump(self.qai_Manager,file)
 			print("QAI Manager updated to {}".format(out_path))
 		self.classifier.update_XY(new_QV,qai_index)
-		#TODO: Atualizar apenas em alguns casos
-		self.classifier.update()
+		self.steps_to_update-= 1
+		if self.steps_to_update <= 0:
+			print("UPDATEE!!!!!!!!!!!!!!!")
+			self.steps_to_update = steps_to_update
+			self.classifier.update()
 
 	def list_QAIs(self):
 		qais = []
