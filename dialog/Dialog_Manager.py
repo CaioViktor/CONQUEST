@@ -404,7 +404,7 @@ class Dialog_Manager():
 		self.classifier.update_XY(new_QV,qai_index)
 		self.steps_to_update-= 1
 		if self.steps_to_update <= 0:
-			print("UPDATEE!!!!!!!!!!!!!!!")
+			
 			self.steps_to_update = steps_to_update
 			self.classifier.update()
 

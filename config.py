@@ -1,35 +1,36 @@
-#Parameters
-# ontology_path = "input/ontology.ttl"
-# QAIs_path = "input/input_QAIs.js"
-ontology_path = "input/medibot/ontology.ttl"
-QAIs_path = "input/medibot/MediBot.json"
-sparql_endpoint = "http://localhost:8890/sparql"
-graph_name = "http://localhost:8890/DAV/drugs"
-path_train_NER_temp = "persistence/temp/nlp"
-ner_nlp_model_path = "persistence/nlp/"
-ner_number_iterations = 100
-ner_number_samples_train = 10000
-ner_number_samples_examples = 0
-solr_host =" http://localhost"
-solr_port = "8983"
-solr_core = "conquest_exact_match"
-solr_memory = "1g"
-nlp_model_load = "persistence/nlp/model/pt_br"
-# End Parameters
-
-chatbot_name = "medibot" #Set ChatBot name
-
-#Server Parameters
-host = '0.0.0.0'
-port = 5000
-
-min_confidance_classification = 0.8
-min_diference_confidance = 0.05
-number_desambiguation_options = 3
-steps_to_update = 1
+#WARNING: Change only the file "input/configurations.json"
 
 
+import json
+with open("input/configurations.json","r", encoding="utf-8") as json_file:
+	configurations = json.load(json_file)
 
+	ontology_path = configurations["ontology_path"]
+	QAIs_path = configurations["QAIs_path"]
+	sparql_endpoint = configurations["sparql_endpoint"]
+	graph_name = configurations["graph_name"]
+	path_train_NER_temp = configurations["path_train_NER_temp"]
+	ner_nlp_model_path = configurations["ner_nlp_model_path"]
+	ner_number_iterations = configurations["ner_number_iterations"]
+	ner_number_samples_train = configurations["ner_number_samples_train"]
+	ner_number_samples_examples = configurations["ner_number_samples_examples"]
+	solr_host = configurations["solr_host"]
+	solr_port = configurations["solr_port"]
+	solr_core = configurations["solr_core"]
+	solr_memory = configurations["solr_memory"]
+	nlp_model_load = configurations["nlp_model_load"]
+	# End Parameters
 
-#APIs Messenger
-TELEGRAM_TOKEN = ""
+	chatbot_name = configurations["chatbot_name"] #Set ChatBot name
+
+	#Server Parameters
+	host = configurations["host"]
+	port = configurations["port"]
+
+	min_confidance_classification = configurations["min_confidance_classification"]
+	min_diference_confidance = configurations["min_diference_confidance"]
+	number_desambiguation_options = configurations["number_desambiguation_options"]
+	steps_to_update = configurations["steps_to_update"]
+
+	#APIs Messenger
+	TELEGRAM_TOKEN = configurations["TELEGRAM_TOKEN"]
