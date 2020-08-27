@@ -6,7 +6,7 @@ SELECT_QAI = "select qai"
 
 
 import json
-with open("input/configurations.json","r", encoding="utf-8") as json_file:
+with open("input/medibot/configurations.json","r", encoding="utf-8") as json_file:
 	configurations = json.load(json_file)
 	messages = configurations["messages"]
 

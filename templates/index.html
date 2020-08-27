@@ -1,0 +1,275 @@
+<!DOCTYPE HTML>
+<!--
+	Editorial by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+	<head>
+		<title>CONQUEST - Server Manager</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="{{url_for('static',filename='assets/css/main.css')}}" />
+	</head>
+	<body class="is-preload">
+
+		<!-- Wrapper -->
+			<div id="wrapper">
+
+				<!-- Main -->
+					<div id="main">
+						<div class="inner">
+							<!-- Header -->
+								<header id="header">
+									<a href="{{url_for('index')}}" class="logo"><strong>Server Manager</strong></a>
+									<ul class="icons">
+										<li><a href="https://github.com/CaioViktor/CONQUEST" class="icon brands fab fa-github"><span class="label">Github</span></a></li>										
+									</ul>
+								</header>
+									
+								{%if message != ""%}
+									<div id="message" class="green_box">
+											{{message}}
+									</div>
+								{%endif%}
+								
+								<div id="status_server" class="box">
+									<p>Felis sagittis eget tempus primis in faucibus vestibulum. Blandit adipiscing eu felis iaculis volutpat ac adipiscing accumsan eu faucibus. Integer ac pellentesque praesent tincidunt felis sagittis eget. tempus euismod. Magna sed etiam ante ipsum primis in faucibus vestibulum.</p>
+								</div>
+							
+								<section>
+									<h3>Configurations</h3>
+									<hr>
+									<form method="post" action="{{url_for('update_configurations')}}">
+										<details open>
+											<summary>ChatBot Server</summary>
+											<table id="chatbot_server">
+												<tr>
+													<td>Chatbot Name:</td>
+													<td><input type="text" name="chatbot_name" id="chatbot_name" value="{{configurations.chatbot_name}}" placeholder="Name" required/></td>
+												</tr>
+												<tr>
+													<td>Host:</td>
+													<td><input type="text" name="host" id="host" value="{{configurations.host}}" required/></td>
+												</tr>
+												<tr>
+													<td>Host:</td>
+													<td><input type="number" name="port" id="port" value="{{configurations.port}}" required/></td>
+												</tr>
+												<tr>
+													<td>Ontology Path:</td>
+													<td><input type="text" name="ontology_path" id="ontology_path" value="{{configurations.ontology_path}}" required disabled/></td>
+												</tr>
+												<tr>
+													<td>Templates Path:</td>
+													<td><input type="text" name="QAIs_path" id="QAIs_path" value="{{configurations.QAIs_path}}" required disabled/></td>
+												</tr>
+											</table> 
+										</details>
+										<details open>
+											<summary>SPARQL Endpoint</summary>
+											<table id="sparql_endpoint">
+												<tr>
+													<td>SPARQL Endpoint:</td>
+													<td><input type="text" name="sparql_endpoint" id="sparql_endpoint" value="{{configurations.sparql_endpoint}}" required/></td>
+												</tr>
+												<tr>
+													<td>Graph Name:</td>
+													<td><input type="text" name="graph_name" id="graph_name" value="{{configurations.graph_name}}" /></td>
+												</tr>
+											</table> 
+										</details>
+										<details open>
+											<summary>Apache Solr</summary>
+											<table id="apache_solr">
+												<tr>
+													<td>Solr Host:</td>
+													<td><input type="text" name="solr_host" id="solr_host" value="{{configurations.solr_host}}" required/></td>
+												</tr>
+												<tr>
+													<td>Solr Port:</td>
+													<td><input type="number" name="solr_port" id="solr_port" value="{{configurations.solr_port}}" required/></td>
+												</tr>
+												<tr>
+													<td>Name Solr Core:</td>
+													<td><input type="text" name="solr_core" id="solr_core" value="{{configurations.solr_core}}" required/></td>
+												</tr>
+												<tr>
+													<td>Solr Memory:</td>
+													<td><input type="text" name="solr_memory" id="solr_memory" value="{{configurations.solr_memory}}" required/></td>
+												</tr>
+											</table> 
+										</details>
+										<details open>
+											<summary>NLP Model</summary>
+											<table id="nlp_model">
+												<tr>
+													<td>NLP Model Path:</td>
+													<td><input type="text" name="nlp_model_load" id="nlp_model_load" value="{{configurations.nlp_model_load}}" required/></td>
+												</tr>
+												<tr>
+													<td>Temporary NER Model Path:</td>
+													<td><input type="text" name="path_train_NER_temp" id="path_train_NER_temp" value="{{configurations.path_train_NER_temp}}" required disabled /></td>
+												</tr>
+												<tr>
+													<td>Trained NLP Model Path:</td>
+													<td><input type="text" name="ner_nlp_model_path" id="ner_nlp_model_path" value="{{configurations.ner_nlp_model_path}}" required disabled /></td>
+												</tr>
+
+											</table> 
+										</details>
+										<details open>
+											<summary>Classification Model</summary>
+											<table id="classification_model">
+												<tr>
+													<td>Minimum Confidance for Classification:</td>
+													<td><input type="number" name="min_confidance_classification" id="min_confidance_classification" value="{{configurations.min_confidance_classification}}" min="0.0" max="1.0" step="0.05" required/></td>
+												</tr>
+												<tr>
+													<td>Minimum Diference for Classification:</td>
+													<td><input type="number" name="min_diference_confidance" id="min_diference_confidance" value="{{configurations.min_diference_confidance}}" min="0.0" max="1.0" step="0.05" required/></td>
+												</tr>
+												<tr>
+													<td>Minimum Diference for Classification:</td>
+													<td><input type="number" name="number_desambiguation_options" id="number_desambiguation_options" value="{{configurations.number_desambiguation_options}}" min="2" required/></td>
+												</tr>
+												<tr>
+													<td>Number of Clarification to Update:</td>
+													<td><input type="number" name="steps_to_update" id="steps_to_update" value="{{configurations.steps_to_update}}" min="1" required/></td>
+												</tr>
+											</table> 
+										</details>
+										<details open>
+											<summary>Instant Messengers</summary>
+											<table id="instant_messengers">
+												<tr>
+													<td>TELEGRAM_TOKEN:</td>
+													<td><input type="text" name="TELEGRAM_TOKEN" id="TELEGRAM_TOKEN" value="{{configurations.TELEGRAM_TOKEN}}"/></td>
+												</tr>
+											</table> 
+										</details>
+										<details open>
+											<summary>Bot Messages</summary>
+											<table id="bot_messages">
+												<tr>
+													<td>Welcome:</td>
+													<td><input type="text" name="welcome" id="welcome" value="{{configurations.messages.welcome}}"/></td>
+												</tr>
+												<tr>
+													<td>There is no response:</td>
+													<td><input type="text" name="empty_rensponse" id="empty_rensponse" value="{{configurations.messages.empty_rensponse}}"/></td>
+												</tr>
+
+												<tr>
+													<td>Low confidance in classification:</td>
+													<td><input type="text" name="low_confidance" id="low_confidance" value="{{configurations.messages.low_confidance}}"/></td>
+												</tr>
+
+												<tr>
+													<td>Selected invalid option:</td>
+													<td><input type="text" name="invalid_option" id="invalid_option" value="{{configurations.messages.invalid_option}}"/></td>
+												</tr>
+
+												<tr>
+													<td>Unknow question:</td>
+													<td><input type="text" name="unkwon_question" id="unkwon_question" value="{{configurations.messages.unkwon_question}}"/></td>
+												</tr>
+
+												<tr>
+													<td>Ask missing parameter:</td>
+													<td><input type="text" name="ask_cv_question" id="ask_cv_question" value="{{configurations.messages.ask_cv_question}}"/></td>
+												</tr>
+
+												<tr>
+													<td>Ask missing parameter(witout information):</td>
+													<td><input type="text" name="ask_cv_question_without_information" id="ask_cv_question_without_information" value="{{configurations.messages.ask_cv_question_without_information}}"/></td>
+												</tr>
+
+												<tr>
+													<td>Internal error:</td>
+													<td><input type="text" name="Internal_error" id="Internal_error" value="{{configurations.messages.Internal_error}}"/></td>
+												</tr>
+
+												<tr>
+													<td>Desambiguation header:</td>
+													<td><input type="text" name="desambiguation_header" id="desambiguation_header" value="{{configurations.messages.desambiguation_header}}"/></td>
+												</tr>
+
+												<tr>
+													<td>Cancel desambiguation:</td>
+													<td><input type="text" name="cancel_desambiugation" id="cancel_desambiugation" value="{{configurations.messages.cancel_desambiugation}}"/></td>
+												</tr>
+
+												<tr>
+													<td>Help:</td>
+													<td><input type="text" name="help" id="help" value="{{configurations.messages.help}}"/></td>
+												</tr>
+
+											</table> 
+										</details>
+										<hr>
+										<div class="col-12">
+											<ul class="actions">
+												<li><input type="submit" value="Update" class="primary" /></li>
+												<li><input type="reset" value="Cancel" onclick="window.location.href = {{url_for('index')}};" /></li>
+											</ul>
+										</div>
+									</form>
+								</section>
+							
+
+						</div>
+					</div>
+
+				<!-- Sidebar -->
+					<div id="sidebar">
+						<div class="inner">
+
+
+							<!-- Menu -->
+								<nav id="menu">
+									<header class="major">
+										<h2><span class="image fit"><img src="{{url_for('static',filename='images/Logo_CONQUEST.png')}}" alt="" /></span>CONQUEST</h2>
+									</header>
+									<ul>
+										<li><a href="{{url_for('index')}}" >Server Manager</a></li>
+										<li><a href="{{url_for('templates')}}">Templates</a></li>
+										<li><a href="{{url_for('developing_tester')}}">Developing Tester</a></li>
+										<li>
+											<span class="opener">Monitor</span>
+											<ul>
+												<li><a href="#">Bot Status</a></li>
+												<li><a href="#">Chat Context Status</a></li>
+											</ul>
+										</li>
+									</ul>
+								</nav>
+
+							
+
+							<!-- Footer -->
+								<footer id="footer">
+									<ul class="icons">
+										<li><a href="https://github.com/CaioViktor/CONQUEST" class="icon brands fab fa-github"><span class="label">Github</span></a></li>										
+									</ul>
+									CONQUEST (Chatbot ONtology QUESTion) is a framework that automates much of the construction process of chatbots for the task of template-based Interactive Question Answering on closed-domain knowledge bases.<br/><p class="copyright">&copy; CONQUEST. All rights reserved. Design: <a href="https://html5up.net">HTML5 UP</a>.</p>
+								</footer>
+
+						</div>
+					</div>
+
+			</div>
+
+		<!-- Scripts -->
+			<script src="{{url_for('static',filename='assets/js/jquery.min.js')}}"></script>
+			<script src="{{url_for('static',filename='assets/js/browser.min.js')}}"></script>
+			<script src="{{url_for('static',filename='assets/js/breakpoints.min.js')}}"></script>
+			<script src="{{url_for('static',filename='assets/js/util.js')}}"></script>
+			<script src="{{url_for('static',filename='assets/js/main.js')}}"></script>
+			<meta id="my-data" data-configurations="{{configurations_json}}">
+			<script type="text/javascript">
+				configurations =  $('#my-data').data().configurations;
+			</script>
+
+	</body>
+</html>
