@@ -11,6 +11,7 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
 		<link rel="stylesheet" href="{{url_for('static',filename='assets/css/main.css')}}" />
 		<script type="text/javascript">
+
 			function remove_qp(element){
 				element.parentElement.parentElement.remove();
 			}
@@ -21,6 +22,116 @@
 			function cancel(){
 				window.location.href = "{{url_for('templates',_external=True)}}";
 			}
+			function add_qp(element){
+				div_qps = element.parentElement.parentElement.parentElement;
+				table_qps = $(div_qps).children("table")[0];
+				html = ['<tr>',
+							'<td><textarea class="description" class="qp" autofocus></textarea></td>',
+							'<td><a onclick="remove_qp(this);" class="trash"><i class="fas fa-trash"></i></a></td>',
+						'</tr>'
+						].join("\n");
+				$(table_qps).append(html);
+			}
+			function new_qai(){
+				number = $(".qai").length;
+				html = ['<div id="New_qai_'+(number+1)+'" class="box qai">',
+							'<div class="inline">',
+								'<b>New_QAI: '+(number+1)+'</b><a class="trash" onclick="remove_qai(this);"><i class="fas fa-trash"></i></a>',
+							'</div>',
+							'<div class="box description">',
+								'<tr>',
+									'<td><b>Template Description:</b></td>',
+									'<td><textarea  class="description"></textarea></td>',
+								'</tr>',
+							'</div>',
+							'<div class="box sp">',
+								'<tr>',
+									'<td><b>SPARQL Pattern:</b></td>',
+									'<td><textarea rows="10" class="sp"></textarea></td>',
+								'</tr>',
+							'</div>',
+							'<div class="box qps">',
+								'<h5><b>Questions Patterns:</b></h5>',
+								'<table>',
+										'<tr>',
+											'<td><textarea class="qp"></textarea></td>',
+											'<td><a onclick="remove_qp(this);" class="trash"><i class="fas fa-trash"></i></a></td>',
+										'</tr>',
+								'</table>',
+								'<ul class="actions small">',
+									'<li><a onclick="add_qp(this)" class="button primary small"><i class="fas fa-plus"></i>Add Pattern</a></li>',
+								'</ul>',
+							'</div>',
+							'<div class="box rp">',
+								'<tr>',
+									'<td><b>Response Header:</b></td>',
+									'<td><textarea  class="rp_header"></textarea></td>',
+								'</tr>',
+								'<tr>',
+									'<td><b>Response Body:</b></td>',
+									'<td><textarea  class="rp_body"></textarea></td>',
+								'</tr>',
+								'<tr>',
+									'<td><b>Response Footer:</b></td>',
+									'<td><textarea  class="rp_footer"></textarea></td>',
+								'</tr>',
+							'</div>',
+						'</div>'
+						].join("\n");
+						div_templates = $("#templates")[0];
+						$(div_templates).append(html);
+			}
+			function send(obj){
+				url_server = "{{url_for('save_qai')}}";
+				$.ajax({
+				  type: "POST",
+				  url: url_server,
+				  dataType: "json",
+				  contentType: 'application/json;charset=UTF-8',
+				  data: JSON.stringify(obj),
+				  success: function (data){
+				  		window.location.href = "{{url_for('templates',message='Templates Updated!',_external=True)}}";
+				  },
+				  error: function () {
+				      alert('Error');
+				  }
+				});
+
+			}
+			function save(){
+				QAIs = {
+					"description": $("#qais_description")[0].value,
+				    "update_data": new Date().toJSON().slice(0,10),
+				    "author": $("#qais_author")[0].value,
+				    "created_date": $("#qais_created_date")[0].value,
+				    "QAIs": []
+				};
+				number_qais = $(".qai").length;
+				for(var c =0 ; c < number_qais;c++){
+					qai = $(".qai")[c];
+
+					rp = $(qai).children(".rp")[0]
+					header = $(rp).children(".rp_header")[0].value
+					body = $(rp).children(".rp_body")[0].value
+					footer = $(rp).children(".rp_footer")[0].value
+					QAI = {"id": c,
+							"description": $(qai).children(".description")[0].children[1].value,
+							"SP": $(qai).children(".sp")[0].children[1].value,
+							"RP":{"header":header,
+								  "body":body,
+								  "footer":footer
+								},
+							"QPs": []
+							};
+					qps = $(qai).find(".qp").length;
+					for(var qc = 0 ; qc < qps; qc++){
+						QAI.QPs.push($(qai).find(".qp")[qc].value);
+					}
+					QAIs.QAIs.push(QAI);
+				}
+				send(QAIs);
+			}
+
 		</script>
 	</head>
 	<body class="is-preload">
@@ -39,22 +150,26 @@
 										<li><a href="https://github.com/CaioViktor/CONQUEST" class="icon brands fab fa-github"><span class="label">Github</span></a></li>										
 									</ul>
 								</header>
-
+								{%if message != ""%}
+									<div id="message" class="green_box">
+											{{message}}
+									</div>
+								{%endif%}
 						
 							<div id="form_templates">
 								
 								<table id="information_template">
 									<tr>
 										<td>Chatbot Description:</td>
-										<td><textarea  id="description">{{templates.description}}</textarea></td>
+										<td><textarea  id="qais_description">{{templates.description}}</textarea></td>
 									</tr>
 									<tr>
 										<td>Autor Name:</td>
-										<td><input type="text" id="author" value="{{templates.author}}" required/></td>
+										<td><input type="text" id="qais_author" value="{{templates.author}}" required/></td>
 									</tr>
 									<tr>
 										<td>Created Date:</td>
-										<td><input type="date" name="created_date" id="created_date" value="{%if templates.created_date != ''%}{{templates.created_date}}{%else%}{{today}}{%endif%}" required disabled/></td>
+										<td><input type="date" id="qais_created_date" id="created_date" value="{%if templates.created_date != ''%}{{templates.created_date}}{%else%}{{today}}{%endif%}" required disabled/></td>
 									</tr>
 								</table> 
 								<hr>
@@ -64,37 +179,37 @@
 											<div class="inline">
 													<b>QAI: {{QAI.id}}</b><a class="trash" onclick="remove_qai(this);"><i class="fas fa-trash"></i></a>
 											</div>
-												
-											</table>
 											
-											
-											<div class="box">
+											<div class="box description">
 												<tr>
 													<td><b>Template Description:</b></td>
 													<td><textarea  class="description">{{QAI.description}}</textarea></td>
 												</tr>
 											</div>
-											<div class="box">
+
+											<div class="box sp">
 												<tr>
 													<td><b>SPARQL Pattern:</b></td>
 													<td><textarea rows="10" class="sp">{{QAI.SP}}</textarea></td>
 												</tr>
 											</div>
+
 											<div class="box qps">
-											<h5><b>Questions Patterns:</b></h5>
+												<h5><b>Questions Patterns:</b></h5>
 												<table>
 													{%for QP in QAI.QPs%}
 														<tr>
-															<td><textarea class="description" class="qp">{{QP}}</textarea></td>
-															<td><a onclick="remove_qp(this);"><i class="fas fa-trash"></i></a></td>
+															<td><textarea class="qp">{{QP}}</textarea></td>
+															<td><a onclick="remove_qp(this);" class="trash"><i class="fas fa-trash"></i></a></td>
 														</tr>
 													{%endfor%}
 												</table>
 												<ul class="actions small">
-													<li><a class="button primary small"><i class="fas fa-plus"></i>Add Pattern</a></li>
+													<li><a onclick="add_qp(this)" class="button primary small"><i class="fas fa-plus"></i>Add Pattern</a></li>
 												</ul>
 											</div>
-											<div class="box">
+
+											<div class="box rp">
 												<tr>
 													<td><b>Response Header:</b></td>
 													<td><textarea  class="rp_header">{{QAI.RP.header}}</textarea></td>
@@ -108,15 +223,16 @@
 													<td><textarea  class="rp_footer">{{QAI.RP.footer}}</textarea></td>
 												</tr>
 											</div>
+
 										</div>
 									{%endfor%}
 								</div>
 								<ul class="actions small">
-									<li><a class="button primary small"><i class="fas fa-plus"></i>Add Template</a></li>
+									<li><a onclick="new_qai();" class="button primary small"><i class="fas fa-plus"></i>Add Template</a></li>
 								</ul>
 							</div>
 							<ul class="actions">
-								<li><a href="#" class="button primary">Save</a></li>
+								<li><a onclick="save()" class="button primary">Save</a></li>
 								<li><a onclick="cancel()" class="button">Cancel</a></li>
 							</ul>
 						</div>

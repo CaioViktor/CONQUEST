@@ -6,6 +6,14 @@ from datetime import date
 app = Flask(__name__)
 
 
+@app.route("/save_qai",methods=['POST'])
+def save_qai():
+	QAIs = json.loads(request.data)
+	with open("input/input_QAIs.json","w") as QAIs_file:
+		QAIs_string = json.dumps(QAIs,indent=4,ensure_ascii=False).encode('utf8').decode()
+		QAIs_file.write(QAIs_string)
+	return json.dumps({'success':True}), 200, {'ContentType':'application/json'}
+
 @app.route("/update_configurations",methods=['POST'])
 def update_configurations():
 	configurations = {'messages': {}}
@@ -25,6 +33,7 @@ def update_configurations():
 	return redirect(url_for("index",message="Configurations Updated!"))
 
 
+
 @app.route("/developing_tester")
 def developing_tester():
 	return render_template('developing_tester.html')
@@ -34,11 +43,15 @@ def templates():
 	today = date.today().strftime("%Y-%m-%d")
 	with open("input/input_QAIs.json","r") as templates_file:
 		templates = json.load(templates_file)
-	return render_template('templates.html',templates=templates,today=today)
+	if "message" in request.values:
+		message = request.values['message']
+	else:
+		message = ""
+	return render_template('templates.html',templates=templates,today=today,message=message)
 
 @app.route("/")
 def index():
-	with open("input/medibot/configurations.json","r") as config_file:
+	with open("input/configurations.json","r") as config_file:
 		configurations = json.load(config_file)
 	if "message" in request.values:
 		message = request.values['message']
@@ -48,5 +61,4 @@ def index():
 
 
 if __name__ == "__main__":
-	#app.run(host='200.19.182.252')
 	app.run(host='0.0.0.0',port="5050")

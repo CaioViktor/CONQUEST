@@ -2284,4 +2284,5 @@ button,
 }
 .trash{
   float:right;
+  cursor: pointer;
 }
