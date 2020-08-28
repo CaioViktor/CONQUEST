@@ -38,7 +38,7 @@ def templates():
 
 @app.route("/")
 def index():
-	with open("input/medibot/configurations.json","r") as config_file:
+	with open("input/configurations.json","r") as config_file:
 		configurations = json.load(config_file)
 	if "message" in request.values:
 		message = request.values['message']
