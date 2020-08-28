@@ -6,10 +6,15 @@
 -->
 <html>
 	<head>
-		<title>CONQUEST - Server Manager</title>
+		<title>CONQUEST-Server Manager</title>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
 		<link rel="stylesheet" href="{{url_for('static',filename='assets/css/main.css')}}" />
+		<script type="text/javascript">
+			function cancel(){
+				window.location.href = "{{url_for('index',_external=True)}}";
+			}
+		</script>
 	</head>
 	<body class="is-preload">
 
@@ -211,7 +216,7 @@
 										<div class="col-12">
 											<ul class="actions">
 												<li><input type="submit" value="Update" class="primary" /></li>
-												<li><input type="reset" value="Cancel" onclick="window.location.href = {{url_for('index')}};" /></li>
+												<li><input type="reset" value="Cancel" onclick="cancel()" /></li>
 											</ul>
 										</div>
 									</form>

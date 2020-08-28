@@ -1,6 +1,7 @@
 import os
 from flask import Flask,render_template,request, redirect, url_for
 import json
+from datetime import date
 
 app = Flask(__name__)
 
@@ -30,7 +31,10 @@ def developing_tester():
 
 @app.route("/templates")
 def templates():
-	return render_template('templates.html')
+	today = date.today().strftime("%Y-%m-%d")
+	with open("input/input_QAIs.json","r") as templates_file:
+		templates = json.load(templates_file)
+	return render_template('templates.html',templates=templates,today=today)
 
 @app.route("/")
 def index():

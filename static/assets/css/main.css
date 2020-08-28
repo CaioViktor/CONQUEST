@@ -2279,3 +2279,9 @@ button,
   margin-bottom: 2em;
   padding: 1.5em; 
 }
+.inline{
+  display: inline;
+}
+.trash{
+  float:right;
+}

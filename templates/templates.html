@@ -6,10 +6,22 @@
 -->
 <html>
 	<head>
-		<title>Editorial by HTML5 UP</title>
+		<title>CONQUEST-Templates</title>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
 		<link rel="stylesheet" href="{{url_for('static',filename='assets/css/main.css')}}" />
+		<script type="text/javascript">
+			function remove_qp(element){
+				element.parentElement.parentElement.remove();
+			}
+			function remove_qai(element){
+				element.parentElement.parentElement.remove();
+			}
+
+			function cancel(){
+				window.location.href = "{{url_for('templates',_external=True)}}";
+			}
+		</script>
 	</head>
 	<body class="is-preload">
 
@@ -22,17 +34,91 @@
 
 							<!-- Header -->
 								<header id="header">
-									<a href="index.html" class="logo"><strong>Templates</strong></a>
+									<a href="{{url_for('templates')}}" class="logo"><strong>Templates</strong></a>
 									<ul class="icons">
 										<li><a href="https://github.com/CaioViktor/CONQUEST" class="icon brands fab fa-github"><span class="label">Github</span></a></li>										
 									</ul>
 								</header>
 
 						
-							
-
-							
-
+							<div id="form_templates">
+								
+								<table id="information_template">
+									<tr>
+										<td>Chatbot Description:</td>
+										<td><textarea  id="description">{{templates.description}}</textarea></td>
+									</tr>
+									<tr>
+										<td>Autor Name:</td>
+										<td><input type="text" id="author" value="{{templates.author}}" required/></td>
+									</tr>
+									<tr>
+										<td>Created Date:</td>
+										<td><input type="date" name="created_date" id="created_date" value="{%if templates.created_date != ''%}{{templates.created_date}}{%else%}{{today}}{%endif%}" required disabled/></td>
+									</tr>
+								</table> 
+								<hr>
+								<div id="templates">
+									{%for QAI in templates.QAIs%}
+										<div id="qai_{{QAI.id}}" class="box qai">
+											<div class="inline">
+													<b>QAI: {{QAI.id}}</b><a class="trash" onclick="remove_qai(this);"><i class="fas fa-trash"></i></a>
+											</div>
+												
+											</table>
+											
+											
+											<div class="box">
+												<tr>
+													<td><b>Template Description:</b></td>
+													<td><textarea  class="description">{{QAI.description}}</textarea></td>
+												</tr>
+											</div>
+											<div class="box">
+												<tr>
+													<td><b>SPARQL Pattern:</b></td>
+													<td><textarea rows="10" class="sp">{{QAI.SP}}</textarea></td>
+												</tr>
+											</div>
+											<div class="box qps">
+											<h5><b>Questions Patterns:</b></h5>
+												<table>
+													{%for QP in QAI.QPs%}
+														<tr>
+															<td><textarea class="description" class="qp">{{QP}}</textarea></td>
+															<td><a onclick="remove_qp(this);"><i class="fas fa-trash"></i></a></td>
+														</tr>
+													{%endfor%}
+												</table>
+												<ul class="actions small">
+													<li><a class="button primary small"><i class="fas fa-plus"></i>Add Pattern</a></li>
+												</ul>
+											</div>
+											<div class="box">
+												<tr>
+													<td><b>Response Header:</b></td>
+													<td><textarea  class="rp_header">{{QAI.RP.header}}</textarea></td>
+												</tr>
+												<tr>
+													<td><b>Response Body:</b></td>
+													<td><textarea  class="rp_body">{{QAI.RP.body}}</textarea></td>
+												</tr>
+												<tr>
+													<td><b>Response Footer:</b></td>
+													<td><textarea  class="rp_footer">{{QAI.RP.footer}}</textarea></td>
+												</tr>
+											</div>
+										</div>
+									{%endfor%}
+								</div>
+								<ul class="actions small">
+									<li><a class="button primary small"><i class="fas fa-plus"></i>Add Template</a></li>
+								</ul>
+							</div>
+							<ul class="actions">
+								<li><a href="#" class="button primary">Save</a></li>
+								<li><a onclick="cancel()" class="button">Cancel</a></li>
+							</ul>
 						</div>
 					</div>
 

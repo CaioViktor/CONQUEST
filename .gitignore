@@ -2,4 +2,5 @@
 *~
 input/medibot/
 persistence/
-
+config.py
+dialog/constants.py
