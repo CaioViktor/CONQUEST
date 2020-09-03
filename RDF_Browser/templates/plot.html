@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang = "pt-br">
+	<head>
+		<meta charset = "UTF-8">
+		<link rel = "stylesheet" href = "{{url_for('static',filename='css/style.css')}}">
+		<title>RDF Browser</title>
+		<script src="{{url_for('static',filename='js/sigmajs/src/sigma.core.js')}}"></script>
+		<script src="{{url_for('static',filename='js/sigmajs/src/conrad.js')}}"></script>
+		<script src="{{url_for('static',filename='js/sigmajs/src/utils/sigma.utils.js')}}"></script>
+		<script src="{{url_for('static',filename='js/sigmajs/src/utils/sigma.polyfills.js')}}"></script>
+		<script src="{{url_for('static',filename='js/sigmajs/src/sigma.settings.js')}}"></script>
+		<script src="{{url_for('static',filename='js/sigmajs/src/classes/sigma.classes.dispatcher.js')}}"></script>
+		<script src="{{url_for('static',filename='js/sigmajs/src/classes/sigma.classes.configurable.js')}}"></script>
+		<script src="{{url_for('static',filename='js/sigmajs/src/classes/sigma.classes.graph.js')}}"></script>
+		<script src="{{url_for('static',filename='js/sigmajs/src/classes/sigma.classes.camera.js')}}"></script>
+		<script src="{{url_for('static',filename='js/sigmajs/src/classes/sigma.classes.quad.js')}}"></script>
+		<script src="{{url_for('static',filename='js/sigmajs/src/classes/sigma.classes.edgequad.js')}}"></script>
+		<script src="{{url_for('static',filename='js/sigmajs/src/captors/sigma.captors.mouse.js')}}"></script>
+		<script src="{{url_for('static',filename='js/sigmajs/src/captors/sigma.captors.touch.js')}}"></script>
+		<script src="{{url_for('static',filename='js/sigmajs/src/renderers/sigma.renderers.canvas.js')}}"></script>
+		<script src="{{url_for('static',filename='js/sigmajs/src/renderers/sigma.renderers.webgl.js')}}"></script>
+		<script src="{{url_for('static',filename='js/sigmajs/src/renderers/sigma.renderers.svg.js')}}"></script>
+		<script src="{{url_for('static',filename='js/sigmajs/src/renderers/sigma.renderers.def.js')}}"></script>
+		<script src="{{url_for('static',filename='js/sigmajs/src/renderers/webgl/sigma.webgl.nodes.def.js')}}"></script>
+		<script src="{{url_for('static',filename='js/sigmajs/src/renderers/webgl/sigma.webgl.nodes.fast.js')}}"></script>
+		<script src="{{url_for('static',filename='js/sigmajs/src/renderers/webgl/sigma.webgl.edges.def.js')}}"></script>
+		<script src="{{url_for('static',filename='js/sigmajs/src/renderers/webgl/sigma.webgl.edges.fast.js')}}"></script>
+		<script src="{{url_for('static',filename='js/sigmajs/src/renderers/webgl/sigma.webgl.edges.arrow.js')}}"></script>
+		<script src="{{url_for('static',filename='js/sigmajs/src/renderers/canvas/sigma.canvas.labels.def.js')}}"></script>
+		<script src="{{url_for('static',filename='js/sigmajs/src/renderers/canvas/sigma.canvas.hovers.def.js')}}"></script>
+		<script src="{{url_for('static',filename='js/sigmajs/src/renderers/canvas/sigma.canvas.nodes.def.js')}}"></script>
+		<script src="{{url_for('static',filename='js/sigmajs/src/renderers/canvas/sigma.canvas.edges.def.js')}}"></script>
+		<script src="{{url_for('static',filename='js/sigmajs/src/renderers/canvas/sigma.canvas.edges.curve.js')}}"></script>
+		<script src="{{url_for('static',filename='js/sigmajs/src/renderers/canvas/sigma.canvas.edges.arrow.js')}}"></script>
+		<script src="{{url_for('static',filename='js/sigmajs/src/renderers/canvas/sigma.canvas.edges.curvedArrow.js')}}"></script>
+		<script src="{{url_for('static',filename='js/sigmajs/src/renderers/canvas/sigma.canvas.edgehovers.def.js')}}"></script>
+		<script src="{{url_for('static',filename='js/sigmajs/src/renderers/canvas/sigma.canvas.edgehovers.curve.js')}}"></script>
+		<script src="{{url_for('static',filename='js/sigmajs/src/renderers/canvas/sigma.canvas.edgehovers.arrow.js')}}"></script>
+		<script src="{{url_for('static',filename='js/sigmajs/src/renderers/canvas/sigma.canvas.edgehovers.curvedArrow.js')}}"></script>
+		<script src="{{url_for('static',filename='js/sigmajs/src/renderers/canvas/sigma.canvas.extremities.def.js')}}"></script>
+		<script src="{{url_for('static',filename='js/sigmajs/src/renderers/svg/sigma.svg.utils.js')}}"></script>
+		<script src="{{url_for('static',filename='js/sigmajs/src/renderers/svg/sigma.svg.nodes.def.js')}}"></script>
+		<script src="{{url_for('static',filename='js/sigmajs/src/renderers/svg/sigma.svg.edges.def.js')}}"></script>
+		<script src="{{url_for('static',filename='js/sigmajs/src/renderers/svg/sigma.svg.edges.curve.js')}}"></script>
+		<script src="{{url_for('static',filename='js/sigmajs/src/renderers/svg/sigma.svg.labels.def.js')}}"></script>
+		<script src="{{url_for('static',filename='js/sigmajs/src/renderers/svg/sigma.svg.hovers.def.js')}}"></script>
+		<script src="{{url_for('static',filename='js/sigmajs/src/middlewares/sigma.middlewares.rescale.js')}}"></script>
+		<script src="{{url_for('static',filename='js/sigmajs/src/middlewares/sigma.middlewares.copy.js')}}"></script>
+		<script src="{{url_for('static',filename='js/sigmajs/src/misc/sigma.misc.animation.js')}}"></script>
+		<script src="{{url_for('static',filename='js/sigmajs/src/misc/sigma.misc.bindEvents.js')}}"></script>
+		<script src="{{url_for('static',filename='js/sigmajs/src/misc/sigma.misc.bindDOMEvents.js')}}"></script>
+		<script src="{{url_for('static',filename='js/sigmajs/src/misc/sigma.misc.drawHovers.js')}}"></script>
+		<script src="{{url_for('static',filename='js/sigmajs/plugins/sigma.layout.forceAtlas2/worker.js')}}"></script>
+		<script src="{{url_for('static',filename='js/sigmajs/plugins/sigma.layout.forceAtlas2/supervisor.js')}}"></script>
+
+		<script src="{{url_for('static',filename='js/sigmajs/plugins/sigma.renderers.edgeLabels/settings.js')}}"></script>
+		<script src="{{url_for('static',filename='js/sigmajs/plugins/sigma.renderers.edgeLabels/sigma.canvas.edges.labels.def.js')}}"></script>
+		<script src="{{url_for('static',filename='js/sigmajs/plugins/sigma.renderers.edgeLabels/sigma.canvas.edges.labels.curve.js')}}"></script>
+		<script src="{{url_for('static',filename='js/sigmajs/plugins/sigma.renderers.edgeLabels/sigma.canvas.edges.labels.curvedArrow.js')}}"></script>
+		<script type="text/javascript">
+			function submitForm(uri) {
+				document.getElementById('input_uri').value = uri;
+				document.getElementById("plotGraph").submit(); 
+			}
+		</script>
+	</head>
+	<body>
+		<div class = "content">
+			<div id="modelDiv" >
+				<img src="{{url_for('static',filename='img/error.png')}}" class="icon" id="close" onclick="this.parentElement.style.display='none'">
+				<div id="properties"></div>
+			</div>
+			<div id="graph-container"></div>
+			<a href="{{url_for('index')}}"><img id="home" class="icon" src="{{url_for('static',filename='img/analyzing.png')}}"></a>
+		</div>
+	</body>
+	<footer>
+		<script type="text/javascript">
+g = {
+  nodes: [],
+  edges: []
+};
+
+
+{%set count = {'c':0}%}
+{%for node in nodes%}
+	var properties = {}
+	{%for property in nodes[node]['properties']%}
+		properties['{{property}}'] = {'uri':"{{nodes[node]['properties'][property]['uri']}}",'values':[]};
+		{%for value in nodes[node]['properties'][property]['values']%}
+			properties['{{property}}']['values'].push("{{value|replace('\n','')}}");
+		{%endfor%}
+	{%endfor%}
+	g['nodes'].push({'id':"{{node}}",'size':3, 'x': (100 * Math.cos(2 * {{count.c}} * Math.PI / {{nodes|length}})), 'y': (100 * Math.sin(2 * {{count.c}} * Math.PI / {{nodes|length}})),'color':{%if ("<"+nodes[node]['uri']+">") == uri%}'#cc2255'{%else%}'#008cc2'{%endif%}  , 'properties':properties,'uri':"{{nodes[node]['uri']}}"})
+	{%if count.update({'c':(count.c +1)})%}{%endif%}
+{%endfor%}
+
+
+{%set count = {'c':0}%}
+{%for edge in edges%}
+	{%if edge[2] in nodes%}
+		g['edges'].push({'id':'e{{count.c}}',label:'{{edge[3]}}','source':'{{edge[0]}}','target':'{{edge[2]}}',type:'arrow',size: Math.random(),
+    color: '#555', uri:'{{edge[1]}}',sourceUri:'{{nodes[edge[0]]["uri"]}}',targetUri:'{{nodes[edge[2]]["uri"]}}'})
+	{%endif%}
+	{%if count.update({'c':(count.c +1)})%}{%endif%}
+{%endfor%}
+
+s = new sigma({
+  graph: g,
+  renderer: {
+    container: document.getElementById('graph-container'),
+    type: 'canvas'
+  },
+  settings: {
+  	edgeLabelSize: 'proportional',
+  	enableEdgeHovering: true,
+    edgeHoverColor: 'edge',
+    defaultEdgeHoverColor: '#f00',
+    edgeHoverSizeRatio: 2,
+    edgeHoverExtremities: true,
+  }
+});
+
+s.bind('clickNode', function(e) {
+	var properties = e.data.node.properties;
+	var uri = e.data.node.uri;
+	var div = document.getElementById('properties');
+	var stringHTML = "<center><h3>< "+uri+" ></h3></center><br/><ul>";
+	for(property in properties){
+		stringHTML += "<li ><span class='property'>< "+properties[property]['uri']+" ></span>: <ul>";
+		for(var i =0 ; i < properties[property]['values'].length;i++){
+			stringHTML += "<li> "+properties[property]['values'][i]+" </li>"
+		}
+		stringHTML += "</ul></li>";
+	}
+	stringHTML += "</ul><br/><form action='"+"{{url_for('plot')}}"+"' method='post' id='plotGraph'> <input type='hidden' name='uri' id='input_uri'> <center> <input type='submit' onClick='submitForm("+'"'+uri+'"'+");' name='searchButton' value='Explorar'></center></form>";
+
+	div.innerHTML = stringHTML;
+	document.getElementById('modelDiv').style.display='block';
+});
+
+
+s.bind('clickEdge', function(e) {
+	var uri = e.data.edge.uri;
+	var sourceUri = e.data.edge.sourceUri;
+	var targetUri = e.data.edge.targetUri;
+	var div = document.getElementById('properties');
+	var stringHTML = "<center><h3>< "+uri+" ></h3></center><br/><ul>";
+	stringHTML += "<li><span class='property'>Source</span>:<br/>"+sourceUri+"</li>";
+	stringHTML += "<li><span class='property'>Target</span>:<br/>"+targetUri+"</li>";
+	stringHTML += "</ul>";
+
+
+	div.innerHTML = stringHTML;
+	document.getElementById('modelDiv').style.display='block';
+});
+
+// Start the ForceAtlas2 algorithm:
+s.startForceAtlas2({worker: true, barnesHutOptimize: false});
+window.setTimeout(function() {s.killForceAtlas2()}, 5000);
+		</script>
+	</footer>
+</html>

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>RDF Browser</title>
+	<link rel = "stylesheet" href = "{{url_for('static',filename='css/style.css')}}">
+	<script type="text/javascript">
+		function search(){
+			var term = document.getElementById('termSearch').value;
+			if(term != ""){
+				window.location.href = "{{url_for('search',term='')}}"+term;
+			}
+			
+		}
+		function submitForm(uri) {
+			document.getElementById('input_uri').value = uri;
+			document.getElementById("plotGraph").submit(); 
+		}
+		function pressed(event) {
+			if(event.keyCode == "13")
+				document.getElementById('searchButton').click();
+		}
+	</script>
+</head>
+<body>
+	<div id="content">
+		<center><input required="true" type="search" name="termSearch" id="termSearch" onkeypress="pressed(event)"><input type="submit" onClick="search();" name="searchButton" id="searchButton"></center>
+		<form action="{{url_for('plot')}}" method="post" id="plotGraph">
+			<input type="hidden" name="uri" id="input_uri">
+			{% if results|length > 0 %}
+				<table id="listaOnt">
+					<tr>
+						<th>Term</th>
+						<th>Property</th>
+						<th>Value</th>
+					</tr>
+					{%set count = {'c':0}%}
+					{% for result in results %}
+						{%set id = "cor"+ (count.c%2)|string%}
+						<tr id="{{id}}" onClick="submitForm('{{result[0]}}');">
+							<td> {{result[0]}}</td>
+							<td> {{result[1]}}</td>
+							<td> {{result[2]}}</td>						
+						</tr>
+						{%if count.update({'c':(count.c +1)})%}{%endif%}
+					{%endfor%}
+				</table>
+			{% else %}
+				<center>
+					No item found
+				</center>
+			{% endif %}
+		</form>
+	</div>
+</body>
+</html>

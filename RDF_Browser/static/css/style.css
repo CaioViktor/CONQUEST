@@ -1,0 +1,84 @@
+body{
+	background-color: #87CEFA;
+	font-family: "Bookman";
+}
+#graph-container {
+	position: absolute;
+	left: 0%;
+	top: 0%;
+	height: 100%;
+	width: 100%;
+}
+
+#modelDiv{
+	display: none;
+	position: absolute;
+	top: 0%;
+	left: 0%;
+	height: 100%;
+	width:100%;
+	z-index: 998;
+	background: rgba(0, 0, 0, 0.3);
+}
+.icon{
+	height:32px !important;
+	width:32px !important;
+	cursor: pointer;
+}
+#close{
+	position: absolute;
+	top: 1%;
+	right: 25%;
+	margin-right: 32px; 
+	z-index: 999;
+}
+#properties{
+	background-color: white;
+	position: absolute;
+	top: 5%;
+	left: 20%;
+	min-height: 90%;
+	display: block;
+	width: 50%;
+
+	-moz-border-radius: 8px 8px 8px 8px;
+	-webkit-border-radius: 8px 8px 8px 8px;
+	padding: 10px 10px 10px 10px;
+	box-shadow:2px 2px 5px #000000;
+	-moz-box-shadow:2px 2px 5px #000000;
+	-webkit-box-shadow:2px 2px 5px #000000;
+}
+
+#cor1{
+	background-color: #c9c5c5;
+}
+#cor0{
+	background-color: #e2e0e0;
+}
+#listaOnt{
+	width: 100%;
+	table-layout:fixed;
+	border-collapse: collapse;
+}
+table tr td{
+	padding: 5px 5px 5px 5px;
+}
+#listaOnt tr td,#listaOnt tr th{
+	padding: 5px 5px 5px 5px;
+	display: table-cell;
+	height: auto;
+	overflow:auto; 
+	text-align: center;
+}
+td{
+	cursor: pointer;
+}
+#home{
+	position: absolute;
+	z-index: 999;
+	right: 1%;
+	bottom: 1%;
+}
+.property{
+	color: blue
+}
