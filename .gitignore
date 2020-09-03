@@ -1,5 +1,6 @@
 *.pyc
 *~
-input/medibot/
+input/
 persistence/
-
+config.py
+dialog/constants.py
