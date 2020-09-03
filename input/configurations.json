@@ -30,7 +30,8 @@
 		"Internal_error" : "Desculpe ocorreu um erro interno",
 		"desambiguation_header" : "O que exatamente você quer saber:",
 		"cancel_desambiugation" : "Nenhuma",
-		"help" : "Consigo responder os seguintes tipos de questões:",
-	   "rdf_browser_port": "5555",
+		"help" : "Consigo responder os seguintes tipos de questões:"
+		},
+	 "rdf_browser_port": "5555",
         "rdf_browser_graph": ""
 }
