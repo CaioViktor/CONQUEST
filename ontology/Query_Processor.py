@@ -71,7 +71,7 @@ class Query_Processor():
 
 	def build_answer(self,qai,results):
 		if len(results) == 0:
-			return messages['empty_rensponse']
+			return [messages['empty_rensponse']]
 		answer = [qai.RP['header']]
 		# print("RV",qai.RVs)
 		for result in results:

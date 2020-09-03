@@ -1,6 +1,22 @@
 from dialog.constants import *
 from config import *
 
+#To run Stand-alone
+# import json
+# configurations = None
+# messages = None
+# host = None
+# port = None
+# TELEGRAM_TOKEN =  None
+# with open("../input/configurations.json","r", encoding="utf-8") as json_file:
+#     configurations = json.load(json_file)
+#     messages = configurations["messages"]
+#     host = configurations["host"]
+#     port = configurations["port"]
+#     TELEGRAM_TOKEN = configurations["TELEGRAM_TOKEN"]
+#     rdf_browser_port = configurations["rdf_browser_port"]
+#To run Stand-alone
+
 import logging
 
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackQueryHandler
@@ -12,6 +28,7 @@ updater = None
 #host,port,TELEGRAM_TOKEN - source in config
 
 server_url = "http://{}:{}/".format(host,port)
+rdf_browser_url = "http://{}:{}/".format(host,rdf_browser_port)
 
 # Enable logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -28,6 +45,29 @@ def start(update, context):
     # update.message.reply_text()
 
 
+
+def browser(update, context):
+    
+    url = server_url+"search"
+    term = " ".join(context.args)
+    # print(term)
+    r = requests.get(url = url,params={'term':term}) 
+    data = r.json() 
+    url_select = rdf_browser_url+"select"
+    c = 0
+    for item in data:
+        # print(item['link'])
+        select_link = url_select+"?term={}&option={}".format(term,c)
+        text = '<a href="'+select_link+'">'+item['value']+"</a>"
+        # print(text)
+        update.message.reply_text(text,parse_mode="HTML",disable_web_page_preview=False)
+        c+=1
+        # update.message.reply_text('['+item['link']+']('+item['link']+')',parse_mode="MarkdownV2")
+        # keyboard.append([InlineKeyboardButton(qai[2], callback_data=str(qai[0])+"@"+SELECT_QAI)])
+    # reply_markup = InlineKeyboardMarkup(keyboard)
+    # update.message.reply_text(messages['help'], reply_markup=reply_markup)  
+    # reply(update,'Help!')
+    # update.message.reply_text('Help!')
 
 
 def help(update, context):
@@ -157,6 +197,9 @@ def main():
     dp.add_handler(CommandHandler("start", start))
     dp.add_handler(CommandHandler("help", help))
     dp.add_handler(CommandHandler("ajuda", help))
+    dp.add_handler(CommandHandler("explorar", browser))
+    dp.add_handler(CommandHandler("browser", browser))
+    dp.add_handler(CommandHandler("navegar", browser))
     # dp.add_handler(CommandHandler('stop', stop))
 
     # on noncommand i.e message - echo the message on Telegram

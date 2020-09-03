@@ -5,6 +5,7 @@ import pymongo
 import re
 import user_interface.Telegram as telegram
 import threading
+import requests
 
 #States constants
 from dialog.constants import *
@@ -39,6 +40,19 @@ print("Starting Dialog Manager...")
 dialog_manager = Dialog_Manager(users_collection)
 print("Starting Telegram Bot...")
 telegram_thread = threading.Thread(target=telegram.main()).start()
+
+@app.route("/search")
+def search():
+	if 'term' in request.args:
+		rdf_browser_url = "http://localhost:{}/".format(rdf_browser_port)
+		r = requests.get(rdf_browser_url+"search", params={'term':request.args['term']})
+		results = []
+		for result in r.json():
+			result_aux = result
+			result_aux['link'] = rdf_browser_url+"plot?uri="+result['uri']
+			results.append(result_aux)
+		return jsonify(results)
+	return {'status':1,'message':["Missing args!"]}
 
 
 @app.route("/query/")
