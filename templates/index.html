@@ -63,11 +63,11 @@
 												</tr>
 												<tr>
 													<td>Ontology Path:</td>
-													<td><input type="text" name="ontology_path" id="ontology_path" value="{{configurations.ontology_path}}" required disabled/></td>
+													<td><input type="text" name="ontology_path" id="ontology_path" value="{{configurations.ontology_path}}" required readonly/></td>
 												</tr>
 												<tr>
 													<td>Templates Path:</td>
-													<td><input type="text" name="QAIs_path" id="QAIs_path" value="{{configurations.QAIs_path}}" required disabled/></td>
+													<td><input type="text" name="QAIs_path" id="QAIs_path" value="{{configurations.QAIs_path}}" required readonly/></td>
 												</tr>
 											</table> 
 										</details>
@@ -108,17 +108,27 @@
 										<details open>
 											<summary>NLP Model</summary>
 											<table id="nlp_model">
+												
+												<tr>
+													<td>Language:</td>
+													<td>
+														<select name="language" id="language">
+															<option value="pt">Português</option>
+															<option value="en">English</option>
+														</select>
+													</td>
+												</tr>
 												<tr>
 													<td>NLP Model Path:</td>
 													<td><input type="text" name="nlp_model_load" id="nlp_model_load" value="{{configurations.nlp_model_load}}" required/></td>
 												</tr>
 												<tr>
 													<td>Temporary NER Model Path:</td>
-													<td><input type="text" name="path_train_NER_temp" id="path_train_NER_temp" value="{{configurations.path_train_NER_temp}}" required disabled /></td>
+													<td><input type="text" name="path_train_NER_temp" id="path_train_NER_temp" value="{{configurations.path_train_NER_temp}}" required readonly /></td>
 												</tr>
 												<tr>
 													<td>Trained NLP Model Path:</td>
-													<td><input type="text" name="ner_nlp_model_path" id="ner_nlp_model_path" value="{{configurations.ner_nlp_model_path}}" required disabled /></td>
+													<td><input type="text" name="ner_nlp_model_path" id="ner_nlp_model_path" value="{{configurations.ner_nlp_model_path}}" required readonly /></td>
 												</tr>
 
 											</table> 
@@ -274,6 +284,9 @@
 			<meta id="my-data" data-configurations="{{configurations_json}}">
 			<script type="text/javascript">
 				configurations =  $('#my-data').data().configurations;
+				if(configurations['language'] == 'en'){
+					$("#language")[0].selectedIndex = 1;
+				}
 			</script>
 
 	</body>

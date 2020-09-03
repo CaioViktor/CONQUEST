@@ -7,6 +7,8 @@ echo "Downloading Sorl..."
 wget -O sorl.tar.xz "https://sourceforge.net/projects/conquest-sqai/files/solr.tar.xz/download"
 echo "Extracting Solr..."
 tar xf sorl.tar.xz
+echo "Downloading NLP model en..."
+python -m spacy download en_core_web_md
 echo "Downloading NLP model pt-br..."
 wget -O model.tar.xz "https://sourceforge.net/projects/conquest-sqai/files/model_pt-br.tar.xz/download"
 echo "Extracting model..."

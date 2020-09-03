@@ -9,12 +9,19 @@ import hashlib
 import numpy as np
 import pandas as pd
 from nltk.stem import RSLPStemmer
+from config import language
 
 
 class NLP_Processor():
 	def __init__(self,labels_NER,loadPath="persistence/nlp/model/pt_br",startup_solr=True):
-		self.model = spacy.load(loadPath)
-		self.stop_words = spacy.lang.pt.stop_words.STOP_WORDS
+		if language == "en":
+			self.model = spacy.load("en_core_web_md")
+			self.stop_words = spacy.lang.en.stop_words.STOP_WORDS
+		else:
+			self.model = spacy.load(loadPath)
+			self.stop_words = spacy.lang.pt.stop_words.STOP_WORDS
+			self.model.meta['name'] = "CONQUEST PT"
+		print("Using NLP model " +self.model.meta['name'])
 		self.vector_size = len(self.model("test").vector)
 		self.ner = NER(startup_solr=startup_solr)
 		self.stemmer = RSLPStemmer()
@@ -58,7 +65,7 @@ class NLP_Processor():
 		entities, sentenceAux,sentence_oov = self.ner.parser(sentenceAux)
 			
 		#Search possibles values to date CVs
-		dates = search_dates(sentenceAux,languages=['pt'])
+		dates = search_dates(sentenceAux,languages=[language])
 		if dates:
 			for date in dates:
 				entities.append([(date[1],str(XSD.dateTime)),sentenceAux.index(date[0])])

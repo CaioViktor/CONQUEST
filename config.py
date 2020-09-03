@@ -11,6 +11,7 @@ with open("input/configurations.json","r", encoding="utf-8") as json_file:
 	graph_name = configurations["graph_name"]
 	path_train_NER_temp = configurations["path_train_NER_temp"]
 	ner_nlp_model_path = configurations["ner_nlp_model_path"]
+	language = configurations["language"]
 	
 	solr_host = configurations["solr_host"]
 	solr_port = configurations["solr_port"]
