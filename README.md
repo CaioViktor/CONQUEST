@@ -4,23 +4,29 @@ CONQUEST (Chatbot ONtology QUESTion) is a framework that automates much of the c
 <h2>Installation</h2>
 <h3>Automatic Installation</h3><br>
 Just run the script "install.sh"<br>
-<code>$./install.sh</code>
+<code>$ ./install.sh</code>
 
 <h3>Manual Installation</h3><br>
 <ul>
-	<li><code>$pip install -r requirements.txt</code></li>
-	<li><code>$python -c "import nltk; nltk.download('punkt')"</code></li>
+	<li><code>Execute the command: $ pip install -r requirements.txt</code></li>
+	<li><code>Execute the command: $ python -c "import nltk; nltk.download('punkt')"</code></li>
 	<li>Download the file "sorl.tar.xz" from <a href="https://sourceforge.net/projects/conquest-sqai/files/solr.tar.xz/download">https://sourceforge.net/projects/conquest-sqai/files/solr.tar.xz/download</a></li>
 	<li>Extract the "sorl.tar.xz" file in "persistence/nlp" keeping the name "sorl"</li>
 	<li>Download the file "model.tar.xz" from <a href="https://sourceforge.net/projects/conquest-sqai/files/model_pt-br.tar.xz/download">https://sourceforge.net/projects/conquest-sqai/files/model_pt-br.tar.xz/download</a></li>
 	<li>Extract the "model.tar.xz file in "persistence/nlp" keeping the name "model"</li>
+	<li>Execute the command: <code>$ python -m spacy download en_core_web_md</code></li>
 	<li>Remove temporary files</li>
 </ul>
 
-
+<h2>Configuration</h2>
+<p>It is possible to configure the framework through a Web interface using the CONQUEST Workbench:</p>
+<ul>
+ <li><code>$ python WorkBench.py</code></li>
+ <li>Access the link in the Web browser: <a href="http://localhost:5050/">http://localhost:5050/</a></li>
+</ul>
 <h2>Trainer</h2>
 <h3>To run the training script:</h3>
-	<code>$python Trainer.py</code>
+	<code>$ python Trainer.py</code>
 	<br/>
 	<pre>
 usage: python Trainer.py [-h] [-m zero] [-p 0]
@@ -40,4 +46,4 @@ optional arguments:
 	</pre>
 <h2>Server</h2>
 <h3>To run the server script:</h3>
-	<code>$python Server.py</code>
+	<code>$ python Server.py</code>
