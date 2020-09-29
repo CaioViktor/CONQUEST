@@ -23,8 +23,10 @@ Just run the script "install.sh"<br>
 <ul>
  <li><code>$ python WorkBench.py</code></li>
  <li>Access the link in the Web browser: <a href="http://localhost:5050/">http://localhost:5050/</a></li>
+ <li>Configure the chatbot parameters and enter the supported templates.</li>
 </ul>
 <h2>Trainer</h2>
+<p>The target ontology file should be placed in the directory "input" with the name "ontology.ttl" in the turle serialization.</p>
 <h3>To run the training script:</h3>
 	<code>$ python Trainer.py</code>
 	<br/>
@@ -46,4 +48,12 @@ optional arguments:
 	</pre>
 <h2>Server</h2>
 <h3>To run the server script:</h3>
+	<p> The chatbot service will be available in the link <a href="http://0.0.0.0:5555/">http://0.0.0.0:5000/</a></p>
 	<code>$ python Server.py</code>
+<h3>To run the RDF Browser (Optional):</h3>
+	<p>The RDF Browser will be available in the link: <a href="http://0.0.0.0:5555/">http://0.0.0.0:5555/</a> and through the functions <code>/explorar $term</code> or <code>/browser $term</code> in the chatbot.</p>
+	<ul>
+		<li>Enter in the directory RDF_Browser: <code>$ cd RDF_Browser</code></li>
+		<li>Run the command: <code>$ python server.py</code></li>
+	</ul>
+	
