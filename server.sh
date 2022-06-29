@@ -1,0 +1,2 @@
+#!/bin/bash
+gunicorn --bind 0.0.0.0:5000 --log-level=debug --workers 4 --timeout 0 --log-file 'gunicornlog.txt'  --threads=4 --graceful-timeout 600 --keep-alive=120 wsgi:app  #Colocar IP da máquina hospedeira (Servidor) aqui

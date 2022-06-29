@@ -1,6 +1,10 @@
 #!/bin/bash
 echo "Installing dependecies..."
 pip install -r requirements.txt
+echo "Installing Spacy english model..."
+python -m spacy download en_core_web_sm
+echo "Installing Spacy portuguese model..."
+python -m spacy download pt_core_news_sm
 python -c "import nltk; nltk.download('punkt')"
 cd persistence/nlp/
 echo "Downloading Sorl..."
