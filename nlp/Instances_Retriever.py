@@ -45,12 +45,13 @@ class Instances_Retriever():
 		query = """
 			PREFIX rdf:<http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 			PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-			SELECT count(DISTINCT ?val) as ?count_t """+self.graph_name+""" WHERE{
+			SELECT (count(DISTINCT ?val) as ?count_t) """+self.graph_name+""" WHERE{
 				_:s a <"""+classs+""">;
 					<"""+propertyy+"""> ?val_raw.
 				BIND(LCASE(SUBSTR(str(?val_raw),1,1000)) as ?val)
 			}
 		"""
+		# print(query)
 		sparql.setQuery(query)
 		sparql.setReturnFormat(JSON)
 		results = sparql.query().convert()

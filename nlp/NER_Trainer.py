@@ -74,7 +74,9 @@ class NER_Trainer():
 		#Removing old index 
 		solr.delete(q="*:*",commit=True)
 		#creating new index
-		solr.add(self.train_dataset,commit=True)
+		for document in self.train_dataset:
+			if len(document['values']) > 0:
+				solr.add(document,commit=True)
 		solr_connection.stop()
 
 		finish_time = datetime.now()

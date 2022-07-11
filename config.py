@@ -33,5 +33,6 @@ with open("input/configurations.json","r", encoding="utf-8") as json_file:
 
 	#APIs Messenger
 	TELEGRAM_TOKEN = configurations["TELEGRAM_TOKEN"]
+	use_TELEGRAM = configurations["use_TELEGRAM"]
 
 	rdf_browser_port = configurations["rdf_browser_port"]

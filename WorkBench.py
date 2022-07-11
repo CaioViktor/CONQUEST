@@ -9,7 +9,9 @@ app = Flask(__name__)
 @app.route("/save_qai",methods=['POST'])
 def save_qai():
 	QAIs = json.loads(request.data)
-	with open("input/input_QAIs.json","w") as QAIs_file:
+	with open("input/configurations.json","r") as config_file:
+		configurations = json.load(config_file)
+	with open(configurations['QAIs_path'],"w") as QAIs_file:
 		QAIs_string = json.dumps(QAIs,indent=4,ensure_ascii=False).encode('utf8').decode()
 		QAIs_file.write(QAIs_string)
 	return json.dumps({'success':True}), 200, {'ContentType':'application/json'}
@@ -41,7 +43,9 @@ def developing_tester():
 @app.route("/templates")
 def templates():
 	today = date.today().strftime("%Y-%m-%d")
-	with open("input/input_QAIs.json","r") as templates_file:
+	with open("input/configurations.json","r") as config_file:
+		configurations = json.load(config_file)	
+	with open(configurations['QAIs_path'],"r") as templates_file:
 		templates = json.load(templates_file)
 	if "message" in request.values:
 		message = request.values['message']

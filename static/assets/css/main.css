@@ -1036,7 +1036,7 @@ textarea {
   color: inherit;
   display: block;
   outline: 0;
-  padding: 0 1em;
+  /* padding: 0 1em; */
   text-decoration: none;
   width: 100%; }
   input[type="text"]:invalid,
@@ -1065,7 +1065,7 @@ select {
   background-repeat: no-repeat;
   background-position: calc(100% - 1em) center;
   height: 2.75em;
-  padding-right: 2.75em;
+  /* padding-right: 2.75em; */
   text-overflow: ellipsis; }
   select option {
     color: #3d4449;

@@ -38,8 +38,10 @@ def create_new_user(user_id):
 app = Flask(__name__)
 print("Starting Dialog Manager...")
 dialog_manager = Dialog_Manager(users_collection)
-print("Starting Telegram Bot...")
-telegram_thread = threading.Thread(target=telegram.main()).start()
+
+if use_TELEGRAM:
+	print("Starting Telegram Bot...")
+	telegram_thread = threading.Thread(target=telegram.main()).start()
 
 @app.route("/search")
 def search():
@@ -100,13 +102,19 @@ def select_qai():
 
 @app.route("/")
 def index():
-	return "Server Running..."
+	return """Server Running...<br/>
+	/list_qais/\t----\t For List suported Questions<br/>
+	/select_qai?user_id=VALUE&qai_id=VALUE\t----\t For select a Especific Question<br/>
+	/query?user_id=VALUE&text\t----\t For send a Message for the chatbot<br/>
+	/search?term=VALUE\t----\t For browser on a specific URI<br/>
+	"""
 
 
 def exit_handler():
-	global telegram_thread
-	print('Telegram bot is ending!')
-	telegram.shutdown()
+	if use_TELEGRAM:
+		global telegram_thread
+		print('Telegram bot is ending!')
+		telegram.shutdown()
 	print('Server is ending!')
 	dialog_manager.close()
 
@@ -114,6 +122,5 @@ def exit_handler():
 atexit.register(exit_handler)
 
 if __name__ == "__main__":
-	#app.run(host='200.19.182.252')
 	app.run(host=host,port = port)
 

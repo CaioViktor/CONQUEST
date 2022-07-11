@@ -18,6 +18,7 @@
 	"min_diference_confidance": 0.05,
 	"number_desambiguation_options": 3,
 	"steps_to_update": 1,
+	"use_TELEGRAM": false,
 	"TELEGRAM_TOKEN": "",
 	"messages": {
 		"welcome": "Olá,\n Eu sou o $chatbot_name e estou aqui para lhe tirar dúvidas sobre medicamentos.",
