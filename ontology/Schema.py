@@ -1,4 +1,3 @@
-import os
 from rdflib import Graph
 from rdflib.util import guess_format
 import hashlib
@@ -8,6 +7,7 @@ import re
 import rdflib.plugins.sparql.processor as processor
 from rdflib import OWL, RDF, RDFS, OWL, XSD,URIRef,BNode,Variable,Literal
 from rdflib.namespace import Namespace
+from regex import P
 
 DC = Namespace('http://purl.org/dc/elements/1.1/')
 DCTERMS = Namespace('http://purl.org/dc/terms/')
@@ -18,6 +18,7 @@ CMO = Namespace('https://github.com/CaioViktor/CONQUEST/tree/master/ontology/Con
 URI = 0
 LITERAL = 1
 #end consts definitions
+
 
 
 #Load Graph
@@ -38,23 +39,53 @@ def get_Resource(graph,uri):
 def normalize_datatype(datatype_xsd):
 	if datatype_xsd == XSD.int or datatype_xsd == XSD.decimal:
 		return XSD.integer
-	if datatype_xsd == XSD.float or datatype_xsd == XSD.double or datatype_xsd == XSD.real:
+	if datatype_xsd == XSD.float or datatype_xsd == XSD.double:
 		return XSD.double
 	if datatype_xsd == XSD.date:
 		return XSD.dateTime
 	return datatype_xsd
 
-def get_range_damain(schema,types=RDF.Property):
+def get_range_domain(schema,types=RDF.Property):
 	properties = {}
 	for prop in schema.subjects( RDF.type, types):
 		domains = []
 		for domain in schema.objects(prop,RDFS.domain):
 			domains.append(normalize_datatype(domain))
+		query = f"""
+		SELECT DISTINCT ?c1
+		WHERE {{
+			?c1 rdfs:subClassOf* ?cn.
+			?cn rdf:type owl:Restriction;
+				owl:onProperty <{prop}>;
+				owl:someValuesFrom|owl:allValuesFrom ?c.
+			FILTER(!isBlank(?c1))
+		}}"""
+		qres = schema.query(query)
+		if len(qres) > 0:
+			for row in qres:
+				uri_ref = URIRef(row[0])
+				if not uri_ref in domains:
+					domains.append(uri_ref)
 
 		ranges = []
 		for rangep in schema.objects(prop,RDFS.range):
 			ranges.append(normalize_datatype(rangep))
-
+		print(prop)
+		query = f"""
+		SELECT DISTINCT ?c
+		WHERE {{
+			?c1 rdfs:subClassOf* ?cn.
+			?cn rdf:type owl:Restriction;
+				owl:onProperty <{prop}>;
+				owl:someValuesFrom|owl:allValuesFrom ?c.
+			FILTER(!isBlank(?c))
+		}}"""
+		qres = schema.query(query)
+		if len(qres) > 0:
+			for row in qres:
+				uri_ref = URIRef(row[0])
+				if not uri_ref in ranges:
+					ranges.append(uri_ref)
 		comments = []
 		for comment in schema.objects(prop,RDFS.comment):
 			comments.append(comment)
@@ -74,15 +105,15 @@ def load_properties_index(schema):
 
 	# print("Get properties")
 	#Get properties
-	p = get_range_damain(schema)
+	p = get_range_domain(schema)
 
 	#print("Get ObjectProperty")
 	#Get ObjectProperty
-	op = get_range_damain(schema,OWL.ObjectProperty)
+	op = get_range_domain(schema,OWL.ObjectProperty)
 
 	#print("Get DatatypeProperty")
 	#Get DatatypeProperty
-	dtp = get_range_damain(schema,OWL.DatatypeProperty)
+	dtp = get_range_domain(schema,OWL.DatatypeProperty)
 	return p,op,dtp
 
 
@@ -103,6 +134,20 @@ def get_info_class(classe,schema):
 	for propertyO in schema.subjects(RDFS.domain,classe):
 		properties.append(propertyO)
 	info['properties'] = properties
+	query = f"""
+		SELECT DISTINCT ?p
+		WHERE {{
+			<{classe}> rdfs:subClassOf* ?cn.
+			?cn rdf:type owl:Restriction;
+				owl:onProperty ?p;
+				owl:someValuesFrom|owl:allValuesFrom ?c.
+		}}"""
+	qres = schema.query(query)
+	if len(qres) > 0:
+		for row in qres:
+			uri_ref = URIRef(row[0])
+			if not uri_ref in info['properties']:
+				info['properties'].append(uri_ref)
 
 
 	#get incident properties
@@ -110,7 +155,20 @@ def get_info_class(classe,schema):
 	for propertyO in schema.subjects(RDFS.range,classe):
 		incident_properties.append(propertyO)
 	info['incident_properties'] = incident_properties
-
+	query = f"""
+		SELECT DISTINCT ?p
+		WHERE {{
+			?c rdfs:subClassOf* ?cn.
+			?cn rdf:type owl:Restriction;
+				owl:onProperty ?p;
+				owl:someValuesFrom|owl:allValuesFrom  <{classe}>.
+		}}"""
+	qres = schema.query(query)
+	if len(qres) > 0:
+		for row in qres:
+			uri_ref = URIRef(row[0])
+			if not uri_ref in info['incident_properties']:
+				info['incident_properties'].append(uri_ref)
 
 	#get super-classes
 	super_classes_list = get_Resource(schema,classe).transitive_objects(RDFS.subClassOf)
@@ -675,3 +733,16 @@ def name_to_id_var(var):
 def update_context(context,triple):
 	if triple not in context:
 		context.append(triple)
+
+def teste():
+	path = "../input/medibot/ontology.ttl"
+	schema = getGraph(path)
+	classes_index = load_classes_index(schema)
+	print("\n\n\n---------------------------------------\n\n\n")
+	properties_index = load_properties_index(schema)
+	
+
+	return 0
+#teste
+if __name__ == "__main__":
+    teste()
