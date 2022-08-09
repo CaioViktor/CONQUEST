@@ -49,28 +49,28 @@ def get_range_domain(schema,types=RDF.Property):
 	properties = {}
 	for prop in schema.subjects( RDF.type, types):
 		domains = []
+		ranges = []
 		for domain in schema.objects(prop,RDFS.domain):
 			domains.append(normalize_datatype(domain))
-		query = f"""
-		SELECT DISTINCT ?c1
-		WHERE {{
-			?c1 rdfs:subClassOf* ?cn.
-			?cn rdf:type owl:Restriction;
-				owl:onProperty <{prop}>;
-				owl:someValuesFrom|owl:allValuesFrom ?c.
-			FILTER(!isBlank(?c1))
-		}}"""
-		qres = schema.query(query)
-		if len(qres) > 0:
-			for row in qres:
-				uri_ref = URIRef(row[0])
-				if not uri_ref in domains:
-					domains.append(uri_ref)
+		if str(prop) not in ['http://www.w3.org/2000/01/rdf-schema#label','http://purl.org/dc/elements/1.1/title','http://www.w3.org/2004/02/skos/core#prefLabel']:
+			query = f"""
+			SELECT DISTINCT ?c1
+			WHERE {{
+				?c1 rdfs:subClassOf* ?cn.
+				?cn rdf:type owl:Restriction;
+					owl:onProperty <{prop}>;
+					owl:someValuesFrom|owl:allValuesFrom ?c.
+				FILTER(!isBlank(?c1))
+			}}"""
+			qres = schema.query(query)
+			if len(qres) > 0:
+				for row in qres:
+					uri_ref = URIRef(row[0])
+					if not uri_ref in domains:
+						domains.append(uri_ref)
 
-		ranges = []
 		for rangep in schema.objects(prop,RDFS.range):
 			ranges.append(normalize_datatype(rangep))
-		print(prop)
 		query = f"""
 		SELECT DISTINCT ?c
 		WHERE {{
@@ -146,7 +146,7 @@ def get_info_class(classe,schema):
 	if len(qres) > 0:
 		for row in qres:
 			uri_ref = URIRef(row[0])
-			if not uri_ref in info['properties']:
+			if not uri_ref in info['properties'] and str(uri_ref) not in ['http://www.w3.org/2000/01/rdf-schema#label','http://purl.org/dc/elements/1.1/title','http://www.w3.org/2004/02/skos/core#prefLabel']:
 				info['properties'].append(uri_ref)
 
 
@@ -167,7 +167,7 @@ def get_info_class(classe,schema):
 	if len(qres) > 0:
 		for row in qres:
 			uri_ref = URIRef(row[0])
-			if not uri_ref in info['incident_properties']:
+			if not uri_ref in info['incident_properties'] and str(uri_ref) not in ['http://www.w3.org/2000/01/rdf-schema#label','http://purl.org/dc/elements/1.1/title','http://www.w3.org/2004/02/skos/core#prefLabel']:
 				info['incident_properties'].append(uri_ref)
 
 	#get super-classes
@@ -239,14 +239,14 @@ def parser_sparql(query_string,schema):
 # 	},
 # }
 
-def new_var(name,typee,classs=list(),context=None):
+def new_var(name,typee,classs=list(),context=None,class_is_explicit=False):
 	if context == None:
 		context = []
 	else:
 		context = [context]
 	if not isinstance(classs,list):
 		classs = [classs]
-	return {'name':name,'type':typee,'class':set(classs),'context':context}
+	return {'name':name,'type':typee,'class':set(classs),'context':context,'class_is_explicit':class_is_explicit}
 
 #parser utilities functions
 def parser_algebra(algebra,schema,depth=0,vars_query={}):
@@ -295,8 +295,12 @@ def parser_expr(expr,vars_query,vars_in_expr=list(),depth=0):
 					if left in vars_query and right in vars_query:
 						#Both are variables
 						#Update classes
-						vars_query[left]['class'].update(vars_query[right]['class'])
-						vars_query[right]['class'].update(vars_query[left]['class'])
+						if not vars_query[left]['class_is_explicit']:
+							# print("foi 1 L ",vars_query[left]['name'])
+							vars_query[left]['class'].update(vars_query[right]['class'])
+						if not vars_query[right]['class_is_explicit']:
+							# print("foi 1 R ",vars_query[left]['name'])
+							vars_query[right]['class'].update(vars_query[left]['class'])
 						#update context
 						
 						update_context(vars_query[left]['context'],(expr['expr'],expr['op'],expr['other']))
@@ -306,6 +310,7 @@ def parser_expr(expr,vars_query,vars_in_expr=list(),depth=0):
 						#Only right is a variable
 						if (isinstance(expr['expr'],Literal)):
 							#left is literal
+							# print("foi 2",vars_query[right]['name'])
 							datatype = expr['expr'].datatype
 							vars_query[right]['class'].update([datatype])
 							vars_query[right]['type'] = LITERAL
@@ -313,6 +318,7 @@ def parser_expr(expr,vars_query,vars_in_expr=list(),depth=0):
 						#Only left is a variable
 						if (isinstance(expr['other'],Literal)):
 							#right is literal
+							# print("foi 3",vars_query[left]['name'])
 							datatype = expr['other'].datatype
 							vars_query[left]['class'].update([datatype])
 							vars_query[left]['type'] = LITERAL
@@ -364,6 +370,7 @@ def parser_expr(expr,vars_query,vars_in_expr=list(),depth=0):
 
 				#infers types
 				if left != None and left in vars_query:
+					# print("foi 4",vars_query[left]['name'])
 					vars_query[left]['class'].update([XSD.double])
 					vars_query[left]['type'] = LITERAL
 					#update context
@@ -372,6 +379,7 @@ def parser_expr(expr,vars_query,vars_in_expr=list(),depth=0):
 
 
 				if right != None and right in vars_query:
+					# print("foi 5",vars_query[right]['name'])
 					vars_query[right]['class'].update([XSD.double])
 					vars_query[right]['type'] = LITERAL
 					#update context
@@ -397,6 +405,7 @@ def parser_expr(expr,vars_query,vars_in_expr=list(),depth=0):
 
 			# infers type
 			if string != None and string in vars_query:
+				# print("foi 6",vars_query[string]['name'])
 				vars_query[string]['class'].update([XSD.string])
 				vars_query[string]['type'] = LITERAL
 				#update context
@@ -408,6 +417,7 @@ def parser_expr(expr,vars_query,vars_in_expr=list(),depth=0):
 					update_context(vars_query[string]['context'],(expr['arg1'],expr.name,sub_string))
 
 			if sub_string != None and sub_string in vars_query:
+				# print("foi 7",vars_query[sub_string]['name'])
 				vars_query[sub_string]['class'].update([XSD.string])
 				vars_query[sub_string]['type'] = LITERAL
 				#update context
@@ -429,6 +439,7 @@ def parser_expr(expr,vars_query,vars_in_expr=list(),depth=0):
 
 			# infers type
 			if string != None and string in vars_query:
+				# print("foi 8",vars_query[string]['name'])
 				vars_query[string]['class'].update([XSD.string])
 				vars_query[string]['type'] = LITERAL
 				#update context
@@ -450,6 +461,7 @@ def parser_expr(expr,vars_query,vars_in_expr=list(),depth=0):
 
 			# infers type
 			if text != None and text in vars_query:
+				# print("foi 9",vars_query[text]['name'])
 				vars_query[text]['class'].update([XSD.string])
 				vars_query[text]['type'] = LITERAL
 				#update context
@@ -461,6 +473,7 @@ def parser_expr(expr,vars_query,vars_in_expr=list(),depth=0):
 					update_context(vars_query[text]['context'],(expr['text'],expr.name,pattern))
 
 			if pattern != None and pattern in vars_query:
+				# print("foi 10",vars_query[pattern]['name'])
 				vars_query[pattern]['class'].update([XSD.string])
 				vars_query[pattern]['type'] = LITERAL
 				#update context
@@ -489,6 +502,7 @@ def parser_expr(expr,vars_query,vars_in_expr=list(),depth=0):
 
 			# infers type
 			if text != None and text in vars_query:
+				# print("foi 11",vars_query[left]['name'])
 				vars_query[text]['class'].update([XSD.string])
 				vars_query[text]['type'] = LITERAL
 				#update context
@@ -500,6 +514,7 @@ def parser_expr(expr,vars_query,vars_in_expr=list(),depth=0):
 					update_context(vars_query[text]['context'],(expr['arg'],expr.name,pattern))
 
 			if pattern != None and pattern in vars_query:
+				# print("foi 12",vars_query[pattern]['name'])
 				vars_query[pattern]['class'].update([XSD.string])	
 				vars_query[pattern]['type'] = LITERAL
 				#update context
@@ -511,6 +526,7 @@ def parser_expr(expr,vars_query,vars_in_expr=list(),depth=0):
 					update_context(vars_query[pattern]['context'],(text,expr.name,expr['pattern']))
 
 			if replacement != None and replacement in vars_query:
+				# print("foi 13",vars_query[replacement]['name'])
 				vars_query[replacement]['class'].update([XSD.string])
 				vars_query[replacement]['type'] = LITERAL
 				#update context
@@ -531,6 +547,7 @@ def parser_expr(expr,vars_query,vars_in_expr=list(),depth=0):
 
 			# infers type
 			if text != None and text in vars_query:
+				# print("foi 14",vars_query[text]['name'])
 				vars_query[text]['class'].update([XSD.string])
 				vars_query[text]['type'] = LITERAL
 				#update context
@@ -541,6 +558,7 @@ def parser_expr(expr,vars_query,vars_in_expr=list(),depth=0):
 					
 					update_context(vars_query[text]['context'],(expr['arg'],expr.name,index))
 			if index != None and index in vars_query:
+				# print("foi 15",vars_query[index]['name'])
 				vars_query[index]['class'].update([XSD.integer])
 				vars_query[index]['type'] = LITERAL
 				#update context
@@ -561,6 +579,7 @@ def parser_expr(expr,vars_query,vars_in_expr=list(),depth=0):
 
 			# infers type
 			if term1 != None and term1 in vars_query:
+				# print("foi 16",vars_query[term1]['name'])
 				vars_query[term1]['class'].update([XSD.string])
 				vars_query[term1]['type'] = LITERAL
 				#update context
@@ -572,6 +591,7 @@ def parser_expr(expr,vars_query,vars_in_expr=list(),depth=0):
 					update_context(vars_query[term1]['context'],(expr['arg1'],expr.name,ter2))
 
 			if ter2 != None and ter2 in vars_query:
+				# print("foi 17",vars_query[ter2]['name'])
 				vars_query[ter2]['class'].update([XSD.string])
 				vars_query[ter2]['type'] = LITERAL
 				#update context
@@ -596,14 +616,17 @@ def parser_expr(expr,vars_query,vars_in_expr=list(),depth=0):
 			if arg != None and arg in vars_query:
 				if expr.name in ['Builtin_ABS','Builtin_CEIL','Builtin_FLOOR','Builtin_ROUND']:
 					#Var is a decimal
+					# print("foi 18",vars_query[arg]['name'])
 					vars_query[arg]['class'].update([XSD.double])
 
 				elif expr.name in ['Builtin_DAY','Builtin_HOURS','Builtin_MINUTES','Builtin_MONTH','Builtin_SECONDS','Builtin_YEAR','Builtin_TIMEZONE']:
 					#Var is a #Var is a decimal
+					# print("foi 19",vars_query[arg]['name'])
 					vars_query[arg]['class'].update([XSD.dateTime])
 
 				elif expr.name in ['Builtin_LANG','Builtin_LCASE','Builtin_UCASE','Builtin_STRLEN','Builtin_ENCODE_FOR_URI']:
 					#Var is a #Var is a string
+					# print("foi 20",vars_query[arg]['name'])
 					vars_query[arg]['class'].update([XSD.string])
 
 				#set type variable
@@ -638,18 +661,25 @@ def parser_expr(expr,vars_query,vars_in_expr=list(),depth=0):
 def parser_triples(triples,schema,vars_query={}):
 	for triple in triples:
 		subject,predicate,objectt = triple
+		# print("Tripla: ",triple)
 		if predicate == RDF.type and isinstance(subject,Variable):
 			#is a variable type declaration
 			id_var = uri_to_hash(subject)
 			if id_var in vars_query:
 				#var already parsed
-				vars_query[id_var]['class'].update([objectt])
+				# print("foi 21",vars_query[id_var]['name'])
+				# vars_query[id_var]['class'].update([objectt])
+				vars_query[id_var]['class'] = set([objectt])
+				vars_query[id_var]['class_is_explicit'] = True
 			else:
 				#new var found
 				name = subject.n3().replace("?","")
 				typee = URI
-				vars_query[id_var] = new_var(name,typee,objectt)
-			#print("declarou {} como um {}".format(subject.n3(),objectt))
+				vars_query[id_var] = new_var(name,typee,objectt,None,True)
+				# print("foi 25",vars_query[id_var]['name'])
+			# print(vars_query[id_var]['class'])
+			#TODO: Obrigar a ficar apenas com o tipo explícito
+			# print("declarou {} como um {}".format(subject.n3(),objectt))
 		elif isinstance(subject,Variable) or isinstance(objectt,Variable):
 			#subject or object are variables, so its types may be infered by property
 			# print("******************************",schema,"******************************")
@@ -688,7 +718,11 @@ def parser_triples(triples,schema,vars_query={}):
 				id_hash_subject = uri_to_hash(subject)
 				if id_hash_subject in vars_query:
 					#var already parsed
-					vars_query[id_hash_subject]['class'].update(domains) 
+					# print(predicate_info['uri'])
+					# print(domains)
+					if not vars_query[id_hash_subject]['class_is_explicit']:
+						# print("foi 22",vars_query[id_hash_subject]['name'])
+						vars_query[id_hash_subject]['class'].update(domains) 
 					
 					update_context(vars_query[id_hash_subject]['context'],triple)
 				else:
@@ -703,7 +737,10 @@ def parser_triples(triples,schema,vars_query={}):
 				id_hash_object = uri_to_hash(objectt)
 				if id_hash_object in vars_query:
 					#var already parsed
-					vars_query[id_hash_object]['class'].update(ranges) 
+					if not vars_query[id_hash_subject]['class_is_explicit'] and not vars_query[id_hash_object]['class_is_explicit']:
+						# print("foi 23",vars_query[id_hash_object]['name'])
+						# print(ranges)
+						vars_query[id_hash_object]['class'].update(ranges) 
 					# print(objectt,":\n",triple)
 					#TODO: Ver por que está aparecendo tripla estranha, nessa linha de baixo
 					update_context(vars_query[id_hash_object]['context'],triple)
@@ -734,15 +771,68 @@ def update_context(context,triple):
 	if triple not in context:
 		context.append(triple)
 
-def teste():
-	path = "../input/medibot/ontology.ttl"
-	schema = getGraph(path)
-	classes_index = load_classes_index(schema)
-	print("\n\n\n---------------------------------------\n\n\n")
-	properties_index = load_properties_index(schema)
-	
 
-	return 0
-#teste
+
+def main():
+	import pprint
+	import qai.QAI as QAI
+	pp = pprint.PrettyPrinter(indent=4)
+	ontology_path = "input/medibot/ontology.ttl"
+	schema = getGraph(ontology_path)
+	classes_index = load_classes_index(schema)
+	properties_index = load_properties_index(schema)
+
+	# query = """
+	# 	PREFIX drugs: <http://www.arida.ufc.br/ontology/drugs/>
+	# 	PREFIX dc: <http://purl.org/dc/elements/1.1/>
+	# 	PREFIX owl: <http://www.w3.org/2002/07/owl#>
+	# 	PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>  
+	# 	SELECT DISTINCT (str(?qai_7_title) as ?qai_7_title) (str(?qai_7_titleApresentacao) as ?qai_7_titleApresentacao) ?qai_7_precoVal WHERE{
+	# 		?qai_7_medicamento a drugs:Medicamento;
+	# 			dc:title ?qai_7_title;
+	# 			drugs:temApresentacao ?qai_7_apresentacao.
+	# 		?qai_7_apresentacao drugs:preco ?qai_7_preco;
+	# 			dc:title ?qai_7_titleApresentacao.
+	# 		?qai_7_preco a drugs:PrecoAoConsumidorSemImposto;
+	# 			drugs:valorPreco ?qai_7_precoVal.
+	# 		FILTER(REGEX(str(?qai_7_title),$qai_7_medicamento_in,'i'))
+	# 	}
+	# """
+	query = """
+		PREFIX drugs: <http://www.arida.ufc.br/ontology/drugs/>
+		PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> 
+		PREFIX dc: <http://purl.org/dc/elements/1.1/>
+		SELECT  DISTINCT (GROUP_CONCAT(DISTINCT LCASE(?qai_1_auxLabel)) AS ?qai_1_titles) WHERE{
+			
+				?qai_1_termo a owl:Class.
+				{
+					?qai_1_termo rdfs:label ?qai_1_auxLabel
+				}UNION{
+					?qai_1_termo dc:title ?qai_1_auxLabel
+				}OPTIONAL{
+					?qai_1_termo rdfs:comment ?qai_1_auxComment
+				}
+				FILTER(REGEX(str(?qai_1_auxLabel),$qai_1_termo_in2 , 'i'))
+			}GROUP BY ?qai_1_termo
+	"""
+	# query = """
+	# 	PREFIX drugs: <http://www.arida.ufc.br/ontology/drugs/>
+	# 	PREFIX dc: <http://purl.org/dc/elements/1.1/>
+	# 	PREFIX owl: <http://www.w3.org/2002/07/owl#>
+	# 	PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>  
+	# 	SELECT * WHERE{
+	# 		?qai_7_medicamento a drugs:Medicamento;
+	# 			dc:title ?qai_7_title.
+	# 		FILTER(REGEX(str(?qai_7_title),$qai_7_medicamento_in,'i'))
+	# 	}
+	# """
+	query_object = processor.prepareQuery(query)
+	pp.pprint(str(query_object.algebra))
+	pp.pprint(parser_sparql(query,properties_index)) 
+	QAIj = {'description':'','SP':query,'RP':{'header':'','body':'','footer':''},'QPs':['quero saber a definção de $qai_1_termo_in2']}
+	qai = QAI.QAI(QAIj,0,properties_index)
+	pp.pprint(qai.CVs)
+
+
 if __name__ == "__main__":
-    teste()
+	main()

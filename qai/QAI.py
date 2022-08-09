@@ -35,7 +35,7 @@ class QAI:
 		self.IVs = {} #Inner Variables. Vars used only inside the query
 		self.SVs = [] #Sentence Vector of QPs
 
-		cvs_Set,rvs_Set = self.get_variables_SP(self.SP);
+		cvs_Set,rvs_Set = self.get_variables_SP(self.SP)
 
 
 		# print("QAI:{}\n\tin:{}\n\tout:{}".format(self.id,vars_Set,result_Set))
