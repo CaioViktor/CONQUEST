@@ -2,6 +2,7 @@ import os
 from flask import Flask,render_template,request, redirect, url_for
 import json
 from datetime import date
+from config import *
 
 app = Flask(__name__)
 
@@ -9,9 +10,7 @@ app = Flask(__name__)
 @app.route("/save_qai",methods=['POST'])
 def save_qai():
 	QAIs = json.loads(request.data)
-	with open("input/medibot/configurations.json","r") as config_file:
-		configurations = json.load(config_file)
-	with open(configurations['QAIs_path'],"w") as QAIs_file:
+	with open(QAIs_path,"w") as QAIs_file:
 		QAIs_string = json.dumps(QAIs,indent=4,ensure_ascii=False).encode('utf8').decode()
 		QAIs_file.write(QAIs_string)
 	return json.dumps({'success':True}), 200, {'ContentType':'application/json'}
@@ -29,7 +28,7 @@ def update_configurations():
 				configurations[field] = request.form[field]
 		else:
 			configurations['messages'][field] = request.form[field]
-	with open("input/medibot/configurations.json","w") as configurations_file:
+	with open(configurations_path,"w") as configurations_file:
 		configurations_json = json.dumps(configurations,indent=4,ensure_ascii=False).encode('utf8').decode()
 		configurations_file.write(configurations_json)
 	return redirect(url_for("index",message="Configurations Updated!"))
@@ -43,9 +42,7 @@ def developing_tester():
 @app.route("/templates")
 def templates():
 	today = date.today().strftime("%Y-%m-%d")
-	with open("input/medibot/configurations.json","r") as config_file:
-		configurations = json.load(config_file)	
-	with open(configurations['QAIs_path'],"r") as templates_file:
+	with open(QAIs_path,"r") as templates_file:
 		templates = json.load(templates_file)
 	if "message" in request.values:
 		message = request.values['message']
@@ -55,7 +52,7 @@ def templates():
 
 @app.route("/")
 def index():
-	with open("input/medibot/configurations.json","r") as config_file:
+	with open(configurations_path,"r") as config_file:
 		configurations = json.load(config_file)
 	if "message" in request.values:
 		message = request.values['message']
