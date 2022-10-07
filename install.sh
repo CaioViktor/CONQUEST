@@ -1,7 +1,7 @@
 #!/bin/bash
 echo "Installing dependecies..."
 pip install -r requirements.txt
-python -c "import nltk; nltk.download('punkt'); nltk.download('rslp')"
+python -c "import nltk; nltk.download('punkt'); nltk.download('rslp'); nltk.download('wordnet')"
 cd persistence/nlp/
 echo "Downloading Sorl..."
 wget -O sorl.tar.xz "https://sourceforge.net/projects/conquest-sqai/files/solr.tar.xz/download"

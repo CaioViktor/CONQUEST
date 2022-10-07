@@ -25,3 +25,6 @@ spacy==2.2.1
 SPARQLWrapper>=1.8.4
 dateparser>=0.7.2
 gunicorn>=20.1.0
+git+https://github.com/PrithivirajDamodaran/Parrot.git#egg=Parrot
+protobuf==3.20.1
+googletrans==4.0.0-rc1
