@@ -2,7 +2,7 @@
 
 
 import json
-configurations_path = "input/medibot/configurations.json"
+configurations_path = "input/configurations.json"
 with open(configurations_path,"r", encoding="utf-8") as json_file:
 	configurations = json.load(json_file)
 

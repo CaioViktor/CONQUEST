@@ -20,6 +20,16 @@ LITERAL = 1
 #end consts definitions
 
 
+def queryLabels(resource):
+	query = f"""
+			PREFIX dc: <http://purl.org/dc/elements/1.1/>
+			PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+			SELECT DISTINCT ?l WHERE{{
+				{{<{resource}> dc:title ?l}}
+				UNION{{<{resource}> rdfs:label ?l}}
+				UNION{{<{resource}> skos:prefLabel ?l}}
+				}}"""
+	return query
 
 #Load Graph
 def getGraph(file_path):
@@ -91,8 +101,10 @@ def get_range_domain(schema,types=RDF.Property):
 			comments.append(comment)
 
 		labels = []
-		for label in schema.preferredLabel(prop):
-			labels.append(label[1])
+		query = queryLabels(prop)
+		qres = schema.query(query)
+		for label in qres:
+			labels.append(label[0])
 
 
 		id_hash = uri_to_hash(prop)
@@ -124,8 +136,10 @@ def get_info_class(classe,schema):
 
 	#get labels
 	labels = []
-	for label in schema.preferredLabel(classe):
-		labels.append(label[1])
+	query = queryLabels(classe)
+	qres = schema.query(query)
+	for label in qres:
+		labels.append(label[0])
 	info['labels'] = labels
 
 
