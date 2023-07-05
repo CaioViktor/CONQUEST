@@ -57,16 +57,26 @@ class Query_Processor():
 		return query
 
 	def run_sparql(self,query):
-		sparql = SPARQLWrapper(self.url_endpoint)
-		sparql.setQuery(query)
-		sparql.setReturnFormat(JSON)
-		results = sparql.query().convert()
 		result_set = []
-		for result in results["results"]["bindings"]:
-			result_item = {}
-			for var in result:
-				result_item["?"+var] = result[var]["value"]
-			result_set.append(result_item)
+		if 'http' in self.url_endpoint:
+			#Enpoint is a valid remote SPARQL endpoint
+			sparql = SPARQLWrapper(self.url_endpoint)
+			sparql.setQuery(query)
+			sparql.setReturnFormat(JSON)
+			results = sparql.query().convert()
+			for result in results["results"]["bindings"]:
+				result_item = {}
+				for var in result:
+					result_item["?"+var] = result[var]["value"]
+				result_set.append(result_item)
+		else:
+			#Enpoint is a local file
+			results= sc.executeQuery(self.url_endpoint,query)
+			for result in results:
+				result_item = {}
+				for var in results.vars:
+					result_item["?"+var] = result[var]
+				result_set.append(result_item)
 		return result_set
 
 	def build_answer(self,qai,results):

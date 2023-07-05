@@ -2,7 +2,9 @@
 
 
 import json
-configurations_path = "input/configurations.json"
+# configurations_path = "input/configurations.json" #For use default configurations
+configurations_path = "input/configurations_example.json" #For use example
+
 with open(configurations_path,"r", encoding="utf-8") as json_file:
 	configurations = json.load(json_file)
 

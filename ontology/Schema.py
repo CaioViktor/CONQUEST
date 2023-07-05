@@ -40,6 +40,10 @@ def getGraph(file_path):
 	# g.parse(file_path,format="turtle")
 	return g
 
+def executeQuery(file_path,query):
+	graph = getGraph(file_path)
+	qres = graph.query(query)
+	return qres
 
 def get_Resource(graph,uri):
 	if type(uri) is str:

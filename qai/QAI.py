@@ -51,6 +51,8 @@ class QAI:
 		for var in cvs_Set:
 			#Getting CV's Owners (classes and properties)
 			id_var = schema_processor.name_to_id_var(var)
+			# print(var)
+			# print(id_var)
 			self.CVs[id_var] = vars_set[id_var]
 			self.CVs[id_var]['name'] = var
 			self.CVs[id_var]['owners'] = {}

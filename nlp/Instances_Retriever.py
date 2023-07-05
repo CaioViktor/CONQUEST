@@ -27,7 +27,7 @@ class Instances_Retriever():
 				self.instances[instance_id]
 			offset = 0
 
-			while offset <= number_instances:
+			while int(offset) <= int(number_instances):
 				self.instances[instance_id]+= self.query_examples(classs,propertyy,offset)
 				offset+= LIMIT
 			return self.instances[instance_id]
@@ -39,7 +39,6 @@ class Instances_Retriever():
 
 ##Utility functions
 	def count_triples(self,classs,propertyy):
-		sparql = SPARQLWrapper(self.url_endpoint)
 		classs = classs.strip()
 		propertyy = propertyy.strip()
 		query = """
@@ -52,19 +51,26 @@ class Instances_Retriever():
 			}
 		"""
 		# print(query)
-		sparql.setQuery(query)
-		sparql.setReturnFormat(JSON)
-		results = sparql.query().convert()
-		count_t = 0
-		for result in results["results"]["bindings"]:
-			count_t = int(result["count_t"]["value"])
+		count_t = None
+		if 'http' in self.url_endpoint:
+			#Enpoint is a valid remote SPARQL endpoint
+			sparql = SPARQLWrapper(self.url_endpoint)
+			sparql.setQuery(query)
+			sparql.setReturnFormat(JSON)
+			results = sparql.query().convert()
+			count_t = 0
+			for result in results["results"]["bindings"]:
+				count_t = int(result["count_t"]["value"])
+		else:
+			#Enpoint is a local file
+			res= sc.executeQuery(self.url_endpoint,query)
+			count_t = res.bindings[0]['count_t']
 		return count_t
 
 
 
 	def query_examples(self,classs,propertyy,offset):
 		#Get values from properties in knowledge graph
-		sparql = SPARQLWrapper(self.url_endpoint)
 		classs = classs.strip()
 		propertyy = propertyy.strip()
 
@@ -87,13 +93,20 @@ class Instances_Retriever():
 			OFFSET """+str(offset)+"""
 		"""
 		# print(query)
-		sparql.setQuery(query)
-		sparql.setReturnFormat(JSON)
-		results = sparql.query().convert()
-
 		values = []
+		if 'http' in self.url_endpoint:
+			#Enpoint is a valid remote SPARQL endpoint
+			sparql = SPARQLWrapper(self.url_endpoint)
+			sparql.setQuery(query)
+			sparql.setReturnFormat(JSON)
+			results = sparql.query().convert()
 
-		for result in results["results"]["bindings"]:
-			values.append(result["val"]["value"].strip())
+			for result in results["results"]["bindings"]:
+				values.append(result["val"]["value"].strip())
+		else:
+			#Enpoint is a local file
+			results= sc.executeQuery(self.url_endpoint,query)
+			for result in results:
+				values.append(result['val'].strip())
 
 		return values

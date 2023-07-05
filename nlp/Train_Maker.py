@@ -40,6 +40,7 @@ class Train_Maker():
 
 							#Get instances to property
 							instances = self.instance_retriever.retriver(classs,cv_owner['uri'])
+
 							document = {"id":label,"values":instances}
 							train_data.append(document)
 		return train_data

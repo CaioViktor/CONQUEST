@@ -8,14 +8,29 @@
 			"id": 0,
 			"description": "Consulta pessoas pelo nome",
 			"QPs": [
-				"Quem é $principioAtivo com idade maior que $ida",
-				"Fale sobre o $principioAtivo com idade maior que $ida",
-				"Busque pela pessoa com o nome $principioAtivo com idade maior que $ida"
+				"Quem é $nome?",
+				"Fale sobre o $nome",
+				"Busque pela pessoa com o nome $nome"
 			],
-			"SP": "PREFIX dc:<http://purl.org/dc/elements/1.1/>\n PREFIX drugs:<http://www.linkedmed.com.br/ontology/drugs/>\n SELECT distinct ?nomeMedicamento \n WHERE { \n   ?s a drugs:Medicamento,drugs:MedicamentoAlopatico;\n dc:title ?nomeMedicamento;\n drugs:temApresentacao ?ap.\n ?s drugs:substancia ?substancia .\n ?substancia dc:title ?tituloSubstanciaPt .\n ?ap drugs:ean ?ean.\n FILTER(regex(str(?tituloSubstanciaPt), $principioAtivo, 'i') && ?ean > $ida)\n }",
+			"SP": "PREFIX ex: <http://www.example.lirb.com/>\n SELECT distinct ?person ?name \n WHERE {\n ?person a ex:Person;\n ex:hasName ?name. FILTER(REGEX(str(?name),$nome , 'i'))}",
 			"RP": {
 				"header": "Eu encontrei as seguintes pessoas:",
-				"body": "?nomeMedicamento",
+				"body": "?person ?name",
+				"footer":"Você desaja mais alguma coisa?"
+			}
+		},
+		{
+			"id": 1,
+			"description": "Consulta idade de uma pessoa",
+			"QPs": [
+				"qual a idade de $nome?",
+				"diga a idade de $nome",
+				"quantos anos $nome tem?"
+			],
+			"SP": "PREFIX ex: <http://www.example.lirb.com/>\n SELECT distinct ?person ?name ?idade \n WHERE {\n ?person a ex:Person;\n ex:hasName ?name;\n ex:hasAge ?idade. FILTER(REGEX(str(?name),$nome , 'i'))}",
+			"RP": {
+				"header": "Eu encontrei as seguintes pessoas:",
+				"body": "?person ?name ?idade",
 				"footer":"Você desaja mais alguma coisa?"
 			}
 		}
